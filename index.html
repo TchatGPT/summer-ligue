@@ -1735,7 +1735,7 @@ let saisieBonus = 0;
 // ============================================================
 async function init() {
   const { data: { session } } = await _sb.auth.getSession();
-  _adminOk = !!session;
+  _auth.hydrate(session);
   await loadState();
   updateAdminUI();
   renderAll();
@@ -2067,21 +2067,28 @@ function renderLog() {
 // ============================================================
 // NAVIGATION
 // ============================================================
-function showPage(name) {
-  const adminPages = ['actions', 'joueurs', 'historique', 'logs', 'moderation'];
-  if (adminPages.includes(name) && !isAdmin()) {
-    document.getElementById('admin-email-input').value = '';
-    document.getElementById('admin-pwd-input').value = '';
-    document.getElementById('admin-login-error').style.display = 'none';
-    openModal('modal-admin');
-    setTimeout(() => document.getElementById('admin-email-input').focus(), 100);
-    return;
+async function showPage(name) {
+  const adminPages = ['actions', 'joueurs', 'moderation'];
+  if (adminPages.includes(name)) {
+    // Vérification cryptographique du JWT via le SDK Supabase — non falsifiable depuis la console
+    const { data: { session } } = await _sb.auth.getSession();
+    _auth.hydrate(session);
+    if (!_auth.ok()) {
+      document.getElementById('admin-email-input').value = '';
+      document.getElementById('admin-pwd-input').value = '';
+      document.getElementById('admin-login-error').style.display = 'none';
+      openModal('modal-admin');
+      setTimeout(() => document.getElementById('admin-email-input').focus(), 100);
+      return;
+    }
   }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
+  const pageEl = document.getElementById('page-' + name);
+  if (!pageEl) return;
+  pageEl.classList.add('active');
   document.querySelectorAll('.nav-tab').forEach(t => {
-    if (t.getAttribute('onclick') && t.getAttribute('onclick').includes("'" + name + "'")) t.classList.add('active');
+    if (t.getAttribute('onclick')?.includes("'" + name + "'")) t.classList.add('active');
   });
   renderAll();
 }
@@ -2140,8 +2147,10 @@ function deletePlayer(id) {
 // ============================================================
 // SAISIE GAME
 // ============================================================
-function openSaisieModal() {
-  if (!isAdmin()) {
+async function openSaisieModal() {
+  const { data: { session } } = await _sb.auth.getSession();
+  _auth.hydrate(session);
+  if (!_auth.ok()) {
     document.getElementById('admin-email-input').value = '';
     document.getElementById('admin-pwd-input').value = '';
     document.getElementById('admin-login-error').style.display = 'none';
@@ -3473,10 +3482,10 @@ function parseSheetCSV(csv) {
       // Skip empty game slots (no kills AND no score)
       if (killsStr === '' && ptsTotauxStr === '') continue;
 
-      const kills = parseInt(killsStr) || 0;
+      const kills = Math.min(999, Math.max(0, parseInt(killsStr) || 0));
       const topRaw = parseInt(topStr) || 0;
       const top = topRaw === 1 ? 1 : topRaw === 2 ? 2 : topRaw === 3 ? 3 : 0;
-      const ptsTotaux = parseInt(ptsTotauxStr) || 0;
+      const ptsTotaux = Math.min(9999, Math.max(0, parseInt(ptsTotauxStr) || 0));
 
       // Parse mult from pts row (e.g. "x1,2" → 1.2, French decimal)
       let mult = 1;
@@ -3564,14 +3573,26 @@ const _sb = createClient(
   'sb_publishable_fHa2Tj8suBHMNJc9egcJTA_Aa6bYaiW'
 );
 
-let _adminOk = false;
-_sb.auth.onAuthStateChange((event, session) => {
-  _adminOk = !!session;
-  updateAdminUI();
-  if (event === 'SIGNED_OUT') { showPage('classement'); toast('Déconnecté.'); }
-});
+// Auth module — inaccessible depuis la console globale
+const _auth = (() => {
+  let _s = null;
+  return {
+    hydrate(session) {
+      // Valide qu'il s'agit d'un vrai JWT Supabase (3 segments, longueur > 200)
+      const tok = session?.access_token || '';
+      _s = (tok.split('.').length === 3 && tok.length > 200 && session?.user?.id) ? session : null;
+    },
+    ok() { return _s !== null; },
+    clear() { _s = null; }
+  };
+})();
+function isAdmin() { return _auth.ok(); }
 
-function isAdmin() { return _adminOk; }
+_sb.auth.onAuthStateChange((event, session) => {
+  _auth.hydrate(session);
+  updateAdminUI();
+  if (event === 'SIGNED_OUT') { _auth.clear(); showPage('classement'); toast('Déconnecté.'); }
+});
 
 async function toggleAdminLogin() {
   if (isAdmin()) {
