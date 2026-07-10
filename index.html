@@ -1092,6 +1092,22 @@ main {
         <button class="btn btn-gold btn-sm" onclick="openAction('top1-bonus')">Appliquer</button>
       </div>
 
+      <div class="action-row">
+        <div>
+          <div class="action-row-name">Pire game d'une personne × 2</div>
+          <div style="font-size:11px;color:var(--text-muted)">Double le score de la pire game d'un joueur</div>
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="openAction('comm-worst-x2')">Appliquer</button>
+      </div>
+
+      <div class="action-row">
+        <div>
+          <div class="action-row-name">Game au hasard × 2</div>
+          <div style="font-size:11px;color:var(--text-muted)">Double le score d'une game tirée au sort pour un joueur</div>
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="openAction('comm-rand-x2')">Appliquer</button>
+      </div>
+
     </div>
   </div>
 
@@ -1191,6 +1207,22 @@ main {
           <div style="font-size:11px;color:var(--text-muted)">La prochaine game du joueur ne sera pas comptabilisée</div>
         </div>
         <button class="btn btn-purple btn-sm" onclick="openAction('perso-skip')">Appliquer</button>
+      </div>
+
+      <div class="action-row">
+        <div>
+          <div class="action-row-name">Game supplémentaire</div>
+          <div style="font-size:11px;color:var(--text-muted)">Ajoute une game bonus hors limite des 20</div>
+        </div>
+        <button class="btn btn-purple btn-sm" onclick="openAction('perso-extra-game')">Appliquer</button>
+      </div>
+
+      <div class="action-row">
+        <div>
+          <div class="action-row-name">+10 pts à partir du top 10</div>
+          <div style="font-size:11px;color:var(--text-muted)">Ajoute 10 pts bonus si le joueur est dans le top 10 du classement</div>
+        </div>
+        <button class="btn btn-purple btn-sm" onclick="openAction('perso-top10pts')">Appliquer</button>
       </div>
 
     </div>
@@ -2212,7 +2244,11 @@ function openAction(type) {
     'perso-clone-kills': 'Clone kills joueur',
     'perso-clone-lriaa': 'Clone kills Lriaa',
     'perso-del-worst': 'Enlève une mauvaise game',
-    'perso-skip': 'Skip ta game'
+    'perso-skip': 'Skip ta game',
+    'perso-extra-game': 'Game supplémentaire',
+    'perso-top10pts': '+10 pts Top 10',
+    'comm-worst-x2': 'Pire game × 2',
+    'comm-rand-x2': 'Game aléatoire × 2'
   };
   document.getElementById('modal-action-title').textContent = titles[type] || type;
   document.getElementById('modal-action-body').innerHTML = buildActionBody(type);
@@ -2368,6 +2404,41 @@ function buildActionBody(type) {
       ${playerSelect('p1', 'Joueur')}
       <p style="color:var(--text-muted);font-size:12px;margin-top:8px">La prochaine game saisie pour ce joueur sera ignorée.</p>
       <button class="btn btn-solid-rust" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Activer le skip</button>`;
+
+    case 'perso-extra-game': return `
+      ${playerSelect('p1', 'Joueur')}
+      <div class="form-row-2" style="margin-top:12px">
+        <div class="form-row" style="margin-bottom:0">
+          <label class="form-label">Kills</label>
+          <input type="number" class="form-input" id="act-kills" value="5" min="0">
+        </div>
+        <div class="form-row" style="margin-bottom:0">
+          <label class="form-label">Multiplicateur</label>
+          <select class="form-select" id="act-mult">
+            <option value="1">x1</option><option value="1.1">x1.1</option><option value="1.2">x1.2</option><option value="1.3">x1.3</option><option value="1.4">x1.4</option><option value="1.5">x1.5</option><option value="2">x2</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row" style="margin-top:12px">
+        <label class="form-label">Top</label>
+        <select class="form-select" id="act-top"><option value="0">Pas de top</option><option value="1">Top 1 (+20)</option><option value="2">Top 2 (+15)</option><option value="3">Top 3 (+8)</option></select>
+      </div>
+      <button class="btn btn-purple" style="width:100%;justify-content:center;margin-top:16px;border-width:1px" onclick="execAction()">Ajouter la game</button>`;
+
+    case 'perso-top10pts': return `
+      ${playerSelect('p1', 'Joueur')}
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Ajoute <strong>+10 pts bonus</strong> si le joueur est dans le top 10 du classement actuel.</p>
+      <button class="btn btn-purple" style="width:100%;justify-content:center;margin-top:16px;border-width:1px" onclick="execAction()">Appliquer</button>`;
+
+    case 'comm-worst-x2': return `
+      ${playerSelect('p1', 'Joueur')}
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Le score de la pire game du joueur sera multiplié par 2.</p>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Appliquer × 2</button>`;
+
+    case 'comm-rand-x2': return `
+      ${playerSelect('p1', 'Joueur')}
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Une game tirée au sort aura son score multiplié par 2.</p>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Tirer au sort et × 2</button>`;
 
     default: return '<p>Action inconnue.</p>';
   }
@@ -2589,6 +2660,53 @@ function execAction() {
       p.skipNext = true;
       addLog(`<strong>${p.name}</strong> — skip activé.`, 'rust', 'forward-step', true);
       toast(`Skip activé pour ${p.name}.`, 'info');
+      break;
+    }
+    case 'perso-extra-game': {
+      const p = getP('p1');
+      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
+      const kills = parseInt(document.getElementById('act-kills').value || 0);
+      const mult = parseFloat(document.getElementById('act-mult').value || 1);
+      const top = parseInt(document.getElementById('act-top').value || 0);
+      const score = calcGameScore(kills, top, mult);
+      p.games.push({ id: uid(), kills, top, mult, score, date: now(), note: 'game sup (roue perso)' });
+      addLog(`<strong>${p.name}</strong> — game supplémentaire ajoutée : ${score} pts.`, 'purple', 'plus', true);
+      toast(`Game sup ajoutée : ${score} pts !`);
+      break;
+    }
+    case 'perso-top10pts': {
+      const p = getP('p1');
+      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
+      const sorted = [...state.players].sort((a, b) => getPlayerTotal(b) - getPlayerTotal(a));
+      const rank = sorted.findIndex(x => x.id === p.id) + 1;
+      if (rank > 10) { toast(`${p.name} n'est pas dans le top 10 (position ${rank}).`, 'error'); return; }
+      p.bonusPoints = (p.bonusPoints || 0) + 10;
+      addLog(`<strong>${p.name}</strong> — +10 pts bonus (top ${rank} du classement).`, 'purple', 'bolt-lightning', true);
+      toast(`+10 pts pour ${p.name} (top ${rank}) !`);
+      break;
+    }
+    case 'comm-worst-x2': {
+      const p = getP('p1');
+      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
+      const worst = getWorstGame(p);
+      if (!worst) { toast('Aucune game trouvée.', 'error'); return; }
+      const oldScore = worst.score;
+      worst.score = Math.round(worst.score * 2);
+      worst.note = (worst.note ? worst.note + ' · ' : '') + `×2 pire game (roue commu)`;
+      addLog(`<strong>${p.name}</strong> — pire game ×2 : ${oldScore} → ${worst.score} pts.`, 'gold', 'angles-up', true);
+      toast(`Pire game ×2 : ${oldScore} → ${worst.score} pts !`, 'gold');
+      break;
+    }
+    case 'comm-rand-x2': {
+      const p = getP('p1');
+      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
+      if (!p.games.length) { toast('Aucune game trouvée.', 'error'); return; }
+      const randGame = p.games[Math.floor(Math.random() * p.games.length)];
+      const oldScore = randGame.score;
+      randGame.score = Math.round(randGame.score * 2);
+      randGame.note = (randGame.note ? randGame.note + ' · ' : '') + `×2 aléatoire (roue commu)`;
+      addLog(`<strong>${p.name}</strong> — game aléatoire ×2 : ${oldScore} → ${randGame.score} pts.`, 'gold', 'shuffle', true);
+      toast(`Game ×2 : ${oldScore} → ${randGame.score} pts !`, 'gold');
       break;
     }
   }
