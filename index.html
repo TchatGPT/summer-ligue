@@ -271,8 +271,8 @@ main {
 .game-pill {
   background: var(--bg3);
   border: 1px solid var(--border);
-  padding: 2px 6px;
-  font-size: 11px;
+  padding: 3px 10px;
+  font-size: 12px;
   border-radius: 2px;
   white-space: nowrap;
   font-family: 'Barlow Condensed', sans-serif;
@@ -1251,7 +1251,7 @@ main {
 </div>
 
 <!-- MODAL DETAIL JOUEUR -->
-<div class="modal-overlay" id="modal-player">
+<div class="modal-overlay modal-center" id="modal-player">
   <div class="modal" style="max-width:680px">
     <div class="modal-header">
       <div class="modal-title" id="modal-player-title">Joueur</div>
@@ -1686,8 +1686,8 @@ function renderClassement() {
         ${top3count ? `<span style="color:#cd7f32"><i class="fa-solid fa-medal" style="font-size:9px"></i> ${top3count}</span>` : ''}
         ${!top1count && !top2count && !top3count ? '<span style="color:var(--text-muted)">—</span>' : ''}
       </td>
-      <td>${best ? `<span class="game-pill best" style="background:rgba(201,149,74,0.1)">${best.score} pts · ${best.kills}K${topLabel(best.top)}</span>` : '<span style="color:var(--text-muted)">—</span>'}</td>
-      <td>${worst && p.games.length > 1 && worst.id !== best?.id ? `<span class="game-pill worst" style="background:rgba(192,71,42,0.1)">${worst.score} pts · ${worst.kills}K${topLabel(worst.top)}</span>` : '<span style="color:var(--text-muted)">—</span>'}</td>
+      <td>${best ? `<span class="game-pill best" style="background:rgba(201,149,74,0.1)">${best.score} pts · ${best.kills} kills</span>` : '<span style="color:var(--text-muted)">—</span>'}</td>
+      <td>${worst && p.games.length > 1 && worst.id !== best?.id ? `<span class="game-pill worst" style="background:rgba(192,71,42,0.1)">${worst.score} pts · ${worst.kills} kills</span>` : '<span style="color:var(--text-muted)">—</span>'}</td>
       <td>
         <button class="btn btn-sm" style="color:var(--text-muted);border-color:var(--border)" onclick="showPlayerDetail('${p.id}')"><i class="fa-solid fa-chart-bar"></i></button>
       </td>
@@ -1695,12 +1695,7 @@ function renderClassement() {
   }).join('');
 }
 
-function topLabel(top) {
-  if (top === 1) return ' · T1';
-  if (top === 2) return ' · T2';
-  if (top === 3) return ' · T3';
-  return '';
-}
+function topLabel(top) { return ''; }
 
 function renderSaisieSelects() {
   const selects = ['saisie-player', 'echange-a', 'echange-b'];
