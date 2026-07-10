@@ -1384,7 +1384,16 @@ main {
         <div class="sp-row"><span>Top placement</span><span id="edit-prev-top">0 pts</span></div>
         <div class="sp-row sp-total"><span>SCORE GAME</span><span id="edit-prev-total">0 pts</span></div>
       </div>
-      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="saveEditGame()">
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn" id="edit-bonus-5-btn" style="flex:1;justify-content:center;border:1px solid var(--green);color:var(--green);background:rgba(76,175,119,0.08)" onclick="addBonusFromEdit(5)">
+          <i class="fa-solid fa-bolt"></i> +5 pts
+        </button>
+        <button class="btn" id="edit-bonus-10-btn" style="flex:1;justify-content:center;border:1px solid var(--green);color:var(--green);background:rgba(76,175,119,0.08)" onclick="addBonusFromEdit(10)">
+          <i class="fa-solid fa-bolt-lightning"></i> +10 pts
+        </button>
+      </div>
+      <div id="edit-bonus-info" style="display:none;font-size:11px;color:var(--green);margin-top:6px;text-align:center"></div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:12px" onclick="saveEditGame()">
         <i class="fa-solid fa-check"></i> Sauvegarder
       </button>
     </div>
@@ -2166,9 +2175,10 @@ function openEditGame(playerId, gameId) {
   const g = p.games.find(x => x.id === gameId);
   if (!g) return;
 
+  const gameIdx = p.games.findIndex(x => x.id === gameId);
   _editCtx = { playerId, gameId, top: g.top };
 
-  document.getElementById('edit-game-title').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Modifier — ${escHtml(p.name)}`;
+  document.getElementById('edit-game-title').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Modifier — Game ${gameIdx + 1} — ${escHtml(p.name)}`;
   document.getElementById('edit-kills').value = g.kills;
   document.getElementById('edit-mult').value = g.mult || 1;
 
@@ -2204,6 +2214,19 @@ function updateEditPreview() {
   document.getElementById('edit-prev-kills').textContent = `${kills}${mult !== 1 ? ' × ' + mult + ' = ' + killsPts : ''} pts`;
   document.getElementById('edit-prev-top').textContent   = topPts + ' pts';
   document.getElementById('edit-prev-total').textContent = (killsPts + topPts) + ' pts';
+}
+
+function addBonusFromEdit(amount) {
+  const { playerId } = _editCtx;
+  const p = state.players.find(x => x.id === playerId);
+  if (!p) return;
+  p.bonusPoints = (p.bonusPoints || 0) + amount;
+  saveState();
+  renderAll();
+  const info = document.getElementById('edit-bonus-info');
+  info.style.display = 'block';
+  info.textContent = `+${amount} pts ajoutés à ${p.name} (total bonus : ${p.bonusPoints} pts)`;
+  addLog(`<strong>${p.name}</strong> — +${amount} pts bonus ajoutés.`, 'green', 'bolt-lightning', true);
 }
 
 function saveEditGame() {
