@@ -458,6 +458,8 @@ main {
   font-weight: 700;
   font-size: 18px;
 }
+.maxg-btn { background:var(--bg3); border:1px solid var(--green); color:var(--green); padding:6px 14px; border-radius:3px; cursor:pointer; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:15px; transition:all 0.15s; }
+.maxg-btn:hover, .maxg-btn.active { background:var(--green); color:var(--bg); }
 .kills-btn {
   background: var(--bg3);
   border: 1px solid var(--border);
@@ -894,6 +896,7 @@ main {
   <button class="nav-tab admin-only" style="display:none" onclick="showPage('joueurs')">Joueurs</button>
   <button class="nav-tab" onclick="showPage('evenements')">Évènements</button>
   <button class="nav-tab" onclick="showPage('regles')">Règles</button>
+  <button class="nav-tab admin-only" style="display:none" onclick="showPage('moderation')">Modération</button>
   <button class="nav-tab admin-only" style="display:none" onclick="showPage('historique')">Logs</button>
 </nav>
 
@@ -911,6 +914,20 @@ main {
         <i class="fa-solid fa-medal" style="color:#c0c0c0"></i>
         <i class="fa-solid fa-medal" style="color:#cd7f32"></i>
         <span style="color:var(--gold);margin-left:4px">TOP 3</span> — session de 3h
+      </div>
+    </div>
+  </div>
+
+  <div id="subs-banner" style="display:none;margin-bottom:16px;background:var(--bg3);border:1px solid var(--gold);border-radius:6px;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <i class="fa-solid fa-rotate" style="color:var(--gold);font-size:16px"></i>
+    <div style="flex:1;min-width:140px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;color:var(--gold);letter-spacing:1px;text-transform:uppercase">Roue Communautaire</div>
+      <div style="font-size:12px;color:var(--text-muted)" id="subs-banner-text">— subs</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:22px;color:var(--gold)" id="subs-banner-count">0/50</div>
+      <div style="width:80px;height:6px;background:var(--bg2);border-radius:3px;overflow:hidden">
+        <div id="subs-banner-bar" style="height:100%;background:var(--gold);border-radius:3px;width:0%;transition:width 0.4s"></div>
       </div>
     </div>
   </div>
@@ -1392,6 +1409,84 @@ main {
   </div>
 </div>
 
+<!-- PAGE MODÉRATION -->
+<div id="page-moderation" class="page">
+  <h1 class="section-title" style="margin-bottom:24px">Modération <span>Admin</span></h1>
+
+  <!-- COMPTEUR SUBS ROUE COMMU -->
+  <div class="roue-section" style="margin-bottom:20px">
+    <div class="roue-header">
+      <div class="roue-title roue-comm-color"><i class="fa-solid fa-rotate" style="font-size:14px;margin-right:6px"></i>Compteur Roue Communautaire</div>
+    </div>
+    <div style="padding:8px 0">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap">
+        <div style="text-align:center">
+          <div id="mod-subs-display" style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:52px;color:var(--gold);line-height:1">0/50</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px">subs vers la prochaine roue</div>
+        </div>
+        <div style="flex:1;min-width:180px">
+          <div style="width:100%;height:12px;background:var(--bg2);border-radius:6px;overflow:hidden;margin-bottom:8px">
+            <div id="mod-subs-bar" style="height:100%;background:var(--gold);border-radius:6px;width:0%;transition:width 0.4s"></div>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted)" id="mod-subs-info">Prochain unlock dans 50 subs</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px">
+        <label class="form-label">Ajouter des subs manuellement</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <button class="btn btn-gold btn-sm" onclick="addSubs(1)">+1</button>
+          <button class="btn btn-gold btn-sm" onclick="addSubs(5)">+5</button>
+          <button class="btn btn-gold btn-sm" onclick="addSubs(10)">+10</button>
+          <button class="btn btn-gold btn-sm" onclick="addSubs(25)">+25</button>
+          <button class="btn btn-gold btn-sm" onclick="addSubs(50)">+50</button>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="number" class="form-input" id="subs-custom-input" placeholder="Autre..." min="1" max="9999" style="width:90px;text-align:center">
+            <button class="btn btn-gold btn-sm" onclick="addSubsCustom()">Ajouter</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-sm" style="color:var(--text-muted);border-color:var(--border)" onclick="resetSubs()"><i class="fa-solid fa-rotate-left"></i> Réinitialiser à 0</button>
+        <button class="btn btn-sm" style="color:var(--text-muted);border-color:var(--border)" onclick="setSubsManual()"><i class="fa-solid fa-pen"></i> Définir valeur exacte</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIMITE DE GAMES -->
+  <div class="roue-section">
+    <div class="roue-header">
+      <div class="roue-title" style="color:var(--green)"><i class="fa-solid fa-gamepad" style="font-size:14px;margin-right:6px"></i>Limite de games par joueur</div>
+    </div>
+    <div style="padding:8px 0">
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">
+        Nombre maximum de games comptabilisées par joueur. Les games supplémentaires accordées par la roue s'ajoutent par-dessus.
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">Limite actuelle</div>
+          <div id="mod-maxgames-display" style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:36px;color:var(--green)">20</div>
+        </div>
+        <div style="flex:1">
+          <label class="form-label">Nouvelle limite</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-sm maxg-btn" onclick="setMaxGames(20)">20</button>
+            <button class="btn btn-sm maxg-btn" onclick="setMaxGames(25)">25</button>
+            <button class="btn btn-sm maxg-btn" onclick="setMaxGames(30)">30</button>
+            <button class="btn btn-sm maxg-btn" onclick="setMaxGames(35)">35</button>
+            <button class="btn btn-sm maxg-btn" onclick="setMaxGames(40)">40</button>
+            <div style="display:flex;gap:6px;align-items:center">
+              <input type="number" class="form-input" id="maxgames-custom-input" placeholder="Autre..." min="1" max="100" style="width:80px;text-align:center">
+              <button class="btn btn-sm" style="border-color:var(--green);color:var(--green)" onclick="setMaxGamesCustom()">OK</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="page-historique" class="page">
   <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
     <h1 class="section-title"><span>Logs</span></h1>
@@ -1614,7 +1709,9 @@ main {
 let state = {
   players: [],  // { id, name, games: [{kills, top, mult, score, bonus, note, frozen, skip}], bonusPoints, skipNext, freezeKills }
   log: [],
-  top1BonusDone: false
+  top1BonusDone: false,
+  subsCount: 0,   // subs vers la prochaine Roue Commu (0 → 49)
+  maxGames: 20    // limite globale de games par joueur
 };
 
 let currentTop = 0;
@@ -1674,8 +1771,12 @@ async function loadState() {
       pub: !!l.pub
     }));
 
-    const top1Flag = (flags || []).find(f => f.key === 'top1BonusDone');
+    const top1Flag    = (flags || []).find(f => f.key === 'top1BonusDone');
+    const subsFlag    = (flags || []).find(f => f.key === 'subsCount');
+    const maxGFlag    = (flags || []).find(f => f.key === 'maxGames');
     state.top1BonusDone = top1Flag?.value === 'true';
+    state.subsCount     = parseInt(subsFlag?.value  || '0')  || 0;
+    state.maxGames      = parseInt(maxGFlag?.value  || '20') || 20;
   } catch(e) {
     console.error('loadState error:', e);
   }
@@ -1732,7 +1833,9 @@ async function saveState() {
   // Flags
   try {
     await _sb.from('app_flags').upsert([
-      { key: 'top1BonusDone', value: String(!!state.top1BonusDone) }
+      { key: 'top1BonusDone', value: String(!!state.top1BonusDone) },
+      { key: 'subsCount',     value: String(state.subsCount || 0) },
+      { key: 'maxGames',      value: String(state.maxGames  || 20) }
     ]);
   } catch(e) { console.error('saveState flags:', e); }
 }
@@ -1751,7 +1854,7 @@ function calcGameScore(kills, top, mult) {
 
 function getPlayerTotal(player) {
   const games = player.games || [];
-  const maxGames = 20 + (player.extraGames || 0);
+  const maxGames = (state.maxGames || 20) + (player.extraGames || 0);
   const sorted = [...games].sort((a, b) => b.score - a.score);
   const counted = sorted.slice(0, maxGames);
   const gamesSum = counted.reduce((s, g) => s + g.score, 0);
@@ -1769,7 +1872,7 @@ function getWorstGame(player) {
 }
 
 function getCountedGames(player) {
-  const MAX_GAMES = 20;
+  const MAX_GAMES = (state.maxGames || 20) + (player.extraGames || 0);
   return [...player.games].sort((a, b) => b.score - a.score).slice(0, MAX_GAMES);
 }
 
@@ -1782,6 +1885,7 @@ function renderAll() {
   renderPlayersList();
   renderLog();
   renderStats();
+  renderModerationPage();
 }
 
 function renderStats() {
@@ -1865,7 +1969,7 @@ function renderClassement() {
         ${p.pendingBonus ? `<div style="font-size:10px;color:var(--green)"><i class="fa-solid fa-bolt-lightning"></i> +${p.pendingBonus}pts top10</div>` : ''}
       </td>
       <td class="score-total">${total}<small style="font-size:12px;color:var(--text-muted);font-weight:400"> pts</small>${p.bonusPoints ? `<div style="font-size:11px;color:var(--green)">+${p.bonusPoints} bonus</div>` : ''}</td>
-      <td class="stat-games">${p.games.length}/${20 + (p.extraGames || 0)}</td>
+      <td class="stat-games">${p.games.length}/${(state.maxGames || 20) + (p.extraGames || 0)}</td>
       <td class="stat-kills">${totalKills}</td>
       <td class="stat-tops">
         ${top1count ? `<span style="color:#ffd700"><i class="fa-solid fa-trophy" style="font-size:9px"></i> ${top1count}</span> ` : ''}
@@ -1890,7 +1994,7 @@ function renderSaisieSelects() {
     const current = el.value;
     el.innerHTML = '<option value="">— Sélectionner un joueur —</option>' +
       state.players.map(p => {
-        const maxG = 20 + (p.extraGames || 0);
+        const maxG = (state.maxGames || 20) + (p.extraGames || 0);
         const full = p.games.length >= maxG;
         return `<option value="${p.id}" ${current === p.id ? 'selected' : ''} ${full ? 'disabled' : ''}>${escHtml(p.name)}${full ? ' (complet)' : ''}</option>`;
       }).join('');
@@ -1952,7 +2056,7 @@ function renderLog() {
 // NAVIGATION
 // ============================================================
 function showPage(name) {
-  const adminPages = ['actions', 'joueurs', 'historique', 'logs'];
+  const adminPages = ['actions', 'joueurs', 'historique', 'logs', 'moderation'];
   if (adminPages.includes(name) && !isAdmin()) {
     document.getElementById('admin-email-input').value = '';
     document.getElementById('admin-pwd-input').value = '';
@@ -2131,8 +2235,8 @@ function updateSaisiePreview() {
 
   let warning = '';
   if (player) {
-    const maxG = 20 + (player.extraGames || 0);
-    if (player.games.length >= maxG) warning = `Le joueur a déjà ${maxG} games — seules les ${maxG} meilleures sont comptabilisées.`;
+    const maxG = (state.maxGames || 20) + (player.extraGames || 0);
+    if (player.games.length >= maxG) warning = `Le joueur a déjà ${maxG} games (limite atteinte).`;
     if (player.pendingBonus) warning += `<div style="display:flex;align-items:center;gap:8px;margin-top:6px;padding:8px 10px;background:rgba(76,175,119,0.1);border:1px solid var(--green);border-radius:4px"><i class="fa-solid fa-bolt-lightning" style="color:var(--green)"></i><span style="flex:1;font-size:13px;color:var(--green)">+${player.pendingBonus} pts top 10 Warzone — s'applique sur cette game</span><button onclick="cancelPendingBonus('${pid}')" style="background:none;border:1px solid var(--green);color:var(--green);border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer;line-height:1.4">✕ Annuler</button></div>`;
   }
   document.getElementById('prev-warning').innerHTML = warning;
@@ -3036,6 +3140,108 @@ function addLog(msg, color, icon, pub = false) {
   if (state.log.length > 200) state.log.shift();
   saveState();
   renderLog();
+}
+
+// ============================================================
+// MODÉRATION — SUBS & MAX GAMES
+// ============================================================
+function renderSubsBanner() {
+  const count = state.subsCount || 0;
+  const pct = Math.min(100, Math.round(count / 50 * 100));
+  const remaining = 50 - count;
+
+  const banner = document.getElementById('subs-banner');
+  if (banner) {
+    banner.style.display = 'flex';
+    document.getElementById('subs-banner-count').textContent = `${count}/50`;
+    document.getElementById('subs-banner-text').textContent = remaining > 0 ? `Encore ${remaining} sub${remaining > 1 ? 's' : ''} avant la prochaine Roue Commu !` : 'Roue Communautaire débloquée !';
+    document.getElementById('subs-banner-bar').style.width = pct + '%';
+  }
+
+  const disp = document.getElementById('mod-subs-display');
+  if (disp) {
+    disp.textContent = `${count}/50`;
+    document.getElementById('mod-subs-bar').style.width = pct + '%';
+    document.getElementById('mod-subs-info').textContent = remaining > 0 ? `Prochain unlock dans ${remaining} sub${remaining > 1 ? 's' : ''}` : 'Roue débloquée ! Réinitialisez après avoir appliqué.';
+  }
+}
+
+function renderModerationPage() {
+  renderSubsBanner();
+  const mg = state.maxGames || 20;
+  const disp = document.getElementById('mod-maxgames-display');
+  if (disp) disp.textContent = mg;
+  document.querySelectorAll('.maxg-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.trim() === String(mg));
+  });
+}
+
+function addSubs(n) {
+  _applySubsAdd(n);
+}
+
+function addSubsCustom() {
+  const val = parseInt(document.getElementById('subs-custom-input').value || '0');
+  if (!val || val < 1) { toast('Entrez un nombre de subs valide.', 'error'); return; }
+  document.getElementById('subs-custom-input').value = '';
+  _applySubsAdd(val);
+}
+
+function _applySubsAdd(n) {
+  let total = (state.subsCount || 0) + n;
+  let unlocks = 0;
+  while (total >= 50) { total -= 50; unlocks++; }
+  state.subsCount = total;
+  saveState();
+  renderModerationPage();
+  if (unlocks > 0) {
+    for (let i = 0; i < unlocks; i++) {
+      addLog(`Roue Communautaire débloquée ! (${50 * (i + 1)} subs atteints)`, 'gold', 'rotate', true);
+    }
+    showConfirm(
+      unlocks > 1 ? `${unlocks}× Roue Communautaire débloquée !` : 'Roue Communautaire débloquée !',
+      `<div style="text-align:center;padding:8px 0"><i class="fa-solid fa-rotate" style="font-size:40px;color:var(--gold);margin-bottom:8px;display:block"></i><strong style="font-size:16px;color:var(--gold)">${unlocks > 1 ? `${unlocks} roues` : 'La Roue Commu'} est prête à être lancée !</strong><br><span style="color:var(--text-muted);font-size:12px">Compteur remis à ${state.subsCount}/50</span></div>`,
+      () => {}
+    );
+  } else {
+    toast(`+${n} sub${n > 1 ? 's' : ''} — ${state.subsCount}/50`, 'gold');
+  }
+}
+
+function resetSubs() {
+  showConfirm('Réinitialiser le compteur', 'Remettre le compteur de subs à 0 ?', () => {
+    state.subsCount = 0;
+    saveState();
+    renderModerationPage();
+    toast('Compteur remis à 0.', 'info');
+  });
+}
+
+function setSubsManual() {
+  const val = prompt('Définir le compteur de subs à (0–49) :', state.subsCount || 0);
+  if (val === null) return;
+  const n = Math.max(0, Math.min(49, parseInt(val) || 0));
+  state.subsCount = n;
+  saveState();
+  renderModerationPage();
+  toast(`Compteur mis à ${n}/50.`, 'info');
+}
+
+function setMaxGames(n) {
+  state.maxGames = n;
+  saveState();
+  renderModerationPage();
+  renderClassement();
+  renderSaisieSelects();
+  toast(`Limite de games mise à ${n}.`, 'green');
+  addLog(`Limite de games modifiée : ${n} games par joueur.`, 'green', 'gamepad', false);
+}
+
+function setMaxGamesCustom() {
+  const val = parseInt(document.getElementById('maxgames-custom-input').value || '0');
+  if (!val || val < 1 || val > 100) { toast('Entrez une valeur entre 1 et 100.', 'error'); return; }
+  document.getElementById('maxgames-custom-input').value = '';
+  setMaxGames(val);
 }
 
 function clearLog() {
