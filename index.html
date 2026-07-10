@@ -1502,6 +1502,7 @@ async function loadState() {
       skipNext: !!p.skip_next,
       freezeKills: p.freeze_kills || 0,
       pendingMult: p.pending_mult || 0,
+      pendingBonus: p.pending_bonus || 0,
       games: (games || [])
         .filter(g => g.player_id === p.id)
         .map(g => ({
@@ -1541,7 +1542,8 @@ async function saveState() {
       bonus_points: p.bonusPoints || 0,
       skip_next: !!p.skipNext,
       freeze_kills: p.freezeKills || 0,
-      pending_mult: p.pendingMult || 0
+      pending_mult: p.pendingMult || 0,
+      pending_bonus: p.pendingBonus || 0
     }));
     if (playerRows.length > 0) await _sb.from('players').upsert(playerRows);
     const { data: dbP } = await _sb.from('players').select('id');
@@ -1711,6 +1713,7 @@ function renderClassement() {
         ${p.skipNext ? '<div style="font-size:10px;color:var(--rust)"><i class="fa-solid fa-forward-step"></i> Skip activé</div>' : ''}
         ${p.freezeKills ? `<div style="font-size:10px;color:var(--blue)"><i class="fa-solid fa-snowflake"></i> Gelé à ${p.freezeKills} kills</div>` : ''}
         ${p.pendingMult ? `<div style="font-size:10px;color:var(--purple)"><i class="fa-solid fa-xmark"></i> ×${p.pendingMult} kills (roue)</div>` : ''}
+        ${p.pendingBonus ? `<div style="font-size:10px;color:var(--green)"><i class="fa-solid fa-bolt-lightning"></i> +${p.pendingBonus}pts top10</div>` : ''}
       </td>
       <td class="score-total">${total}<small style="font-size:12px;color:var(--text-muted);font-weight:400"> pts</small>${p.bonusPoints ? `<div style="font-size:11px;color:var(--green)">+${p.bonusPoints} bonus</div>` : ''}</td>
       <td class="stat-games">${p.games.length}/${20}</td>
@@ -2004,9 +2007,20 @@ function submitGame() {
     toast(`Multiplicateur ×${mult} (roue) appliqué automatiquement.`, 'info');
   }
 
-  const score = calcGameScore(kills, top, mult);
+  const baseScore = calcGameScore(kills, top, mult);
+
+  // Apply pending +10 bonus (top 10 Warzone)
+  let pendingBonusApplied = 0;
+  if (player.pendingBonus) {
+    pendingBonusApplied = player.pendingBonus;
+    player.pendingBonus = 0;
+    toast(`+${pendingBonusApplied} pts top 10 appliqués.`, 'info');
+  }
+
+  const score = baseScore + pendingBonusApplied;
   const noteparts = [];
   if (multFromRoue) noteparts.push(`×${mult} roue`);
+  if (pendingBonusApplied) noteparts.push(`+${pendingBonusApplied}pts top10`);
   if (saisieBonus > 0) noteparts.push(`+${saisieBonus}pts bonus`);
   const game = {
     id: uid(),
@@ -2024,8 +2038,9 @@ function submitGame() {
 
   const topStr = top === 1 ? 'Top 1' : top === 2 ? 'Top 2' : top === 3 ? 'Top 3' : '';
   const bonusStr = saisieBonus > 0 ? ` +${saisieBonus}pts bonus` : '';
+  const top10Str = pendingBonusApplied ? ` +${pendingBonusApplied}pts top10` : '';
   const totalScore = score + saisieBonus;
-  addLog(`<strong>${player.name}</strong> — ${kills} kills${mult !== 1 ? ' ×'+mult : ''} ${topStr} = ${totalScore} pts${bonusStr}`, 'green', 'gamepad');
+  addLog(`<strong>${player.name}</strong> — ${kills} kills${mult !== 1 ? ' ×'+mult : ''} ${topStr} = ${totalScore} pts${top10Str}${bonusStr}`, 'green', 'gamepad');
   toast(`Game enregistrée : ${totalScore} pts !`);
   resetSaisie();
   renderAll();
@@ -2079,6 +2094,7 @@ function showPlayerDetail(id) {
     ${p.skipNext ? '<div style="background:rgba(224,90,56,0.1);border:1px solid var(--rust);padding:8px 12px;border-radius:2px;margin-bottom:8px;font-size:13px"><i class="fa-solid fa-forward-step"></i> Skip activé pour la prochaine game</div>' : ''}
     ${p.freezeKills ? `<div style="background:rgba(74,142,201,0.1);border:1px solid var(--blue);padding:8px 12px;border-radius:2px;margin-bottom:8px;font-size:13px"><i class="fa-solid fa-snowflake"></i> Kills gelés à ${p.freezeKills} pour la prochaine game</div>` : ''}
     ${p.pendingMult ? `<div style="background:rgba(155,89,182,0.1);border:1px solid var(--purple);padding:8px 12px;border-radius:2px;margin-bottom:8px;font-size:13px"><i class="fa-solid fa-xmark"></i> Multiplicateur ×${p.pendingMult} activé (roue) — s'appliquera sur la prochaine game (kills uniquement)</div>` : ''}
+    ${p.pendingBonus ? `<div style="background:rgba(76,175,119,0.1);border:1px solid var(--green);padding:8px 12px;border-radius:2px;margin-bottom:8px;font-size:13px"><i class="fa-solid fa-bolt-lightning"></i> +${p.pendingBonus} pts top 10 — s'appliquera sur la prochaine game</div>` : ''}
     <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:10px">Games (${p.games.length})</div>
     ${gamesHtml}
   `;
@@ -2677,9 +2693,9 @@ function execAction() {
     case 'perso-top10pts': {
       const p = getP('p1');
       if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
-      p.bonusPoints = (p.bonusPoints || 0) + 10;
-      addLog(`<strong>${p.name}</strong> — +10 pts bonus (top 10 Warzone).`, 'purple', 'bolt-lightning', true);
-      toast(`+10 pts pour ${p.name} !`);
+      p.pendingBonus = (p.pendingBonus || 0) + 10;
+      addLog(`<strong>${p.name}</strong> — +10 pts top 10 Warzone activé (prochaine game).`, 'purple', 'bolt-lightning', true);
+      toast(`+10 pts top 10 activé pour ${p.name} !`);
       break;
     }
     case 'comm-worst-x2': {
