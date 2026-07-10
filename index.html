@@ -333,6 +333,7 @@ main {
   padding: 20px;
 }
 .modal-overlay.open { display: flex; }
+#modal-confirm.open { z-index: 400; }
 .modal {
   background: var(--bg2);
   border: 1px solid var(--gold);
@@ -1612,13 +1613,17 @@ main {
         <div class="bonus-btns">
           <button class="bonus-btn" onclick="addBonusFromEdit(5)"><i class="fa-solid fa-plus" style="font-size:10px"></i> 5 pts</button>
           <button class="bonus-btn" onclick="addBonusFromEdit(10)"><i class="fa-solid fa-plus" style="font-size:10px"></i> 10 pts</button>
+          <div class="bonus-display" id="edit-bonus-display" style="display:none">
+            <span id="edit-bonus-total">+0 pts</span>
+            <button onclick="clearEditBonus()" title="Retirer le bonus">×</button>
+          </div>
         </div>
-        <div id="edit-bonus-info" style="display:none;font-size:11px;color:var(--green);margin-top:6px"></div>
       </div>
 
       <div class="score-preview" style="margin-top:14px">
         <div class="sp-row"><span>Kills (×multiplicateur)</span><span id="edit-prev-kills">0 pts</span></div>
         <div class="sp-row"><span>Top placement</span><span id="edit-prev-top">0 pts</span></div>
+        <div class="sp-row" id="edit-prev-bonus-row" style="display:none;color:var(--blue)"><span><i class="fa-solid fa-star-of-life" style="font-size:9px"></i> Bonus</span><span id="edit-prev-bonus">+0 pts</span></div>
         <div class="sp-row sp-total"><span>SCORE GAME</span><span id="edit-prev-total">0 pts</span></div>
       </div>
 
@@ -2448,6 +2453,7 @@ function deleteGame(playerId, gameId) {
   const p = state.players.find(x => x.id === playerId);
   if (!p) return;
   const g = p.games.find(x => x.id === gameId);
+  closeModal('modal-player');
   showConfirm(
     'Supprimer une game',
     `Supprimer cette game de <strong>${escHtml(p.name)}</strong>${g ? ` (${g.score} pts)` : ''} ?`,
@@ -2457,7 +2463,9 @@ function deleteGame(playerId, gameId) {
       renderAll();
       addLog(`Game supprimée pour <strong>${p.name}</strong>.`, 'rust', 'trash');
       showPlayerDetail(playerId);
-    }
+    },
+    true, null,
+    () => { showPlayerDetail(playerId); }
   );
 }
 
@@ -2465,6 +2473,7 @@ function deleteGame(playerId, gameId) {
 // EDIT GAME
 // ============================================================
 let _editCtx = { playerId: null, gameId: null, top: 0 };
+let _editBonus = 0;
 
 function openEditGame(playerId, gameId) {
   const p = state.players.find(x => x.id === playerId);
@@ -2484,9 +2493,9 @@ function openEditGame(playerId, gameId) {
   const topMap = { 0: 'edit-top-n', 1: 'edit-top-1', 2: 'edit-top-2', 3: 'edit-top-3' };
   document.getElementById(topMap[g.top]).classList.add('selected');
 
-  // Reset bonus info
-  const bonusInfo = document.getElementById('edit-bonus-info');
-  bonusInfo.style.display = 'none'; bonusInfo.textContent = '';
+  // Reset bonus
+  _editBonus = 0;
+  document.getElementById('edit-bonus-display').style.display = 'none';
 
   // Effets roue actifs du joueur + note de la game
   const badges = [];
@@ -2536,20 +2545,27 @@ function updateEditPreview() {
   const topPts   = top === 1 ? 20 : top === 2 ? 15 : top === 3 ? 8 : 0;
   document.getElementById('edit-prev-kills').textContent = `${kills}${mult !== 1 ? ' × ' + mult + ' = ' + killsPts : ''} pts`;
   document.getElementById('edit-prev-top').textContent   = topPts + ' pts';
-  document.getElementById('edit-prev-total').textContent = (killsPts + topPts) + ' pts';
+  const bonusRow = document.getElementById('edit-prev-bonus-row');
+  if (_editBonus > 0) {
+    bonusRow.style.display = '';
+    document.getElementById('edit-prev-bonus').textContent = `+${_editBonus} pts`;
+  } else {
+    bonusRow.style.display = 'none';
+  }
+  document.getElementById('edit-prev-total').textContent = (killsPts + topPts + _editBonus) + ' pts';
 }
 
-function addBonusFromEdit(amount) {
-  const { playerId } = _editCtx;
-  const p = state.players.find(x => x.id === playerId);
-  if (!p) return;
-  p.bonusPoints = (p.bonusPoints || 0) + amount;
-  saveState();
-  renderAll();
-  const info = document.getElementById('edit-bonus-info');
-  info.style.display = 'block';
-  info.textContent = `+${amount} pts ajoutés à ${p.name} (total bonus : ${p.bonusPoints} pts)`;
-  addLog(`<strong>${p.name}</strong> — +${amount} pts bonus ajoutés.`, 'green', 'bolt-lightning', true);
+function addBonusFromEdit(pts) {
+  _editBonus += pts;
+  document.getElementById('edit-bonus-total').textContent = `+${_editBonus} pts`;
+  document.getElementById('edit-bonus-display').style.display = 'flex';
+  updateEditPreview();
+}
+
+function clearEditBonus() {
+  _editBonus = 0;
+  document.getElementById('edit-bonus-display').style.display = 'none';
+  updateEditPreview();
 }
 
 function saveEditGame() {
@@ -2567,6 +2583,12 @@ function saveEditGame() {
   g.top   = top;
   g.mult  = mult;
   g.score = calcGameScore(kills, top, mult);
+
+  if (_editBonus > 0) {
+    p.bonusPoints = (p.bonusPoints || 0) + _editBonus;
+    g.note = (g.note ? g.note + ' · ' : '') + `+${_editBonus}pts bonus`;
+    addLog(`<strong>${p.name}</strong> — +${_editBonus} pts bonus ajoutés.`, 'green', 'bolt-lightning', true);
+  }
 
   saveState();
   addLog(`<strong>${p.name}</strong> — game corrigée : ${oldScore} pts → <strong>${g.score} pts</strong>.`, 'blue', 'pen-to-square');
@@ -2611,8 +2633,8 @@ function doEchange() {
   // Remove worstB from pb
   pb.games = pb.games.filter(g => g.id !== worstB.id);
   // Add to opposite
-  pa.games.push({ ...worstB, id: uid() });
-  pb.games.push({ ...bestA, id: uid() });
+  pa.games.push({ ...worstB, id: uid(), note: (worstB.note ? worstB.note + ' · ' : '') + `échange comm avec ${pb.name}` });
+  pb.games.push({ ...bestA, id: uid(), note: (bestA.note ? bestA.note + ' · ' : '') + `échange comm avec ${pa.name}` });
 
   saveState();
   closeModal('modal-echange');
@@ -2933,8 +2955,8 @@ function execAction() {
       if (!bestA || !worstB) { toast('Games manquantes.', 'error'); return; }
       pa.games = pa.games.filter(g => g.id !== bestA.id);
       pb.games = pb.games.filter(g => g.id !== worstB.id);
-      pa.games.push({ ...worstB, id: uid() });
-      pb.games.push({ ...bestA, id: uid() });
+      pa.games.push({ ...worstB, id: uid(), note: (worstB.note ? worstB.note + ' · ' : '') + `échange perso avec ${pb.name}` });
+      pb.games.push({ ...bestA, id: uid(), note: (bestA.note ? bestA.note + ' · ' : '') + `échange perso avec ${pa.name}` });
       addLog(`<strong>${pa.name}</strong> ↔ <strong>${pb.name}</strong> échange perso.`, 'purple', 'arrow-right-arrow-left', true);
       toast('Échange effectué !', 'purple');
       break;
@@ -3113,8 +3135,9 @@ function closeModal(id) {
 // CONFIRM MODAL
 // ============================================================
 let _confirmCb = null;
+let _confirmCancelCb = null;
 
-function showConfirm(title, message, onOk, danger = true, okLabel = null) {
+function showConfirm(title, message, onOk, danger = true, okLabel = null, onCancel = null) {
   document.getElementById('confirm-title').textContent = title;
   document.getElementById('confirm-message').innerHTML = message;
   const btn = document.getElementById('confirm-ok-btn');
@@ -3129,17 +3152,20 @@ function showConfirm(title, message, onOk, danger = true, okLabel = null) {
     header.style.borderBottom = '';
   }
   _confirmCb = onOk;
+  _confirmCancelCb = onCancel;
   openModal('modal-confirm');
 }
 
 function confirmOk() {
   closeModal('modal-confirm');
   if (_confirmCb) { _confirmCb(); _confirmCb = null; }
+  _confirmCancelCb = null;
 }
 
 function confirmCancel() {
   closeModal('modal-confirm');
   _confirmCb = null;
+  if (_confirmCancelCb) { _confirmCancelCb(); _confirmCancelCb = null; }
 }
 document.querySelectorAll('.modal-overlay').forEach(m => {
   m.addEventListener('click', function(e) {
