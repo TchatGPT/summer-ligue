@@ -1,0 +1,3099 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Summer Ligue Warzone — by Lriaa</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root {
+  --bg: #0a0c0f;
+  --bg2: #111318;
+  --bg3: #1a1d24;
+  --border: #2a2d35;
+  --gold: #c9954a;
+  --gold-light: #e8b96a;
+  --rust: #c0472a;
+  --rust-light: #e05a38;
+  --text: #e8e0d0;
+  --text-muted: #8a8478;
+  --green: #4caf77;
+  --red: #e05a38;
+  --blue: #4a8ec9;
+  --purple: #9b59b6;
+  --shadow: 0 4px 24px rgba(0,0,0,0.5);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  background-image:
+    radial-gradient(ellipse 60% 40% at 10% 20%, rgba(201,149,74,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 35% at 90% 80%, rgba(192,71,42,0.04) 0%, transparent 55%);
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  font-size: 14px;
+  min-height: 100vh;
+}
+
+/* HEADER */
+header {
+  background: linear-gradient(135deg, #070911 0%, #111520 55%, #0c0f18 100%);
+  border-bottom: 2px solid var(--gold);
+  box-shadow: 0 0 40px rgba(201,149,74,0.15), 0 4px 20px rgba(0,0,0,0.6);
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-logo {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 30px;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+.header-logo span { color: var(--gold); text-shadow: 0 0 24px rgba(201,149,74,0.45); }
+.header-logo small {
+  display: block;
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 400;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.header-dates {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: right;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.header-dates strong { color: var(--gold); display: block; font-size: 13px; }
+.header-admin-btns { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.btn-admin {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn-admin:hover { border-color: var(--gold); color: var(--gold); }
+.btn-admin.active { border-color: var(--gold); color: var(--gold); background: rgba(201,149,74,0.1); }
+
+.nav-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 28px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.nav-tab {
+  padding: 13px 22px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+}
+.nav-tab:hover { color: var(--text); }
+.nav-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+/* MAIN LAYOUT */
+main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 28px;
+}
+
+.page { display: none; }
+.page.active { display: block; }
+
+/* CLASSEMENT */
+.classement-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.section-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 40px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  line-height: 1;
+}
+.section-title span { color: var(--gold); }
+.badge {
+  background: var(--gold);
+  color: var(--bg);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  padding: 3px 8px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* TABLE CLASSEMENT */
+.rank-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+.rank-table-wrap.scrollable {
+  max-height: 640px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.rank-table-wrap.scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+.rank-table-wrap.scrollable::-webkit-scrollbar-track {
+  background: transparent;
+}
+.rank-table-wrap.scrollable::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+.rank-table-wrap.scrollable::-webkit-scrollbar-thumb:hover {
+  background: var(--gold);
+}
+.rank-table-wrap.scrollable .rank-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  box-shadow: 0 1px 0 var(--border);
+}
+@media (max-width: 768px) {
+  .rank-table-wrap.scrollable { max-height: 62vh; }
+}
+@media (max-width: 480px) {
+  .rank-table-wrap.scrollable { max-height: 56vh; }
+}
+.rank-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.rank-table th {
+  background: var(--bg3);
+  color: var(--text-muted);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 13px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.rank-table td {
+  padding: 16px 16px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.rank-table tr:last-child td { border-bottom: none; }
+.rank-table tr:hover td { background: rgba(201,149,74,0.05); }
+
+.rank-num {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 30px;
+  width: 48px;
+  text-align: center;
+}
+.rank-1 { color: #ffd700; }
+.rank-2 { color: #c0c0c0; }
+.rank-3 { color: #cd7f32; }
+
+.player-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 0.5px;
+  line-height: 1.1;
+}
+
+.score-total {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 30px;
+  color: var(--gold-light);
+}
+
+.games-mini {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  max-width: 320px;
+}
+.game-pill {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 2px 6px;
+  font-size: 11px;
+  border-radius: 2px;
+  white-space: nowrap;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+}
+.game-pill.best { border-color: var(--gold); color: var(--gold); }
+.game-pill.worst { border-color: var(--rust); color: var(--rust); }
+.game-pill.mult { border-color: var(--purple); color: var(--purple); }
+
+.stat-kills { color: var(--rust-light); font-weight: 600; font-size: 16px; }
+.stat-tops { color: var(--blue); font-weight: 600; font-size: 15px; }
+.stat-games { color: var(--text-muted); font-size: 15px; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: 1px solid;
+  border-radius: 2px;
+  transition: all 0.2s;
+  white-space: nowrap;
+  background: none;
+}
+.btn-gold { color: var(--gold); border-color: var(--gold); }
+.btn-gold:hover { background: var(--gold); color: var(--bg); }
+.btn-rust { color: var(--rust-light); border-color: var(--rust-light); }
+.btn-rust:hover { background: var(--rust-light); color: white; }
+.btn-green { color: var(--green); border-color: var(--green); }
+.btn-green:hover { background: var(--green); color: var(--bg); }
+.btn-blue { color: var(--blue); border-color: var(--blue); }
+.btn-blue:hover { background: var(--blue); color: white; }
+.btn-purple { color: var(--purple); border-color: var(--purple); }
+.btn-purple:hover { background: var(--purple); color: white; }
+.btn-solid-gold { background: var(--gold); color: var(--bg); border-color: var(--gold); }
+.btn-solid-gold:hover { background: var(--gold-light); }
+.btn-solid-rust { background: var(--rust); color: white; border-color: var(--rust); }
+.btn-solid-rust:hover { background: var(--rust-light); }
+.btn-sm { padding: 5px 10px; font-size: 11px; }
+.btn-lg { padding: 11px 20px; font-size: 15px; }
+
+/* MODALS / PANELS */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--gold);
+  border-radius: 4px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal-header {
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 18px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--gold);
+}
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 4px;
+}
+.modal-close:hover { color: var(--text); }
+.modal-body { padding: 20px; }
+
+/* FORM ELEMENTS */
+.form-row { margin-bottom: 14px; }
+.form-label {
+  display: block;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.form-input, .form-select {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 9px 12px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 14px;
+  border-radius: 2px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-input:focus, .form-select:focus { border-color: var(--gold); }
+.form-select option { background: var(--bg2); }
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+/* ACTIONS PAGE */
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.action-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 16px;
+  transition: border-color 0.2s;
+}
+.action-card:hover { border-color: var(--gold); }
+.action-card.roue-comm { border-left: 3px solid var(--gold); }
+.action-card.roue-perso { border-left: 3px solid var(--purple); }
+
+.action-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.action-tag {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.tag-comm { background: rgba(201,149,74,0.2); color: var(--gold); }
+.tag-perso { background: rgba(155,89,182,0.2); color: var(--purple); }
+
+.action-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+
+.kills-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.kills-input-group .form-input {
+  text-align: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+}
+.kills-btn {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 34px;
+  height: 34px;
+  font-size: 18px;
+  cursor: pointer;
+  border-radius: 2px;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.kills-btn:hover { background: var(--gold); color: var(--bg); border-color: var(--gold); }
+
+/* BONUS BUTTONS */
+.bonus-btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.bonus-btn {
+  background: rgba(74,142,201,0.12);
+  border: 1px solid var(--blue);
+  color: var(--blue);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 6px 16px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.bonus-btn:hover { background: var(--blue); color: var(--bg); }
+.bonus-display {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(74,142,201,0.12);
+  border: 1px solid var(--blue);
+  border-radius: 2px;
+  padding: 5px 10px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--blue);
+}
+.bonus-display > button {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0 0 0 2px;
+}
+.bonus-display > button:hover { color: var(--rust); }
+
+/* TOAST */
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.toast {
+  background: var(--bg3);
+  border-left: 4px solid var(--green);
+  padding: 12px 16px;
+  border-radius: 2px;
+  font-size: 13px;
+  max-width: 320px;
+  animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+  box-shadow: var(--shadow);
+}
+.toast.error { border-left-color: var(--rust); }
+.toast.info { border-left-color: var(--blue); }
+.toast.gold { border-left-color: var(--gold); }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes fadeOut { to { opacity: 0; transform: translateX(100%); } }
+
+/* SCORE PREVIEW */
+.score-preview {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 12px;
+  margin-top: 12px;
+  font-family: 'Barlow Condensed', sans-serif;
+}
+.score-preview .sp-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+.score-preview .sp-total {
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+  padding-top: 8px;
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--gold-light);
+}
+
+/* PLAYER DETAIL */
+.player-detail-games {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+.game-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 10px;
+  text-align: center;
+  position: relative;
+}
+.game-card.best-game { border-color: var(--gold); }
+.game-card.worst-game { border-color: var(--rust); }
+.game-card .gc-num { font-size: 10px; color: var(--text-muted); margin-bottom: 4px; }
+.game-card .gc-score { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 22px; color: var(--gold-light); }
+.game-card .gc-detail { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.game-card .gc-mult { font-size: 11px; color: var(--purple); margin-top: 2px; }
+.game-card .gc-tag {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 9px;
+  padding: 1px 4px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* HISTORIQUE */
+.log-list { list-style: none; }
+.log-item {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+}
+.log-time { color: var(--text-muted); font-size: 11px; white-space: nowrap; margin-top: 1px; font-family: 'Barlow Condensed', sans-serif; }
+.log-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+.log-dot.green { background: var(--green); }
+.log-dot.gold { background: var(--gold); }
+.log-dot.rust { background: var(--rust); }
+.log-dot.blue { background: var(--blue); }
+.log-dot.purple { background: var(--purple); }
+
+/* IMPORT/EXPORT */
+.import-area {
+  background: var(--bg3);
+  border: 2px dashed var(--border);
+  border-radius: 4px;
+  padding: 30px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.import-area:hover { border-color: var(--gold); }
+
+/* CLASSEMENT ACTIONS BAR */
+.actions-bar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+/* PLAYER ADD ROW */
+.player-add-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.player-add-row .form-input { flex: 1; }
+
+/* KILLS TOP PICKER */
+.top-selector {
+  display: flex;
+  gap: 6px;
+}
+.top-btn {
+  flex: 1;
+  padding: 10px;
+  background: var(--bg3);
+  border: 2px solid var(--border);
+  color: var(--text-muted);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+.top-btn:hover { border-color: var(--gold); color: var(--gold); }
+.top-btn.selected.t1 { background: rgba(255,215,0,0.15); border-color: #ffd700; color: #ffd700; }
+.top-btn.selected.t2 { background: rgba(192,192,192,0.15); border-color: #c0c0c0; color: #c0c0c0; }
+.top-btn.selected.t3 { background: rgba(205,127,50,0.15); border-color: #cd7f32; color: #cd7f32; }
+.top-btn.selected.tn { background: rgba(139,132,120,0.15); border-color: var(--text-muted); color: var(--text); }
+
+/* MULT SELECTOR */
+.mult-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.mult-btn {
+  padding: 8px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s;
+  text-align: center;
+}
+.mult-btn:hover { border-color: var(--purple); color: var(--purple); }
+.mult-btn.selected { background: rgba(155,89,182,0.2); border-color: var(--purple); color: var(--purple); }
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+.empty-state .es-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state h3 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 20px; color: var(--text); margin-bottom: 6px; }
+
+/* SEPARATEUR */
+.sep {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  color: var(--text-muted);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.sep::before, .sep::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* STATS OVERVIEW */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.stat-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--border);
+  border-radius: 4px;
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card .sc-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-family: 'Barlow Condensed', sans-serif;
+  margin-bottom: 6px;
+}
+.stat-card .sc-val {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 40px;
+  line-height: 1;
+}
+.stat-card .sc-icon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 32px;
+  opacity: 0.08;
+}
+.sc-gold { color: var(--gold-light); }
+.sc-rust { color: var(--rust-light); }
+.sc-green { color: var(--green); }
+.sc-blue { color: var(--blue); }
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .rank-table th:nth-child(8), .rank-table td:nth-child(8) { display: none; }
+}
+@media (max-width: 768px) {
+  .rank-table th:nth-child(7), .rank-table td:nth-child(7),
+  .rank-table th:nth-child(5), .rank-table td:nth-child(5),
+  .rank-table th:nth-child(6), .rank-table td:nth-child(6) { display: none; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .actions-grid { grid-template-columns: 1fr; }
+  .form-row-2, .form-row-3 { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  header { flex-wrap: wrap; gap: 10px; }
+  .header-dates { display: none; }
+  main { padding: 16px; }
+}
+@media (max-width: 480px) {
+  header { padding: 10px 14px; }
+  .header-logo { font-size: 18px; }
+  main { padding: 8px; }
+  .nav-tabs { padding: 0 6px; gap: 0; }
+  .nav-tab { padding: 9px 10px; font-size: 11px; letter-spacing: 0; }
+  .modal-overlay { padding: 6px; align-items: flex-end; }
+  .modal-overlay.modal-center { align-items: center; padding: 12px; }
+  .modal { max-width: 100%; border-radius: 4px 4px 0 0; max-height: 90vh; }
+  .modal-overlay.modal-center .modal { border-radius: 4px; }
+  .toast-container { left: 8px; right: 8px; bottom: 8px; }
+  .toast { max-width: 100%; font-size: 12px; }
+  .player-detail-games { grid-template-columns: 1fr 1fr; }
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .section-title { font-size: 28px; }
+.rank-table th:nth-child(4), .rank-table td:nth-child(4) { display: none; }
+}
+@media (max-width: 360px) {
+  .header-logo { font-size: 16px; }
+  .header-logo small { display: none; }
+  .nav-tab { padding: 8px 8px; font-size: 10px; }
+  main { padding: 6px; }
+  .btn-admin span { display: none; }
+}
+
+/* SECTION ROUE */
+.roue-section {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 24px 28px;
+  margin-bottom: 20px;
+}
+.roue-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.roue-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 18px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.roue-comm-color { color: var(--gold); }
+.roue-perso-color { color: var(--purple); }
+
+.action-list-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  gap: 12px;
+}
+.action-row-name {
+  font-size: 13px;
+  font-weight: 500;
+  flex: 1;
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-logo">
+    SUMMER<span> LIGUE</span>
+    <small>Call of Duty Warzone</small>
+  </div>
+  <div class="header-right">
+    <div class="header-dates">
+      <strong>8 Juil — 31 Août 2026</strong>
+      by Lriaa • Twitch /LRIAA
+    </div>
+    <div class="header-admin-btns">
+      <button class="btn-admin admin-only" style="display:none" id="btn-admin-settings" onclick="openModal('modal-admin-settings')" title="Paramètres admin">
+        <i class="fa-solid fa-gear"></i>
+      </button>
+      <button class="btn-admin" id="btn-admin-toggle" onclick="toggleAdminLogin()">
+        <i class="fa-solid fa-lock" id="admin-lock-icon"></i>
+        <span id="admin-toggle-label">Admin</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav class="nav-tabs">
+  <button class="nav-tab active" onclick="showPage('classement')">Classement</button>
+  <button class="nav-tab admin-only" style="display:none" onclick="openSaisieModal()">Saisir une game</button>
+  <button class="nav-tab admin-only" style="display:none" onclick="showPage('actions')">Actions roues</button>
+  <button class="nav-tab admin-only" style="display:none" onclick="showPage('joueurs')">Joueurs</button>
+  <button class="nav-tab admin-only" style="display:none" onclick="showPage('historique')">Historique</button>
+</nav>
+
+<main>
+
+<!-- PAGE CLASSEMENT -->
+<div id="page-classement" class="page active">
+  <div class="classement-header">
+    <h1 class="section-title">Classement <span>Général</span></h1>
+    <div class="badge" id="badge-games-count">0 joueurs</div>
+    <div style="margin-left:auto;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:8px 16px;text-align:right;line-height:1.6">
+      <div style="font-size:11px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase">Finale</div>
+      <div style="font-size:14px;font-family:'Barlow Condensed',sans-serif;font-weight:700">
+        <i class="fa-solid fa-trophy" style="color:#ffd700"></i>
+        <i class="fa-solid fa-medal" style="color:#c0c0c0"></i>
+        <i class="fa-solid fa-medal" style="color:#cd7f32"></i>
+        <span style="color:var(--gold);margin-left:4px">TOP 3</span> — session de 3h
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-row" id="stats-overview"></div>
+
+  <div class="actions-bar admin-only" style="display:none">
+    <button class="btn btn-green btn-sm" onclick="openSaisieModal()"><i class="fa-solid fa-gamepad"></i> Saisir une game</button>
+    <button class="btn btn-blue btn-sm" onclick="openImportSheetModal()"><i class="fa-solid fa-cloud-arrow-down"></i> Importer Google Sheets</button>
+    <button class="btn btn-sm" style="color:var(--rust-light);border-color:var(--rust-light)" onclick="resetAllData()"><i class="fa-solid fa-trash-can"></i> Reset données</button>
+  </div>
+
+  <div class="rank-table-wrap">
+    <table class="rank-table">
+      <thead>
+        <tr>
+          <th style="width:48px">#</th>
+          <th>Joueur</th>
+          <th>Score Total</th>
+          <th>Games</th>
+          <th>Kills</th>
+          <th>Tops</th>
+          <th style="color:var(--gold)"><i class="fa-solid fa-star" style="font-size:10px"></i> Meilleure</th>
+          <th style="color:var(--rust)"><i class="fa-solid fa-skull" style="font-size:10px"></i> Pire</th>
+          <th>Détail</th>
+        </tr>
+      </thead>
+      <tbody id="rank-body">
+        <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-muted)">Aucun joueur enregistré.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL SAISIE GAME -->
+<div class="modal-overlay modal-center" id="modal-saisie">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-gamepad" style="margin-right:8px;font-size:15px"></i>Saisir une Game</div>
+      <button class="modal-close" onclick="closeModal('modal-saisie')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="form-label">Joueur</label>
+        <select class="form-select" id="saisie-player" onchange="updateSaisiePreview()">
+          <option value="">— Sélectionner un joueur —</option>
+        </select>
+      </div>
+
+      <!-- BANNER SKIP (affiché quand skipNext actif) -->
+      <div id="saisie-skip-banner" style="display:none;margin-top:14px">
+        <div style="background:rgba(192,71,42,0.12);border:2px solid var(--rust);border-radius:4px;padding:20px;text-align:center">
+          <div style="font-size:32px;margin-bottom:8px"><i class="fa-solid fa-forward-step" style="color:var(--rust)"></i></div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;text-transform:uppercase;letter-spacing:1px;color:var(--rust-light);margin-bottom:6px">Skip activé</div>
+          <div style="font-size:13px;color:var(--text-muted);line-height:1.5">La prochaine game de ce joueur<br>ne sera <strong style="color:var(--text)">pas comptabilisée</strong> et son nombre de games n'augmentera pas.</div>
+        </div>
+        <button class="btn btn-solid-rust btn-lg" onclick="submitGame()" style="width:100%;justify-content:center;margin-top:14px"><i class="fa-solid fa-forward-step" style="margin-right:6px"></i>Confirmer le skip</button>
+      </div>
+
+      <!-- CHAMPS SAISIE (masqués si skip actif) -->
+      <div id="saisie-form-fields">
+        <div class="form-row-2" style="margin-top:14px">
+          <div class="form-row" style="margin-bottom:0">
+            <label class="form-label">Kills</label>
+            <div class="kills-input-group">
+              <button class="kills-btn" onclick="changeKills(-1)">−</button>
+              <input type="number" class="form-input" id="saisie-kills" value="0" min="0" max="50" oninput="updateSaisiePreview()">
+              <button class="kills-btn" onclick="changeKills(1)">+</button>
+            </div>
+          </div>
+          <div class="form-row" style="margin-bottom:0">
+            <label class="form-label">Multiplicateur</label>
+            <select class="form-select" id="saisie-mult" onchange="updateSaisiePreview()">
+              <option value="1">x1 (aucun)</option>
+              <option value="1.1">x1.1</option>
+              <option value="1.2">x1.2</option>
+              <option value="1.3">x1.3</option>
+              <option value="1.4">x1.4</option>
+              <option value="1.5">x1.5</option>
+              <option value="2">x2</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row" style="margin-top:14px">
+          <label class="form-label">Classement (Top)</label>
+          <div class="top-selector">
+            <button class="top-btn t1" id="top-1" onclick="selectTop(1)">TOP 1<br><small>+20 pts</small></button>
+            <button class="top-btn t2" id="top-2" onclick="selectTop(2)">TOP 2<br><small>+15 pts</small></button>
+            <button class="top-btn t3" id="top-3" onclick="selectTop(3)">TOP 3<br><small>+8 pts</small></button>
+            <button class="top-btn tn selected" id="top-n" onclick="selectTop(0)">Pas top<br><small>+0 pts</small></button>
+          </div>
+        </div>
+
+        <div class="form-row" style="margin-top:14px">
+          <label class="form-label">Bonus Points</label>
+          <div class="bonus-btns">
+            <button class="bonus-btn" onclick="addBonus(5)"><i class="fa-solid fa-plus" style="font-size:10px"></i> 5 pts</button>
+            <button class="bonus-btn" onclick="addBonus(10)"><i class="fa-solid fa-plus" style="font-size:10px"></i> 10 pts</button>
+            <div class="bonus-display" id="bonus-display" style="display:none">
+              <span id="bonus-total">+0 pts</span>
+              <button onclick="clearBonus()" title="Retirer le bonus">×</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="saisie-preview" class="score-preview" style="display:none">
+          <div class="sp-row"><span>Kills (×multiplicateur)</span><span id="prev-kills-pts">0 pts</span></div>
+          <div class="sp-row"><span>Top placement</span><span id="prev-top-pts">0 pts</span></div>
+          <div class="sp-row" id="prev-bonus-row" style="display:none;color:var(--blue)"><span><i class="fa-solid fa-star-of-life" style="font-size:9px"></i> Bonus</span><span id="prev-bonus-pts">+0 pts</span></div>
+          <div class="sp-row sp-total"><span>SCORE GAME</span><span id="prev-total">0 pts</span></div>
+          <div style="margin-top:8px;font-size:11px;color:var(--text-muted)" id="prev-warning"></div>
+        </div>
+
+        <div style="margin-top:16px;display:flex;gap:10px">
+          <button class="btn btn-solid-gold btn-lg" onclick="submitGame()" style="flex:1"><i class="fa-solid fa-check" style="margin-right:6px"></i>Valider la game</button>
+          <button class="btn btn-sm" style="color:var(--text-muted);border-color:var(--border)" onclick="resetSaisie()">Reset</button>
+        </div>
+      </div>
+
+      <div class="sep" style="margin-top:20px">Ajouter un joueur</div>
+      <div class="player-add-row">
+        <input type="text" class="form-input" id="quick-add-name" placeholder="Pseudo du joueur..." onkeydown="if(event.key==='Enter')quickAddPlayer()">
+        <button class="btn btn-green" onclick="quickAddPlayer()">+ Ajouter</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE ACTIONS ROUES -->
+<div id="page-actions" class="page">
+  <h1 class="section-title" style="margin-bottom:20px">Actions <span>Roues</span></h1>
+
+  <!-- ROUE COMMUNAUTAIRE -->
+  <div class="roue-section">
+    <div class="roue-header">
+      <div class="roue-title roue-comm-color">Roue Communautaire <span style="font-size:13px;color:var(--text-muted);font-weight:400">(par palier de 50 subgifts)</span></div>
+    </div>
+    <div class="action-list-compact">
+
+      <div class="action-row">
+        <div>
+          <div class="action-row-name">Meilleure game × 1.5</div>
+          <div style="font-size:11px;color:var(--text-muted)">Multiplie le score de la meilleure game de chaque joueur par 1.5</div>
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="openAction('best-x15')">Appliquer</button>
+      </div>
+
+      <div class="action-row">
+        <div>
+          <div class="action-row-name">Ajout d'une game sup</div>
+          <div style="font-size:11px;color:var(--text-muted)">Saisie d'une game supplémentaire pour un joueur (hors limite des 20)</div>
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="openAction('add-bonus-game')">Appliquer</button>
+      </div>
+
+      <div class="action-row">
+        <div>
+          <div class="action-row-name">Suppression de la pire game</div>
+          <div style="font-size:11px;color:var(--text-muted)">Supprime la game avec le score le plus bas de chaque joueur</div>
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="openAction('remove-worst')">Appliquer</button>
+      </div>
+
+      <div class="action-row">
+        <div>
+          <div class="action-row-name">Joker sur la game de son choix</div>
+          <div style="font-size:11px;color:var(--text-muted)">Supprime une game spécifique au choix pour un joueur</div>
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="openAction('joker-game')">Appliquer</button>
+      </div>
+
+      <div class="action-row">
+        <div>
+          <div class="action-row-name">Échange de game (meilleure ↔ pire)</div>
+          <div style="font-size:11px;color:var(--text-muted)">Échange la meilleure game de joueur A contre la pire game de joueur B</div>
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="openModal('modal-echange')">Appliquer</button>
+      </div>
+
+      <div class="action-row">
+        <div>
+          <div class="action-row-name">Clone meilleure game → pire (hasard)</div>
+          <div style="font-size:11px;color:var(--text-muted)">Clone la meilleure game d'un joueur et remplace sa pire game</div>
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="openAction('clone-best-worst')">Appliquer</button>
+      </div>
+
+      <div class="action-row">
+        <div>
+          <div class="action-row-name"><i class="fa-solid fa-crown"></i> +5 pts par Top 1</div>
+          <div style="font-size:11px;color:var(--text-muted)">Chaque top 1 dans le classement actuel ajoute +5 pts</div>
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="openAction('top1-bonus')">Appliquer</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ROUE PERSONNELLE -->
+  <div class="roue-section">
+    <div class="roue-header">
+      <div>
+        <div class="roue-title roue-perso-color">Roue Personnelle <span style="font-size:13px;color:var(--text-muted);font-weight:400">(5 subgifts avant la game)</span></div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px"><i class="fa-solid fa-circle-info"></i> Applicable à toi-même ou à un autre joueur de ton choix</div>
+      </div>
+    </div>
+    <div class="action-list-compact">
+
+      <div class="action-row">
+        <div>
+          <div class="action-row-name">Échange de game avec joueur au choix</div>
+          <div style="font-size:11px;color:var(--text-muted)">Échange une game spécifique entre deux joueurs</div>
+        </div>
+        <button class="btn btn-purple btn-sm" onclick="openAction('perso-echange')">Appliquer</button>
+      </div>
+
+      <div class="action-row">
+        <div>
+          <div class="action-row-name">Enlève -5 pts à un joueur</div>
+          <div style="font-size:11px;color:var(--text-muted)">Retire 5 points à la personne de son choix</div>
+        </div>
+        <button class="btn btn-purple btn-sm" onclick="openAction('perso-minus5')">Appliquer</button>
+      </div>
+
+      <div class="action-row">
+        <div>
+          <div class="action-row-name">Gèle un mate à 5 kills</div>
+          <div style="font-size:11px;color:var(--text-muted)">Fixe les kills d'un joueur à 5 pour sa prochaine game</div>
+        </div>
+        <button class="btn btn-purple btn-sm" onclick="openAction('perso-freeze')">Appliquer</button>
+      </div>
+
+      <div class="action-row">
+        <div>
+          <div class="action-row-name"><i class="fa-solid fa-bolt-lightning"></i> +10 pts</div>
+          <div style="font-size:11px;color:var(--text-muted)">Ajoute 10 points bonus au joueur</div>
+        </div>
+        <button class="btn btn-purple btn-sm" onclick="openAction('perso-plus10')">Appliquer</button>
+      </div>
+
+      <div class="action-row">
+        <div>
+          <div class="action-row-name"><i class="fa-solid fa-bolt"></i> +5 pts</div>
+          <div style="font-size:11px;color:var(--text-muted)">Ajoute 5 points bonus au joueur</div>
+        </div>
+        <button class="btn btn-purple btn-sm" onclick="openAction('perso-plus5')">Appliquer</button>
+      </div>
+
+      <div class="action-row">
+        <div>
+          <div class="action-row-name">Multiplicateur de kills</div>
+          <div style="font-size:11px;color:var(--text-muted)">Applique x1.1 / x1.2 / x1.3 / x1.4 / x1.5 / x2 sur la prochaine game</div>
+        </div>
+        <button class="btn btn-purple btn-sm" onclick="openAction('perso-mult')">Appliquer</button>
+      </div>
+
+      <div class="action-row">
+        <div>
+          <div class="action-row-name"><i class="fa-solid fa-crosshairs" style="font-size:11px"></i> Clone kill du meilleur killeur</div>
+          <div style="font-size:11px;color:var(--text-muted)">Copie le nombre de kills du top killeur de la game pour un joueur</div>
+        </div>
+        <button class="btn btn-purple btn-sm" onclick="openAction('perso-clone-game')">Appliquer</button>
+      </div>
+
+      <div class="action-row">
+        <div>
+          <div class="action-row-name">Clone kills d'un joueur au choix</div>
+          <div style="font-size:11px;color:var(--text-muted)">Copie les kills d'une game d'un autre joueur</div>
+        </div>
+        <button class="btn btn-purple btn-sm" onclick="openAction('perso-clone-kills')">Appliquer</button>
+      </div>
+
+      <div class="action-row">
+        <div>
+          <div class="action-row-name">Clone kill de Lriaa</div>
+          <div style="font-size:11px;color:var(--text-muted)">Copie les kills de Lriaa sur une game</div>
+        </div>
+        <button class="btn btn-purple btn-sm" onclick="openAction('perso-clone-lriaa')">Appliquer</button>
+      </div>
+
+      <div class="action-row">
+        <div>
+          <div class="action-row-name"><i class="fa-solid fa-trash-can" style="font-size:11px"></i> Enlève une mauvaise game</div>
+          <div style="font-size:11px;color:var(--text-muted)">Retire une game au choix du joueur (pas forcément la pire)</div>
+        </div>
+        <button class="btn btn-purple btn-sm" onclick="openAction('perso-del-worst')">Appliquer</button>
+      </div>
+
+      <div class="action-row">
+        <div>
+          <div class="action-row-name">Skip ta game</div>
+          <div style="font-size:11px;color:var(--text-muted)">La prochaine game du joueur ne sera pas comptabilisée</div>
+        </div>
+        <button class="btn btn-purple btn-sm" onclick="openAction('perso-skip')">Appliquer</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- PAGE JOUEURS -->
+<div id="page-joueurs" class="page">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+    <h1 class="section-title">Gestion des <span>Joueurs</span></h1>
+  </div>
+
+  <div class="player-add-row">
+    <input type="text" class="form-input" id="add-player-input" placeholder="Pseudo du joueur (sub)..." onkeydown="if(event.key==='Enter')addPlayer()">
+    <button class="btn btn-solid-gold" onclick="addPlayer()">+ Ajouter le joueur</button>
+  </div>
+
+  <div id="players-list"></div>
+</div>
+
+<!-- PAGE HISTORIQUE -->
+<div id="page-historique" class="page">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+    <h1 class="section-title">Historique des <span>Actions</span></h1>
+    <button class="btn btn-sm" style="color:var(--rust);border-color:var(--rust);margin-left:auto" onclick="clearLog()">Vider</button>
+  </div>
+  <ul class="log-list" id="log-list">
+    <li style="padding:40px;text-align:center;color:var(--text-muted)">Aucune action enregistrée.</li>
+  </ul>
+</div>
+
+</main>
+
+<!-- MODALS -->
+
+<!-- MODAL CONFIRMATION -->
+<div class="modal-overlay modal-center" id="modal-confirm">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header" id="confirm-header">
+      <div class="modal-title" id="confirm-title">Confirmation</div>
+      <button class="modal-close" onclick="confirmCancel()">×</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-message" style="margin-bottom:20px;line-height:1.6;font-size:14px"></p>
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button class="btn btn-sm" style="color:var(--text-muted);border-color:var(--border)" onclick="confirmCancel()">Annuler</button>
+        <button id="confirm-ok-btn" class="btn btn-sm" onclick="confirmOk()">Confirmer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETAIL JOUEUR -->
+<div class="modal-overlay" id="modal-player">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-player-title">Joueur</div>
+      <button class="modal-close" onclick="closeModal('modal-player')">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="modal-player-body"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ECHANGE -->
+<div class="modal-overlay" id="modal-echange">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Échange de Game</div>
+      <button class="modal-close" onclick="closeModal('modal-echange')">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">La <strong style="color:var(--gold)">meilleure game</strong> du Joueur A sera échangée contre la <strong style="color:var(--rust)">pire game</strong> du Joueur B.</p>
+      <div class="form-row-2">
+        <div class="form-row" style="margin-bottom:0">
+          <label class="form-label">Joueur A (donne sa meilleure)</label>
+          <select class="form-select" id="echange-a">
+            <option value="">— Choisir —</option>
+          </select>
+        </div>
+        <div class="form-row" style="margin-bottom:0">
+          <label class="form-label">Joueur B (donne sa pire)</label>
+          <select class="form-select" id="echange-b">
+            <option value="">— Choisir —</option>
+          </select>
+        </div>
+      </div>
+      <div id="echange-preview" style="margin-top:14px"></div>
+      <button class="btn btn-solid-gold" style="width:100%;margin-top:16px;justify-content:center" onclick="doEchange()">Effectuer l'échange</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GÉNÉRIQUE ACTION -->
+<div class="modal-overlay" id="modal-action">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-action-title">Action</div>
+      <button class="modal-close" onclick="closeModal('modal-action')">×</button>
+    </div>
+    <div class="modal-body" id="modal-action-body"></div>
+  </div>
+</div>
+
+<!-- MODAL EDIT GAME -->
+<div class="modal-overlay" id="modal-edit-game">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <div class="modal-title" id="edit-game-title"><i class="fa-solid fa-pen-to-square"></i> Modifier la game</div>
+      <button class="modal-close" onclick="closeModal('modal-edit-game')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="form-label">Kills</label>
+        <div class="kills-input-group">
+          <button class="kills-btn" onclick="changeEditKills(-1)">−</button>
+          <input type="number" class="form-input" id="edit-kills" value="0" min="0" max="50" oninput="updateEditPreview()">
+          <button class="kills-btn" onclick="changeEditKills(1)">+</button>
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Classement (Top)</label>
+        <div class="top-selector">
+          <button class="top-btn t1" id="edit-top-1" onclick="selectEditTop(1)">TOP 1<br><small>+20 pts</small></button>
+          <button class="top-btn t2" id="edit-top-2" onclick="selectEditTop(2)">TOP 2<br><small>+15 pts</small></button>
+          <button class="top-btn t3" id="edit-top-3" onclick="selectEditTop(3)">TOP 3<br><small>+8 pts</small></button>
+          <button class="top-btn tn" id="edit-top-n" onclick="selectEditTop(0)">Pas top<br><small>+0 pts</small></button>
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Multiplicateur</label>
+        <select class="form-select" id="edit-mult" onchange="updateEditPreview()">
+          <option value="1">x1 (aucun)</option>
+          <option value="1.1">x1.1</option>
+          <option value="1.2">x1.2</option>
+          <option value="1.3">x1.3</option>
+          <option value="1.4">x1.4</option>
+          <option value="1.5">x1.5</option>
+          <option value="2">x2</option>
+        </select>
+      </div>
+      <div class="score-preview">
+        <div class="sp-row"><span>Kills (×multiplicateur)</span><span id="edit-prev-kills">0 pts</span></div>
+        <div class="sp-row"><span>Top placement</span><span id="edit-prev-top">0 pts</span></div>
+        <div class="sp-row sp-total"><span>SCORE GAME</span><span id="edit-prev-total">0 pts</span></div>
+      </div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="saveEditGame()">
+        <i class="fa-solid fa-check"></i> Sauvegarder
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL IMPORT GOOGLE SHEETS -->
+<div class="modal-overlay modal-center" id="modal-import-sheet">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-cloud-arrow-down"></i> Importer Google Sheets</div>
+      <button class="modal-close" onclick="closeModal('modal-import-sheet')">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:6px;line-height:1.6">
+        Collez l'URL de votre Google Sheets (doit être partagé en <strong style="color:var(--gold)">accès public</strong> ou <strong style="color:var(--gold)">publié sur le web</strong>).<br>
+        Structure attendue :
+      </p>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:2px;padding:8px 12px;font-family:'Barlow Condensed',sans-serif;font-size:12px;margin-bottom:14px;color:var(--text-muted)">
+        <span style="color:var(--gold)">Joueur</span> | <span style="color:var(--blue)">Kills</span> | <span style="color:var(--green)">Top</span> (1/2/3 ou 20/15/8) | <span style="color:var(--purple)">Mult</span> (optionnel) | <span style="color:var(--rust-light)">Bonus</span> (optionnel)
+      </div>
+      <div class="form-row">
+        <label class="form-label">URL Google Sheets</label>
+        <input type="url" class="form-input" id="sheet-url-input" placeholder="https://docs.google.com/spreadsheets/d/..." onkeydown="if(event.key==='Enter')importFromSheetURL()">
+      </div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:4px" onclick="importFromSheetURL()">
+        <i class="fa-solid fa-cloud-arrow-down"></i> Importer
+      </button>
+      <div id="sheet-import-msg" style="font-size:12px;margin-top:10px;display:none;line-height:1.5"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ADMIN LOGIN -->
+<div class="modal-overlay modal-center" id="modal-admin">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-lock"></i> Espace Admin</div>
+      <button class="modal-close" onclick="closeModal('modal-admin')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group" style="margin-bottom:12px">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" id="admin-email-input" placeholder="admin@exemple.fr" onkeydown="if(event.key==='Enter')submitAdminLogin()">
+      </div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label class="form-label">Mot de passe</label>
+        <input type="password" class="form-input" id="admin-pwd-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')submitAdminLogin()">
+      </div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:4px" onclick="submitAdminLogin()">
+        <i class="fa-solid fa-right-to-bracket"></i> Accéder
+      </button>
+      <div id="admin-login-error" style="color:var(--rust);font-size:12px;margin-top:10px;display:none">
+        <i class="fa-solid fa-circle-exclamation"></i> Mot de passe incorrect.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ADMIN SETTINGS -->
+<div class="modal-overlay modal-center" id="modal-admin-settings">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-gear"></i> Paramètres Admin</div>
+      <button class="modal-close" onclick="closeModal('modal-admin-settings')">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:14px">
+        <i class="fa-solid fa-circle-check"></i> Connecté en tant qu'admin
+      </div>
+      <button class="btn btn-rust" style="width:100%;justify-content:center" onclick="adminLogout()">
+        <i class="fa-solid fa-right-from-bracket"></i> Se déconnecter
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  players: [],  // { id, name, games: [{kills, top, mult, score, bonus, note, frozen, skip}], bonusPoints, skipNext, freezeKills }
+  log: [],
+  top1BonusDone: false
+};
+
+let currentTop = 0;
+let currentAction = null;
+let saisieBonus = 0;
+
+// ============================================================
+// INIT & LOAD
+// ============================================================
+async function init() {
+  const { data: { session } } = await _sb.auth.getSession();
+  _adminOk = !!session;
+  await loadState();
+  preloadSheetData();
+  updateAdminUI();
+  renderAll();
+}
+
+async function loadState() {
+  try {
+    const [{ data: players }, { data: games }, { data: logs }, { data: flags }] = await Promise.all([
+      _sb.from('players').select('*').order('created_at'),
+      _sb.from('games').select('*').order('created_at'),
+      _sb.from('logs').select('*').order('created_at'),
+      _sb.from('app_flags').select('*')
+    ]);
+
+    if (!players) return;
+
+    state.players = (players || []).map(p => ({
+      id: p.id,
+      name: p.name,
+      bonusPoints: p.bonus_points || 0,
+      skipNext: !!p.skip_next,
+      freezeKills: p.freeze_kills || 0,
+      pendingMult: p.pending_mult || 0,
+      games: (games || [])
+        .filter(g => g.player_id === p.id)
+        .map(g => ({
+          id: g.id,
+          kills: g.kills || 0,
+          top: g.top_rank || 0,
+          mult: g.mult || 1,
+          score: g.score || 0,
+          note: g.note || '',
+          date: g.game_date || ''
+        }))
+    }));
+
+    state.log = (logs || []).map(l => ({
+      id: l.id,
+      msg: l.msg || '',
+      color: l.color || 'green',
+      icon: l.icon || 'circle-dot',
+      time: l.time || ''
+    }));
+
+    const top1Flag = (flags || []).find(f => f.key === 'top1BonusDone');
+    state.top1BonusDone = top1Flag?.value === 'true';
+  } catch(e) {
+    console.error('loadState error:', e);
+  }
+}
+
+async function saveState() {
+  if (!isAdmin()) return;
+
+  // Players
+  try {
+    const playerRows = state.players.map(p => ({
+      id: p.id, name: p.name,
+      bonus_points: p.bonusPoints || 0,
+      skip_next: !!p.skipNext,
+      freeze_kills: p.freezeKills || 0,
+      pending_mult: p.pendingMult || 0
+    }));
+    if (playerRows.length > 0) await _sb.from('players').upsert(playerRows);
+    const { data: dbP } = await _sb.from('players').select('id');
+    const keepP = new Set(playerRows.map(p => p.id));
+    const delP = (dbP || []).filter(p => !keepP.has(p.id)).map(p => p.id);
+    if (delP.length) await _sb.from('players').delete().in('id', delP);
+  } catch(e) { console.error('saveState players:', e); }
+
+  // Games
+  try {
+    const gameRows = state.players.flatMap(p => (p.games || []).map(g => ({
+      id: g.id, player_id: p.id,
+      kills: g.kills || 0, top_rank: g.top || 0,
+      mult: g.mult || 1, score: g.score || 0,
+      note: g.note || '', game_date: g.date || ''
+    })));
+    if (gameRows.length > 0) await _sb.from('games').upsert(gameRows);
+    const { data: dbG } = await _sb.from('games').select('id');
+    const keepG = new Set(gameRows.map(g => g.id));
+    const delG = (dbG || []).filter(g => !keepG.has(g.id)).map(g => g.id);
+    if (delG.length) await _sb.from('games').delete().in('id', delG);
+  } catch(e) { console.error('saveState games:', e); }
+
+  // Logs (sans seq — ordre par created_at)
+  try {
+    const logRows = state.log.map(l => ({
+      id: l.id, msg: l.msg, color: l.color, icon: l.icon, time: l.time
+    }));
+    if (logRows.length > 0) await _sb.from('logs').upsert(logRows);
+    const { data: dbL } = await _sb.from('logs').select('id');
+    const keepL = new Set(logRows.map(l => l.id));
+    const delL = (dbL || []).filter(l => !keepL.has(l.id)).map(l => l.id);
+    if (delL.length) await _sb.from('logs').delete().in('id', delL);
+  } catch(e) { console.error('saveState logs:', e); }
+
+  // Flags
+  try {
+    await _sb.from('app_flags').upsert([
+      { key: 'top1BonusDone', value: String(!!state.top1BonusDone) }
+    ]);
+  } catch(e) { console.error('saveState flags:', e); }
+}
+
+// ============================================================
+// SCORE CALCULATION
+// ============================================================
+function calcGameScore(kills, top, mult) {
+  const killsPts = Math.round(kills * mult);
+  let topPts = 0;
+  if (top === 1) topPts = 20;
+  else if (top === 2) topPts = 15;
+  else if (top === 3) topPts = 8;
+  return killsPts + topPts;
+}
+
+function getPlayerTotal(player) {
+  const games = player.games || [];
+  const MAX_GAMES = 20;
+  // Sort games by score desc, take top 20
+  const sorted = [...games].sort((a, b) => b.score - a.score);
+  const counted = sorted.slice(0, MAX_GAMES);
+  const gamesSum = counted.reduce((s, g) => s + g.score, 0);
+  return gamesSum + (player.bonusPoints || 0);
+}
+
+function getBestGame(player) {
+  if (!player.games.length) return null;
+  return player.games.reduce((best, g) => g.score > best.score ? g : best, player.games[0]);
+}
+
+function getWorstGame(player) {
+  if (!player.games.length) return null;
+  return player.games.reduce((worst, g) => g.score < worst.score ? g : worst, player.games[0]);
+}
+
+function getCountedGames(player) {
+  const MAX_GAMES = 20;
+  return [...player.games].sort((a, b) => b.score - a.score).slice(0, MAX_GAMES);
+}
+
+// ============================================================
+// RENDER ALL
+// ============================================================
+function renderAll() {
+  renderClassement();
+  renderSaisieSelects();
+  renderPlayersList();
+  renderLog();
+  renderStats();
+}
+
+function renderStats() {
+  const el = document.getElementById('stats-overview');
+  if (!state.players.length) { el.innerHTML = ''; return; }
+  const totalKills = state.players.reduce((s, p) => s + p.games.reduce((a, g) => a + g.kills, 0), 0);
+  const totalGames = state.players.reduce((s, p) => s + p.games.length, 0);
+  const top1s = state.players.reduce((s, p) => s + p.games.filter(g => g.top === 1).length, 0);
+  const best = [...state.players].sort((a, b) => getPlayerTotal(b) - getPlayerTotal(a))[0];
+  el.innerHTML = `
+    <div class="stat-card" style="border-top-color:var(--gold-light)">
+      <div class="sc-label">Joueurs</div>
+      <div class="sc-val sc-gold">${state.players.length}</div>
+      <i class="fa-solid fa-users sc-icon"></i>
+    </div>
+    <div class="stat-card" style="border-top-color:var(--blue)">
+      <div class="sc-label">Games jouées</div>
+      <div class="sc-val sc-blue">${totalGames}</div>
+      <i class="fa-solid fa-gamepad sc-icon"></i>
+    </div>
+    <div class="stat-card" style="border-top-color:var(--rust-light)">
+      <div class="sc-label">Total kills</div>
+      <div class="sc-val sc-rust">${totalKills}</div>
+      <i class="fa-solid fa-skull sc-icon"></i>
+    </div>
+    <div class="stat-card" style="border-top-color:var(--green)">
+      <div class="sc-label">Top 1 <i class="fa-solid fa-trophy" style="color:#ffd700;font-size:10px"></i></div>
+      <div class="sc-val sc-green">${top1s}</div>
+      <i class="fa-solid fa-trophy sc-icon"></i>
+    </div>
+    ${best ? `<div class="stat-card" style="border-top-color:var(--gold)">
+      <div class="sc-label">Leader</div>
+      <div class="sc-val" style="font-size:22px;color:var(--gold-light);margin-top:6px;line-height:1.1">${escHtml(best.name)}</div>
+      <i class="fa-solid fa-crown sc-icon"></i>
+    </div>` : ''}
+  `;
+}
+
+function renderClassement() {
+  const tbody = document.getElementById('rank-body');
+  document.getElementById('badge-games-count').textContent = `${state.players.length} joueur${state.players.length > 1 ? 's' : ''}`;
+
+  const wrap = document.querySelector('.rank-table-wrap');
+  if (wrap) wrap.classList.toggle('scrollable', state.players.length >= 10);
+
+  if (!state.players.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-muted)">Aucun joueur enregistré.</td></tr>';
+    return;
+  }
+
+  const rankIcons = {
+    1: `<i class="fa-solid fa-trophy" style="color:#ffd700;font-size:14px"></i>`,
+    2: `<i class="fa-solid fa-medal" style="color:#c0c0c0;font-size:14px"></i>`,
+    3: `<i class="fa-solid fa-medal" style="color:#cd7f32;font-size:14px"></i>`,
+  };
+
+  const sorted = [...state.players].sort((a, b) => getPlayerTotal(b) - getPlayerTotal(a));
+
+  tbody.innerHTML = sorted.map((p, i) => {
+    const total = getPlayerTotal(p);
+    const best  = getBestGame(p);
+    const worst = getWorstGame(p);
+    const top1count = p.games.filter(g => g.top === 1).length;
+    const top2count = p.games.filter(g => g.top === 2).length;
+    const top3count = p.games.filter(g => g.top === 3).length;
+    const totalKills = p.games.reduce((s, g) => s + g.kills, 0);
+    const rank = i + 1;
+    const rankClass = rank <= 3 ? `rank-${rank}` : '';
+    const rowBg = rank === 1 ? 'background:rgba(255,215,0,0.06);box-shadow:inset 4px 0 0 #ffd700' : rank === 2 ? 'background:rgba(192,192,192,0.04);box-shadow:inset 4px 0 0 #c0c0c0' : rank === 3 ? 'background:rgba(205,127,50,0.04);box-shadow:inset 4px 0 0 #cd7f32' : '';
+
+    return `<tr style="${rowBg}">
+      <td class="rank-num ${rankClass}" style="text-align:center">
+        ${rankIcons[rank] || rank}
+        ${rank <= 3 ? `<div style="font-size:11px;margin-top:2px">${rank}</div>` : ''}
+      </td>
+      <td>
+        <div class="player-name">${escHtml(p.name)}</div>
+        ${p.skipNext ? '<div style="font-size:10px;color:var(--rust)"><i class="fa-solid fa-forward-step"></i> Skip activé</div>' : ''}
+        ${p.freezeKills ? `<div style="font-size:10px;color:var(--blue)"><i class="fa-solid fa-snowflake"></i> Gelé à ${p.freezeKills} kills</div>` : ''}
+        ${p.pendingMult ? `<div style="font-size:10px;color:var(--purple)"><i class="fa-solid fa-xmark"></i> ×${p.pendingMult} kills (roue)</div>` : ''}
+      </td>
+      <td class="score-total">${total}<small style="font-size:12px;color:var(--text-muted);font-weight:400"> pts</small>${p.bonusPoints ? `<div style="font-size:11px;color:var(--green)">+${p.bonusPoints} bonus</div>` : ''}</td>
+      <td class="stat-games">${p.games.length}/${20}</td>
+      <td class="stat-kills">${totalKills}</td>
+      <td class="stat-tops">
+        ${top1count ? `<span style="color:#ffd700"><i class="fa-solid fa-trophy" style="font-size:9px"></i> ${top1count}</span> ` : ''}
+        ${top2count ? `<span style="color:#c0c0c0"><i class="fa-solid fa-medal" style="font-size:9px"></i> ${top2count}</span> ` : ''}
+        ${top3count ? `<span style="color:#cd7f32"><i class="fa-solid fa-medal" style="font-size:9px"></i> ${top3count}</span>` : ''}
+        ${!top1count && !top2count && !top3count ? '<span style="color:var(--text-muted)">—</span>' : ''}
+      </td>
+      <td>${best ? `<span class="game-pill best" style="background:rgba(201,149,74,0.1)">${best.score} pts · ${best.kills}K${topLabel(best.top)}</span>` : '<span style="color:var(--text-muted)">—</span>'}</td>
+      <td>${worst && p.games.length > 1 && worst.id !== best?.id ? `<span class="game-pill worst" style="background:rgba(192,71,42,0.1)">${worst.score} pts · ${worst.kills}K${topLabel(worst.top)}</span>` : '<span style="color:var(--text-muted)">—</span>'}</td>
+      <td>
+        <button class="btn btn-sm" style="color:var(--text-muted);border-color:var(--border)" onclick="showPlayerDetail('${p.id}')"><i class="fa-solid fa-chart-bar"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function topLabel(top) {
+  if (top === 1) return ' · T1';
+  if (top === 2) return ' · T2';
+  if (top === 3) return ' · T3';
+  return '';
+}
+
+function renderSaisieSelects() {
+  const selects = ['saisie-player', 'echange-a', 'echange-b'];
+  selects.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const current = el.value;
+    el.innerHTML = '<option value="">— Sélectionner —</option>' +
+      state.players.map(p => `<option value="${p.id}" ${current === p.id ? 'selected' : ''}>${escHtml(p.name)}</option>`).join('');
+  });
+}
+
+function renderPlayersList() {
+  const el = document.getElementById('players-list');
+  if (!state.players.length) {
+    el.innerHTML = '<div class="empty-state"><div class="es-icon"></div><h3>Aucun joueur</h3><p>Ajoutez les pseudos des subs participants.</p></div>';
+    return;
+  }
+  const sorted = [...state.players].sort((a, b) => getPlayerTotal(b) - getPlayerTotal(a));
+  el.innerHTML = sorted.map((p, i) => {
+    const total = getPlayerTotal(p);
+    return `<div class="action-row" style="margin-bottom:6px">
+      <div style="display:flex;align-items:center;gap:12px;flex:1">
+        <span class="rank-num ${i < 3 ? `rank-${i+1}` : ''}" style="font-size:16px">#${i+1}</span>
+        <div>
+          <div class="player-name">${escHtml(p.name)}</div>
+          <div style="font-size:11px;color:var(--text-muted)">${p.games.length} game${p.games.length > 1 ? 's' : ''} • ${total} pts</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm btn-blue" onclick="showPlayerDetail('${p.id}')" title="Détail"><i class="fa-solid fa-chart-bar"></i></button>
+        <button class="btn btn-sm" style="color:var(--rust);border-color:var(--rust)" onclick="deletePlayer('${p.id}')" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderLog() {
+  const el = document.getElementById('log-list');
+  if (!state.log.length) {
+    el.innerHTML = '<li style="padding:40px;text-align:center;color:var(--text-muted)">Aucune action enregistrée.</li>';
+    return;
+  }
+  const colorMap = { green: 'var(--green)', gold: 'var(--gold)', rust: 'var(--rust)', blue: 'var(--blue)', purple: 'var(--purple)' };
+  el.innerHTML = [...state.log].reverse().map(l => {
+    const color = colorMap[l.color] || colorMap.green;
+    const icon = l.icon || 'circle';
+    return `<li class="log-item">
+      <i class="fa-solid fa-${icon}" style="color:${color};font-size:13px;flex-shrink:0;margin-top:2px;width:16px;text-align:center"></i>
+      <div style="flex:1">${sanitizeMsg(l.msg)}</div>
+      <div class="log-time">${l.time}</div>
+    </li>`;
+  }).join('');
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showPage(name) {
+  const adminPages = ['actions', 'joueurs', 'historique'];
+  if (adminPages.includes(name) && !isAdmin()) {
+    document.getElementById('admin-email-input').value = '';
+    document.getElementById('admin-pwd-input').value = '';
+    document.getElementById('admin-login-error').style.display = 'none';
+    openModal('modal-admin');
+    setTimeout(() => document.getElementById('admin-email-input').focus(), 100);
+    return;
+  }
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    if (t.getAttribute('onclick') && t.getAttribute('onclick').includes("'" + name + "'")) t.classList.add('active');
+  });
+  renderAll();
+}
+
+// ============================================================
+// PLAYERS
+// ============================================================
+function addPlayer() {
+  const inp = document.getElementById('add-player-input');
+  const name = inp.value.trim();
+  if (!name) { toast('Entrez un pseudo.', 'error'); return; }
+  if (state.players.find(p => p.name.toLowerCase() === name.toLowerCase())) {
+    toast(`${name} existe déjà.`, 'error'); return;
+  }
+  const player = { id: uid(), name, games: [], bonusPoints: 0, skipNext: false, freezeKills: 0 };
+  state.players.push(player);
+  inp.value = '';
+  saveState();
+  renderAll();
+  addLog(`<strong>${name}</strong> ajouté.`, 'green', 'user-plus');
+  toast(` ${name} ajouté !`);
+}
+
+function quickAddPlayer() {
+  const inp = document.getElementById('quick-add-name');
+  const name = inp.value.trim();
+  if (!name) return;
+  if (state.players.find(p => p.name.toLowerCase() === name.toLowerCase())) {
+    toast(`${name} existe déjà.`, 'error'); return;
+  }
+  const player = { id: uid(), name, games: [], bonusPoints: 0, skipNext: false, freezeKills: 0 };
+  state.players.push(player);
+  inp.value = '';
+  saveState();
+  renderSaisieSelects();
+  addLog(`<strong>${name}</strong> ajouté.`, 'green', 'user-plus');
+  toast(` ${name} ajouté !`);
+}
+
+function deletePlayer(id) {
+  const p = state.players.find(x => x.id === id);
+  if (!p) return;
+  showConfirm(
+    'Supprimer un joueur',
+    `Supprimer <strong>${escHtml(p.name)}</strong> et toutes ses games ?<br><span style="color:var(--text-muted);font-size:12px">Cette action est irréversible.</span>`,
+    () => {
+      state.players = state.players.filter(x => x.id !== id);
+      saveState();
+      renderAll();
+      addLog(`<strong>${p.name}</strong> supprimé.`, 'rust', 'user-minus');
+      toast(`${p.name} supprimé.`, 'error');
+    }
+  );
+}
+
+// ============================================================
+// SAISIE GAME
+// ============================================================
+function openSaisieModal() {
+  if (!isAdmin()) {
+    document.getElementById('admin-email-input').value = '';
+    document.getElementById('admin-pwd-input').value = '';
+    document.getElementById('admin-login-error').style.display = 'none';
+    openModal('modal-admin');
+    setTimeout(() => document.getElementById('admin-email-input').focus(), 100);
+    return;
+  }
+  renderSaisieSelects();
+  resetSaisie();
+  openModal('modal-saisie');
+}
+
+function addBonus(pts) {
+  saisieBonus += pts;
+  document.getElementById('bonus-total').textContent = `+${saisieBonus} pts`;
+  document.getElementById('bonus-display').style.display = 'flex';
+  updateSaisiePreview();
+}
+
+function clearBonus() {
+  saisieBonus = 0;
+  document.getElementById('bonus-display').style.display = 'none';
+  updateSaisiePreview();
+}
+
+function changeKills(delta) {
+  const inp = document.getElementById('saisie-kills');
+  inp.value = Math.max(0, parseInt(inp.value || 0) + delta);
+  updateSaisiePreview();
+}
+
+function selectTop(n) {
+  currentTop = n;
+  document.querySelectorAll('.top-btn').forEach(b => b.classList.remove('selected'));
+  const map = { 0: 'top-n', 1: 'top-1', 2: 'top-2', 3: 'top-3' };
+  document.getElementById(map[n]).classList.add('selected');
+  updateSaisiePreview();
+}
+
+function updateSaisiePreview() {
+  const pid = document.getElementById('saisie-player').value;
+  const player = state.players.find(p => p.id === pid);
+  const isSkip = player && player.skipNext;
+  document.getElementById('saisie-skip-banner').style.display = isSkip ? 'block' : 'none';
+  document.getElementById('saisie-form-fields').style.display = isSkip ? 'none' : 'block';
+  if (isSkip) return;
+
+  const kills = parseInt(document.getElementById('saisie-kills').value || 0);
+  const selectMult = parseFloat(document.getElementById('saisie-mult').value || 1);
+  const effectiveMult = (player && player.pendingMult) ? player.pendingMult : selectMult;
+  const top = currentTop;
+  const killsPts = Math.round(kills * effectiveMult);
+  let topPts = 0;
+  if (top === 1) topPts = 20;
+  else if (top === 2) topPts = 15;
+  else if (top === 3) topPts = 8;
+  const total = killsPts + topPts + saisieBonus;
+
+  const preview = document.getElementById('saisie-preview');
+  preview.style.display = 'block';
+  document.getElementById('prev-kills-pts').textContent = `${kills} kills${effectiveMult !== 1 ? ` × ${effectiveMult} = ${killsPts}` : ''} pts`;
+  document.getElementById('prev-top-pts').textContent = topPts + ' pts';
+
+  const bonusRow = document.getElementById('prev-bonus-row');
+  if (saisieBonus > 0) {
+    bonusRow.style.display = '';
+    document.getElementById('prev-bonus-pts').textContent = `+${saisieBonus} pts`;
+  } else {
+    bonusRow.style.display = 'none';
+  }
+
+  document.getElementById('prev-total').textContent = total + ' pts';
+
+  let warning = '';
+  if (player) {
+    if (player.games.length >= 20) warning = 'Le joueur a déjà 20 games — seules les 20 meilleures sont comptabilisées.';
+    if (player.freezeKills) warning += ` Kills gelés à ${player.freezeKills}.`;
+    if (player.pendingMult) warning += `<div style="display:flex;align-items:center;gap:8px;margin-top:6px;padding:8px 10px;background:rgba(155,89,182,0.1);border:1px solid var(--purple);border-radius:4px"><i class="fa-solid fa-xmark" style="color:var(--purple)"></i><span style="flex:1;font-size:13px;color:var(--purple)">Multiplicateur ×${player.pendingMult} (roue) — kills arrondis</span><button onclick="cancelSaisieMult('${pid}')" style="background:none;border:1px solid var(--purple);color:var(--purple);border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer;line-height:1.4" title="Supprimer le multiplicateur">✕ Supprimer</button></div>`;
+  }
+  document.getElementById('prev-warning').innerHTML = warning;
+}
+
+function resetSaisie() {
+  document.getElementById('saisie-kills').value = 0;
+  document.getElementById('saisie-mult').value = 1;
+  selectTop(0);
+  document.getElementById('saisie-preview').style.display = 'none';
+  document.getElementById('saisie-skip-banner').style.display = 'none';
+  document.getElementById('saisie-form-fields').style.display = 'block';
+  saisieBonus = 0;
+  const bd = document.getElementById('bonus-display');
+  if (bd) bd.style.display = 'none';
+}
+
+function cancelSaisieMult(pid) {
+  const player = state.players.find(p => p.id === pid);
+  if (!player) return;
+  player.pendingMult = 0;
+  saveState();
+  renderClassement();
+  updateSaisiePreview();
+  toast(`Multiplicateur supprimé pour ${player.name}.`, 'info');
+}
+
+function submitGame() {
+  const pid = document.getElementById('saisie-player').value;
+  if (!pid) { toast('Sélectionnez un joueur.', 'error'); return; }
+  const player = state.players.find(p => p.id === pid);
+  if (!player) return;
+
+  if (player.skipNext) {
+    player.skipNext = false;
+    saveState();
+    addLog(`<strong>${player.name}</strong> — game skippée.`, 'rust', 'forward-step');
+    toast(`Game de ${player.name} skippée.`, 'info');
+    resetSaisie();
+    return;
+  }
+
+  let kills = parseInt(document.getElementById('saisie-kills').value || 0);
+  let mult = parseFloat(document.getElementById('saisie-mult').value || 1);
+  const top = currentTop;
+
+  // Apply freeze
+  if (player.freezeKills) {
+    kills = player.freezeKills;
+    player.freezeKills = 0;
+    toast(`Kills gelés à ${kills} pour ${player.name}.`, 'info');
+  }
+
+  // Apply pending mult from roue (kills only — top pts not affected)
+  let multFromRoue = false;
+  if (player.pendingMult) {
+    mult = player.pendingMult;
+    player.pendingMult = 0;
+    multFromRoue = true;
+    toast(`Multiplicateur ×${mult} (roue) appliqué automatiquement.`, 'info');
+  }
+
+  const baseScore = calcGameScore(kills, top, mult);
+  const score = baseScore + saisieBonus;
+  const noteparts = [];
+  if (multFromRoue) noteparts.push(`×${mult} roue`);
+  if (saisieBonus > 0) noteparts.push(`+${saisieBonus}pts bonus`);
+  const game = {
+    id: uid(),
+    kills,
+    top,
+    mult,
+    score,
+    date: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+    note: noteparts.join(' · ')
+  };
+
+  player.games.push(game);
+  saveState();
+
+  const topStr = top === 1 ? 'Top 1' : top === 2 ? 'Top 2' : top === 3 ? 'Top 3' : '';
+  const bonusStr = saisieBonus > 0 ? ` +${saisieBonus}pts bonus` : '';
+  addLog(`<strong>${player.name}</strong> — ${kills} kills${mult !== 1 ? ' ×'+mult : ''} ${topStr} = ${score} pts${bonusStr}`, 'green', 'gamepad');
+  toast(`Game enregistrée : ${score} pts !`);
+  resetSaisie();
+  renderAll();
+  closeModal('modal-saisie');
+}
+
+// ============================================================
+// PLAYER DETAIL MODAL
+// ============================================================
+function showPlayerDetail(id) {
+  const p = state.players.find(x => x.id === id);
+  if (!p) return;
+  const total = getPlayerTotal(p);
+  const counted = getCountedGames(p);
+  const best = getBestGame(p);
+  const worst = getWorstGame(p);
+
+  document.getElementById('modal-player-title').textContent = `${p.name} — ${total} pts`;
+
+  const gamesHtml = p.games.length === 0
+    ? '<p style="color:var(--text-muted);text-align:center;padding:20px">Aucune game.</p>'
+    : `<div class="player-detail-games">${p.games.map((g, i) => {
+      const isBest = best && g.id === best.id;
+      const isWorst = worst && g.id === worst.id;
+      const isCounted = counted.some(c => c.id === g.id);
+      return `<div class="game-card ${isBest ? 'best-game' : ''} ${isWorst ? 'worst-game' : ''}" ${isAdmin() ? 'style="padding-bottom:24px"' : ''}>
+        ${isBest ? '<span class="gc-tag" style="background:var(--gold);color:var(--bg)">BEST</span>' : ''}
+        ${isWorst && !isBest ? '<span class="gc-tag" style="background:var(--rust);color:white">PIRE</span>' : ''}
+        <div class="gc-num">Game ${i + 1} · ${g.date || ''}</div>
+        <div class="gc-score">${g.score}</div>
+        <div class="gc-detail">${g.kills} kills · ${g.top === 1 ? 'Top 1' : g.top === 2 ? 'Top 2' : g.top === 3 ? 'Top 3' : '—'}</div>
+        ${g.mult !== 1 ? `<div class="gc-mult">×${g.mult}</div>` : ''}
+        ${!isCounted ? '<div style="font-size:9px;color:var(--rust);margin-top:2px">non comptée</div>' : ''}
+        ${isAdmin() ? `
+          <button onclick="openEditGame('${p.id}','${g.id}')" style="position:absolute;bottom:5px;left:6px;background:none;border:none;color:var(--blue);cursor:pointer;padding:2px" title="Modifier">
+            <i class="fa-solid fa-pen-to-square" style="font-size:11px"></i>
+          </button>
+          <button onclick="deleteGame('${p.id}','${g.id}')" style="position:absolute;bottom:5px;right:6px;background:none;border:none;color:var(--text-muted);cursor:pointer;padding:2px" title="Supprimer">
+            <i class="fa-solid fa-trash" style="font-size:11px"></i>
+          </button>` : ''}
+      </div>`;
+    }).join('')}</div>`;
+
+  document.getElementById('modal-player-body').innerHTML = `
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      <div class="stat-card" style="flex:1"><div class="sc-label">Score total</div><div class="sc-val sc-gold">${total}</div></div>
+      <div class="stat-card" style="flex:1"><div class="sc-label">Games</div><div class="sc-val sc-blue">${p.games.length}</div></div>
+      <div class="stat-card" style="flex:1"><div class="sc-label">Bonus pts</div><div class="sc-val sc-green">${p.bonusPoints || 0}</div></div>
+    </div>
+    ${p.skipNext ? '<div style="background:rgba(224,90,56,0.1);border:1px solid var(--rust);padding:8px 12px;border-radius:2px;margin-bottom:8px;font-size:13px"><i class="fa-solid fa-forward-step"></i> Skip activé pour la prochaine game</div>' : ''}
+    ${p.freezeKills ? `<div style="background:rgba(74,142,201,0.1);border:1px solid var(--blue);padding:8px 12px;border-radius:2px;margin-bottom:8px;font-size:13px"><i class="fa-solid fa-snowflake"></i> Kills gelés à ${p.freezeKills} pour la prochaine game</div>` : ''}
+    ${p.pendingMult ? `<div style="background:rgba(155,89,182,0.1);border:1px solid var(--purple);padding:8px 12px;border-radius:2px;margin-bottom:8px;font-size:13px"><i class="fa-solid fa-xmark"></i> Multiplicateur ×${p.pendingMult} activé (roue) — s'appliquera sur la prochaine game (kills uniquement)</div>` : ''}
+    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:10px">Games (${p.games.length})</div>
+    ${gamesHtml}
+  `;
+  openModal('modal-player');
+}
+
+function deleteGame(playerId, gameId) {
+  const p = state.players.find(x => x.id === playerId);
+  if (!p) return;
+  const g = p.games.find(x => x.id === gameId);
+  showConfirm(
+    'Supprimer une game',
+    `Supprimer cette game de <strong>${escHtml(p.name)}</strong>${g ? ` (${g.score} pts)` : ''} ?`,
+    () => {
+      p.games = p.games.filter(x => x.id !== gameId);
+      saveState();
+      renderAll();
+      addLog(`Game supprimée pour <strong>${p.name}</strong>.`, 'rust', 'trash');
+      showPlayerDetail(playerId);
+    }
+  );
+}
+
+// ============================================================
+// EDIT GAME
+// ============================================================
+let _editCtx = { playerId: null, gameId: null, top: 0 };
+
+function openEditGame(playerId, gameId) {
+  const p = state.players.find(x => x.id === playerId);
+  if (!p) return;
+  const g = p.games.find(x => x.id === gameId);
+  if (!g) return;
+
+  _editCtx = { playerId, gameId, top: g.top };
+
+  document.getElementById('edit-game-title').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Modifier — ${escHtml(p.name)}`;
+  document.getElementById('edit-kills').value = g.kills;
+  document.getElementById('edit-mult').value = g.mult || 1;
+
+  // Sync top buttons
+  ['edit-top-n','edit-top-1','edit-top-2','edit-top-3'].forEach(id => document.getElementById(id).classList.remove('selected'));
+  const topMap = { 0: 'edit-top-n', 1: 'edit-top-1', 2: 'edit-top-2', 3: 'edit-top-3' };
+  document.getElementById(topMap[g.top]).classList.add('selected');
+
+  updateEditPreview();
+  openModal('modal-edit-game');
+}
+
+function selectEditTop(n) {
+  _editCtx.top = n;
+  ['edit-top-n','edit-top-1','edit-top-2','edit-top-3'].forEach(id => document.getElementById(id).classList.remove('selected'));
+  const map = { 0: 'edit-top-n', 1: 'edit-top-1', 2: 'edit-top-2', 3: 'edit-top-3' };
+  document.getElementById(map[n]).classList.add('selected');
+  updateEditPreview();
+}
+
+function changeEditKills(delta) {
+  const inp = document.getElementById('edit-kills');
+  inp.value = Math.max(0, parseInt(inp.value || 0) + delta);
+  updateEditPreview();
+}
+
+function updateEditPreview() {
+  const kills = parseInt(document.getElementById('edit-kills').value || 0);
+  const mult  = parseFloat(document.getElementById('edit-mult').value || 1);
+  const top   = _editCtx.top;
+  const killsPts = Math.round(kills * mult);
+  const topPts   = top === 1 ? 20 : top === 2 ? 15 : top === 3 ? 8 : 0;
+  document.getElementById('edit-prev-kills').textContent = `${kills}${mult !== 1 ? ' × ' + mult + ' = ' + killsPts : ''} pts`;
+  document.getElementById('edit-prev-top').textContent   = topPts + ' pts';
+  document.getElementById('edit-prev-total').textContent = (killsPts + topPts) + ' pts';
+}
+
+function saveEditGame() {
+  const { playerId, gameId, top } = _editCtx;
+  const p = state.players.find(x => x.id === playerId);
+  if (!p) return;
+  const g = p.games.find(x => x.id === gameId);
+  if (!g) return;
+
+  const kills    = parseInt(document.getElementById('edit-kills').value || 0);
+  const mult     = parseFloat(document.getElementById('edit-mult').value || 1);
+  const oldScore = g.score;
+
+  g.kills = kills;
+  g.top   = top;
+  g.mult  = mult;
+  g.score = calcGameScore(kills, top, mult);
+
+  saveState();
+  addLog(`<strong>${p.name}</strong> — game corrigée : ${oldScore} pts → <strong>${g.score} pts</strong>.`, 'blue', 'pen-to-square');
+  toast(`Game mise à jour : ${g.score} pts.`, 'info');
+  closeModal('modal-edit-game');
+  renderAll();
+  showPlayerDetail(playerId);
+}
+
+// ============================================================
+// ECHANGE
+// ============================================================
+document.addEventListener('change', function(e) {
+  if (e.target.id === 'echange-a' || e.target.id === 'echange-b') updateEchangePreview();
+});
+
+function updateEchangePreview() {
+  const pa = state.players.find(p => p.id === document.getElementById('echange-a').value);
+  const pb = state.players.find(p => p.id === document.getElementById('echange-b').value);
+  const el = document.getElementById('echange-preview');
+  if (!pa || !pb) { el.innerHTML = ''; return; }
+  const bestA = getBestGame(pa);
+  const worstB = getWorstGame(pb);
+  el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:2px;padding:12px;font-size:13px">
+    <div style="margin-bottom:6px"><strong>${pa.name}</strong> donne sa meilleure game : <span style="color:var(--gold)">${bestA ? bestA.score + ' pts' : '—'}</span></div>
+    <div><strong>${pb.name}</strong> donne sa pire game : <span style="color:var(--rust)">${worstB ? worstB.score + ' pts' : '—'}</span></div>
+  </div>`;
+}
+
+function doEchange() {
+  const pa = state.players.find(p => p.id === document.getElementById('echange-a').value);
+  const pb = state.players.find(p => p.id === document.getElementById('echange-b').value);
+  if (!pa || !pb) { toast('Sélectionnez deux joueurs.', 'error'); return; }
+  if (pa.id === pb.id) { toast('Choisissez deux joueurs différents.', 'error'); return; }
+  const bestA = getBestGame(pa);
+  const worstB = getWorstGame(pb);
+  if (!bestA) { toast(`${pa.name} n'a aucune game.`, 'error'); return; }
+  if (!worstB) { toast(`${pb.name} n'a aucune game.`, 'error'); return; }
+
+  // Remove bestA from pa
+  pa.games = pa.games.filter(g => g.id !== bestA.id);
+  // Remove worstB from pb
+  pb.games = pb.games.filter(g => g.id !== worstB.id);
+  // Add to opposite
+  pa.games.push({ ...worstB, id: uid() });
+  pb.games.push({ ...bestA, id: uid() });
+
+  saveState();
+  closeModal('modal-echange');
+  renderAll();
+  addLog(`Échange : <strong>${pa.name}</strong> (best ${bestA.score}pts) ↔ <strong>${pb.name}</strong> (pire ${worstB.score}pts)`, 'gold', 'arrow-right-arrow-left');
+  toast('Échange effectué !', 'gold');
+}
+
+// ============================================================
+// ACTIONS ROUES
+// ============================================================
+function openAction(type) {
+  currentAction = type;
+  const titles = {
+    'best-x15': 'Meilleure game × 1.5',
+    'add-bonus-game': 'Game supplémentaire',
+    'remove-worst': 'Supprimer pire game',
+    'joker-game': 'Joker game',
+    'clone-best-worst': 'Clone meilleure → pire',
+    'top1-bonus': '+5 pts par Top 1',
+    'perso-echange': 'Échange de game',
+    'perso-minus5': '-5 pts',
+    'perso-freeze': 'Geler un mate à 5 kills',
+    'perso-plus10': '+10 pts',
+    'perso-plus5': '+5 pts',
+    'perso-mult': 'Multiplicateur',
+    'perso-clone-game': 'Clone kill du meilleur killeur',
+    'perso-clone-kills': 'Clone kills joueur',
+    'perso-clone-lriaa': 'Clone kills Lriaa',
+    'perso-del-worst': 'Enlève une mauvaise game',
+    'perso-skip': 'Skip ta game'
+  };
+  document.getElementById('modal-action-title').textContent = titles[type] || type;
+  document.getElementById('modal-action-body').innerHTML = buildActionBody(type);
+  openModal('modal-action');
+}
+
+function populateGameSelect(selId, playerId, showKills) {
+  const p = state.players.find(x => x.id === playerId);
+  const sel = document.getElementById(selId);
+  if (!sel) return;
+  if (!p || !p.games.length) { sel.innerHTML = '<option value="">— aucune game —</option>'; return; }
+  const sorted = [...p.games].sort((a,b) => b.score - a.score);
+  sel.innerHTML = sorted.map((g, i) =>
+    `<option value="${g.id}">${showKills ? `${g.kills} kills (${g.score} pts)` : `${g.score} pts (${g.kills} kills) — Game ${i+1}`}</option>`
+  ).join('');
+}
+
+function buildActionBody(type) {
+  const playerSelect = (id, label, onchange) => `
+    <div class="form-row">
+      <label class="form-label">${label}</label>
+      <select class="form-select" id="act-${id}" ${onchange ? `onchange="${onchange}"` : ''}>
+        <option value="">— Sélectionner —</option>
+        ${state.players.map(p => `<option value="${p.id}">${escHtml(p.name)}</option>`).join('')}
+      </select>
+    </div>`;
+
+  switch(type) {
+    case 'best-x15': return `
+      <p style="color:var(--text-muted);margin-bottom:16px;font-size:13px">La meilleure game de <strong>chaque joueur</strong> aura son score multiplié par 1.5.</p>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="execAction()">Appliquer à tous</button>`;
+
+    case 'remove-worst': return `
+      <p style="color:var(--text-muted);margin-bottom:16px;font-size:13px">Supprime la game avec le score le plus bas de <strong>chaque joueur</strong>.</p>
+      <button class="btn btn-solid-rust" style="width:100%;justify-content:center" onclick="execAction()">Supprimer pour tous</button>`;
+
+    case 'top1-bonus': return `
+      <p style="color:var(--text-muted);margin-bottom:16px;font-size:13px">Chaque Top 1 dans le classement actuel de <strong>chaque joueur</strong> ajoute +5 pts bonus.</p>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="execAction()">Appliquer à tous</button>`;
+
+    case 'add-bonus-game': return `
+      ${playerSelect('p1', 'Joueur')}
+      <div class="form-row-2">
+        <div class="form-row" style="margin-bottom:0">
+          <label class="form-label">Kills</label>
+          <input type="number" class="form-input" id="act-kills" value="5" min="0">
+        </div>
+        <div class="form-row" style="margin-bottom:0">
+          <label class="form-label">Multiplicateur</label>
+          <select class="form-select" id="act-mult">
+            <option value="1">x1</option><option value="1.1">x1.1</option><option value="1.2">x1.2</option><option value="1.3">x1.3</option><option value="1.4">x1.4</option><option value="1.5">x1.5</option><option value="2">x2</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row" style="margin-top:12px">
+        <label class="form-label">Top</label>
+        <select class="form-select" id="act-top"><option value="0">Pas de top</option><option value="1">Top 1 (+20)</option><option value="2">Top 2 (+15)</option><option value="3">Top 3 (+8)</option></select>
+      </div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Ajouter la game</button>`;
+
+    case 'joker-game': return `
+      ${playerSelect('p1', 'Joueur', "populateGameSelect('act-game-idx',this.value,false)")}
+      <div class="form-row">
+        <label class="form-label">Game à supprimer</label>
+        <select class="form-select" id="act-game-idx">
+          <option value="">— d'abord choisir le joueur —</option>
+        </select>
+      </div>
+      <button class="btn btn-solid-rust" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Supprimer cette game</button>`;
+
+    case 'clone-best-worst': return `
+      ${playerSelect('p1', 'Joueur')}
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">La meilleure game sera clonée et remplacera la pire game.</p>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Cloner</button>`;
+
+    case 'perso-echange': return `
+      ${playerSelect('p1', 'Joueur A (donne une game)')}
+      ${playerSelect('p2', 'Joueur B (donne une game)')}
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:8px">Échange la meilleure game de A contre la pire game de B.</p>
+      <button class="btn btn-purple" style="width:100%;justify-content:center;border-width:1px" onclick="execAction()">Échanger</button>`;
+
+    case 'perso-minus5': return `
+      ${playerSelect('p1', 'Joueur ciblé')}
+      <button class="btn btn-solid-rust" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Retirer 5 pts</button>`;
+
+    case 'perso-freeze': return `
+      ${playerSelect('p1', 'Joueur ciblé')}
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Sa prochaine game sera comptée avec 5 kills max.</p>
+      <button class="btn btn-blue" style="width:100%;justify-content:center;margin-top:16px;border-width:1px" onclick="execAction()">Geler à 5 kills</button>`;
+
+    case 'perso-plus10': return `
+      ${playerSelect('p1', 'Joueur')}
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-bolt-lightning"></i> +10 pts</button>`;
+
+    case 'perso-plus5': return `
+      ${playerSelect('p1', 'Joueur')}
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-bolt"></i> +5 pts</button>`;
+
+    case 'perso-mult': return `
+      ${playerSelect('p1', 'Joueur')}
+      <div class="form-row">
+        <label class="form-label">Multiplicateur</label>
+        <div class="mult-grid">
+          ${['1.1','1.2','1.3','1.4','1.5','2'].map(m => `<button class="mult-btn" id="mult-${m}" onclick="selectMult('${m}')">${m === '2' ? '×2 ' : '×' + m}</button>`).join('')}
+        </div>
+      </div>
+      <p style="color:var(--text-muted);font-size:12px">S'appliquera sur la prochaine game saisie pour ce joueur.</p>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Appliquer</button>`;
+
+    case 'perso-clone-game': return `
+      ${playerSelect('p1', 'Joueur qui reçoit les kills')}
+      <div class="form-row">
+        <label class="form-label">Kills du meilleur killeur de la game</label>
+        <div class="kills-input-group">
+          <button class="kills-btn" onclick="changeActKills(-1)">−</button>
+          <input type="number" class="form-input" id="act-kills" value="0" min="0" max="50" style="text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px">
+          <button class="kills-btn" onclick="changeActKills(1)">+</button>
+        </div>
+      </div>
+      <p style="color:var(--text-muted);font-size:12px;margin-top:4px">Ces kills seront ajoutés comme une nouvelle game (sans top, ×1).</p>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:14px" onclick="execAction()"><i class="fa-solid fa-crosshairs"></i> Cloner les kills</button>`;
+
+    case 'perso-clone-kills': return `
+      ${playerSelect('p1', 'Joueur qui reçoit les kills')}
+      ${playerSelect('p2', 'Joueur dont on copie les kills', "populateGameSelect('act-game-idx',this.value,true)")}
+      <div class="form-row">
+        <label class="form-label">Game source (du joueur 2)</label>
+        <select class="form-select" id="act-game-idx"><option value="">— d'abord choisir joueur 2 —</option></select>
+      </div>
+      <button class="btn btn-purple" style="width:100%;justify-content:center;margin-top:16px;border-width:1px" onclick="execAction()">Cloner les kills</button>`;
+
+    case 'perso-clone-lriaa': return `
+      ${playerSelect('p1', 'Joueur qui reçoit les kills de Lriaa')}
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Saisissez les kills de Lriaa sur cette game :</p>
+      <div class="form-row">
+        <label class="form-label">Kills de Lriaa</label>
+        <input type="number" class="form-input" id="act-kills" value="0" min="0">
+      </div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Cloner</button>`;
+
+    case 'perso-del-worst': return `
+      ${playerSelect('p1', 'Joueur', "populateGameSelect('act-game-idx',this.value,false)")}
+      <div class="form-row">
+        <label class="form-label">Game à supprimer</label>
+        <select class="form-select" id="act-game-idx">
+          <option value="">— d'abord choisir le joueur —</option>
+        </select>
+      </div>
+      <p style="color:var(--text-muted);font-size:12px;margin-top:4px">Choisissez n'importe quelle game, pas forcément la pire.</p>
+      <button class="btn btn-solid-rust" style="width:100%;justify-content:center;margin-top:14px" onclick="execAction()"><i class="fa-solid fa-trash-can"></i> Supprimer cette game</button>`;
+
+    case 'perso-skip': return `
+      ${playerSelect('p1', 'Joueur')}
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">La prochaine game saisie pour ce joueur sera ignorée.</p>
+      <button class="btn btn-solid-rust" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Activer le skip</button>`;
+
+    default: return '<p>Action inconnue.</p>';
+  }
+}
+
+function changeActKills(delta) {
+  const inp = document.getElementById('act-kills');
+  if (inp) inp.value = Math.max(0, parseInt(inp.value || 0) + delta);
+}
+
+let selectedMult = null;
+function selectMult(v) {
+  selectedMult = v;
+  document.querySelectorAll('.mult-btn').forEach(b => b.classList.remove('selected'));
+  const el = document.getElementById('mult-' + v);
+  if (el) el.classList.add('selected');
+}
+
+function execAction() {
+  const type = currentAction;
+  const getP = (id) => {
+    const el = document.getElementById('act-' + id);
+    return el ? state.players.find(p => p.id === el.value) : null;
+  };
+
+  switch(type) {
+    case 'best-x15': {
+      let count = 0;
+      let skipped = 0;
+      state.players.forEach(p => {
+        const best = getBestGame(p);
+        if (best) {
+          const isOtherRoueGame = best.mult > 1
+            || (best.note && (best.note.includes('clone') || best.note.includes('Lriaa') || best.note === 'bonus game (roue)'));
+          if (isOtherRoueGame) {
+            addLog(`<strong>${p.name}</strong> — ×1.5 non appliqué (autre bonus roue déjà actif sur la meilleure game).`, 'gold', 'ban');
+            skipped++;
+            return;
+          }
+          best.score = Math.round(best.score * 1.5);
+          best.note = 'x1.5 (roue comm)';
+          count++;
+        }
+      });
+      addLog(`Meilleure game ×1.5 appliquée à ${count} joueur(s)${skipped ? `, ignoré pour ${skipped} (non cumulable)` : ''}.`, 'gold', 'star');
+      toast(`×1.5 sur ${count} meilleures games !${skipped ? ` (${skipped} ignoré)` : ''}`, 'gold');
+      break;
+    }
+    case 'remove-worst': {
+      let count = 0;
+      state.players.forEach(p => {
+        const worst = getWorstGame(p);
+        if (worst) {
+          p.games = p.games.filter(g => g.id !== worst.id);
+          count++;
+        }
+      });
+      addLog(`Pire game supprimée pour ${count} joueurs.`, 'rust', 'trash');
+      toast(`Pire game retirée pour ${count} joueurs.`);
+      break;
+    }
+    case 'top1-bonus': {
+      if (state.top1BonusDone) {
+        toast('Bonus Top 1 déjà appliqué (non cumulable).', 'error');
+        return;
+      }
+      state.top1BonusDone = true;
+      state.players.forEach(p => {
+        const top1s = p.games.filter(g => g.top === 1).length;
+        if (top1s > 0) {
+          p.bonusPoints = (p.bonusPoints || 0) + top1s * 5;
+          addLog(`<strong>${p.name}</strong> +${top1s * 5} pts (${top1s} Top 1)`, 'gold', 'crown');
+        }
+      });
+      toast('Bonus Top 1 appliqués !', 'gold');
+      break;
+    }
+    case 'add-bonus-game': {
+      const p = getP('p1');
+      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
+      const kills = parseInt(document.getElementById('act-kills').value || 0);
+      const mult = parseFloat(document.getElementById('act-mult').value || 1);
+      const top = parseInt(document.getElementById('act-top').value || 0);
+      const score = calcGameScore(kills, top, mult);
+      p.games.push({ id: uid(), kills, top, mult, score, date: now(), note: 'bonus game (roue)' });
+      addLog(`<strong>${p.name}</strong> — game bonus ajoutée : ${score} pts.`, 'green', 'plus');
+      toast(`Game bonus ajoutée : ${score} pts !`);
+      break;
+    }
+    case 'joker-game': {
+      const p = getP('p1');
+      const gameId = document.getElementById('act-game-idx')?.value;
+      if (!p || !gameId) { toast('Sélectionnez un joueur et une game.', 'error'); return; }
+      const game = p.games.find(g => g.id === gameId);
+      if (!game) { toast('Game introuvable.', 'error'); return; }
+      p.games = p.games.filter(g => g.id !== gameId);
+      addLog(`<strong>${p.name}</strong> — Joker : game ${game.score} pts supprimée.`, 'gold', 'wand-magic-sparkles');
+      toast(`Game supprimée : ${game.score} pts.`, 'gold');
+      break;
+    }
+    case 'clone-best-worst': {
+      const p = getP('p1');
+      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
+      const best = getBestGame(p);
+      const worst = getWorstGame(p);
+      if (!best) { toast('Aucune game trouvée.', 'error'); return; }
+      if (best.id === worst?.id) { toast('Même game, impossible.', 'error'); return; }
+      p.games = p.games.filter(g => g.id !== worst.id);
+      p.games.push({ ...best, id: uid(), note: 'clone best→pire' });
+      addLog(`<strong>${p.name}</strong> — meilleure game (${best.score} pts) clonée sur pire (${worst?.score} pts).`, 'gold', 'clone');
+      toast('Clone effectué !', 'gold');
+      break;
+    }
+    case 'perso-echange': {
+      const pa = getP('p1'), pb = getP('p2');
+      if (!pa || !pb) { toast('Sélectionnez deux joueurs.', 'error'); return; }
+      if (pa.id === pb.id) { toast('Deux joueurs différents.', 'error'); return; }
+      const bestA = getBestGame(pa); const worstB = getWorstGame(pb);
+      if (!bestA || !worstB) { toast('Games manquantes.', 'error'); return; }
+      pa.games = pa.games.filter(g => g.id !== bestA.id);
+      pb.games = pb.games.filter(g => g.id !== worstB.id);
+      pa.games.push({ ...worstB, id: uid() });
+      pb.games.push({ ...bestA, id: uid() });
+      addLog(`<strong>${pa.name}</strong> ↔ <strong>${pb.name}</strong> échange perso.`, 'purple', 'arrow-right-arrow-left');
+      toast('Échange effectué !', 'purple');
+      break;
+    }
+    case 'perso-minus5': {
+      const p = getP('p1');
+      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
+      p.bonusPoints = (p.bonusPoints || 0) - 5;
+      addLog(`<strong>${p.name}</strong> — 5 pts retirés (bonus now: ${p.bonusPoints}).`, 'rust', 'skull');
+      toast(`-5 pts pour ${p.name}.`, 'error');
+      break;
+    }
+    case 'perso-freeze': {
+      const p = getP('p1');
+      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
+      if (p.pendingMult) { toast(`${p.name} a déjà un multiplicateur actif — impossible de cumuler.`, 'error'); return; }
+      p.freezeKills = 5;
+      addLog(`<strong>${p.name}</strong> — gelé à 5 kills pour sa prochaine game.`, 'blue', 'snowflake');
+      toast(`${p.name} gelé à 5 kills !`, 'info');
+      break;
+    }
+    case 'perso-plus10': {
+      const p = getP('p1');
+      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
+      p.bonusPoints = (p.bonusPoints || 0) + 10;
+      addLog(`<strong>${p.name}</strong> +10 pts bonus.`, 'green', 'bolt-lightning');
+      toast(`+10 pts pour ${p.name} !`);
+      break;
+    }
+    case 'perso-plus5': {
+      const p = getP('p1');
+      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
+      p.bonusPoints = (p.bonusPoints || 0) + 5;
+      addLog(`<strong>${p.name}</strong> +5 pts bonus.`, 'green', 'bolt');
+      toast(`+5 pts pour ${p.name} !`);
+      break;
+    }
+    case 'perso-mult': {
+      const p = getP('p1');
+      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
+      if (!selectedMult) { toast('Choisissez un multiplicateur.', 'error'); return; }
+      if (p.freezeKills) { toast(`${p.name} a déjà un gèle de kills actif — impossible de cumuler.`, 'error'); return; }
+      p.pendingMult = parseFloat(selectedMult);
+      addLog(`<strong>${p.name}</strong> — multiplicateur ×${selectedMult} activé pour la prochaine game.`, 'purple', 'crosshairs');
+      toast(`×${selectedMult} activé pour ${p.name} !`, 'purple');
+      selectedMult = null;
+      break;
+    }
+    case 'perso-clone-game': {
+      const p = getP('p1');
+      const kills = parseInt(document.getElementById('act-kills')?.value || 0);
+      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
+      const score = kills;
+      p.games.push({ id: uid(), kills, top: 0, mult: 1, score, date: now(), note: 'clone kills meilleur killeur' });
+      addLog(`<strong>${p.name}</strong> — clone kill du meilleur killeur (${kills} kills = ${score} pts).`, 'purple', 'crosshairs');
+      toast(`Clone kills : ${kills} kills pour ${p.name} !`, 'purple');
+      break;
+    }
+    case 'perso-clone-kills': {
+      const p1 = getP('p1'); const p2 = getP('p2');
+      const gameId = document.getElementById('act-game-idx')?.value;
+      if (!p1 || !p2 || !gameId) { toast('Sélectionnez joueurs et game.', 'error'); return; }
+      const srcGame = p2.games.find(g => g.id === gameId);
+      if (!srcGame) { toast('Game source introuvable.', 'error'); return; }
+      const newGame = { id: uid(), kills: srcGame.kills, top: 0, mult: 1, score: srcGame.kills, date: now(), note: `kills clonés de ${p2.name}` };
+      p1.games.push(newGame);
+      addLog(`<strong>${p1.name}</strong> — kills de <strong>${p2.name}</strong> (${srcGame.kills} kills) clonés.`, 'purple', 'copy');
+      toast(`Kills clonés : ${srcGame.kills} kills !`, 'purple');
+      break;
+    }
+    case 'perso-clone-lriaa': {
+      const p = getP('p1');
+      const kills = parseInt(document.getElementById('act-kills').value || 0);
+      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
+      const score = kills;
+      p.games.push({ id: uid(), kills, top: 0, mult: 1, score, date: now(), note: 'kills Lriaa' });
+      addLog(`<strong>${p.name}</strong> — kills de Lriaa (${kills}) clonés.`, 'purple', 'gamepad');
+      toast(`Kills de Lriaa clonés : ${kills} kills !`, 'purple');
+      break;
+    }
+    case 'perso-del-worst': {
+      const p = getP('p1');
+      const gameId = document.getElementById('act-game-idx')?.value;
+      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
+      if (!gameId) { toast('Sélectionnez une game à supprimer.', 'error'); return; }
+      const game = p.games.find(g => g.id === gameId);
+      if (!game) { toast('Game introuvable.', 'error'); return; }
+      p.games = p.games.filter(g => g.id !== gameId);
+      addLog(`<strong>${p.name}</strong> — game (${game.score} pts) supprimée.`, 'rust', 'trash-can');
+      toast(`Game supprimée pour ${p.name}.`, 'error');
+      break;
+    }
+    case 'perso-skip': {
+      const p = getP('p1');
+      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
+      p.skipNext = true;
+      addLog(`<strong>${p.name}</strong> — skip activé.`, 'rust', 'forward-step');
+      toast(`Skip activé pour ${p.name}.`, 'info');
+      break;
+    }
+  }
+
+  saveState();
+  closeModal('modal-action');
+  renderAll();
+}
+
+// ============================================================
+// MODALS
+// ============================================================
+function openModal(id) {
+  if (id === 'modal-echange' || id === 'modal-saisie') renderSaisieSelects();
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  currentAction = null;
+  selectedMult = null;
+}
+
+// ============================================================
+// CONFIRM MODAL
+// ============================================================
+let _confirmCb = null;
+
+function showConfirm(title, message, onOk, danger = true) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-message').innerHTML = message;
+  const btn = document.getElementById('confirm-ok-btn');
+  const header = document.getElementById('confirm-header');
+  if (danger) {
+    btn.style.cssText = 'background:var(--rust);color:white;border-color:var(--rust)';
+    btn.textContent = 'Supprimer';
+    header.style.borderBottom = '1px solid var(--rust)';
+  } else {
+    btn.style.cssText = '';
+    btn.textContent = 'Confirmer';
+    header.style.borderBottom = '';
+  }
+  _confirmCb = onOk;
+  openModal('modal-confirm');
+}
+
+function confirmOk() {
+  closeModal('modal-confirm');
+  if (_confirmCb) { _confirmCb(); _confirmCb = null; }
+}
+
+function confirmCancel() {
+  closeModal('modal-confirm');
+  _confirmCb = null;
+}
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', function(e) {
+    if (e.target === this) closeModal(this.id);
+  });
+});
+
+// ============================================================
+// EXPORT / IMPORT
+// ============================================================
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `summer-ligue-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Export téléchargé !');
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.players) {
+        state = data;
+        saveState();
+        renderAll();
+        toast(' Données importées !');
+        addLog('Données importées depuis fichier JSON.', 'blue', 'folder-open');
+      } else {
+        toast('Format invalide.', 'error');
+      }
+    } catch(err) {
+      toast('Erreur lecture fichier.', 'error');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ============================================================
+// LOG
+// ============================================================
+function addLog(msg, color, icon) {
+  // Strip legacy <i> icon tags, then sanitize (only <strong> allowed)
+  const stripped = msg.replace(/<i[^>]*>.*?<\/i>/g, '').replace(/<i[^>]*\/>/g, '').trim();
+  const cleanMsg = sanitizeMsg(stripped);
+  state.log.push({ id: uid(), msg: cleanMsg, color: color || 'green', icon: icon || 'circle-dot', time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) });
+  if (state.log.length > 200) state.log.shift();
+  saveState();
+  renderLog();
+}
+
+function clearLog() {
+  showConfirm(
+    'Vider l\'historique',
+    'Supprimer <strong>tout l\'historique</strong> des actions ?',
+    () => { state.log = []; saveState(); renderLog(); }
+  );
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function toast(msg, type) {
+  const el = document.createElement('div');
+  el.className = `toast ${type === 'error' ? 'error' : type === 'info' ? 'info' : type === 'gold' || type === 'purple' ? 'gold' : ''}`;
+  el.textContent = msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function uid() { return crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random()*16|0; return (c==='x'?r:(r&0x3|0x8)).toString(16); }); }
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function now() { return new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }); }
+function sanitizeMsg(s) {
+  // Escape all HTML, then restore only <strong></strong> (used for player names in bold)
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/&lt;strong&gt;/g,'<strong>').replace(/&lt;\/strong&gt;/g,'</strong>');
+}
+
+// ============================================================
+// IMPORT GOOGLE SHEETS
+// ============================================================
+function openImportSheetModal() {
+  document.getElementById('sheet-url-input').value = '';
+  document.getElementById('sheet-import-msg').style.display = 'none';
+  openModal('modal-import-sheet');
+  setTimeout(() => document.getElementById('sheet-url-input').focus(), 100);
+}
+
+async function importFromSheetURL() {
+  const raw = document.getElementById('sheet-url-input').value.trim();
+  const msgEl = document.getElementById('sheet-import-msg');
+
+  const show = (html, color) => {
+    msgEl.style.display = 'block';
+    msgEl.style.color = color || 'var(--rust)';
+    msgEl.innerHTML = html;
+  };
+
+  if (!raw) { show('<i class="fa-solid fa-circle-exclamation"></i> Entrez une URL.'); return; }
+
+  // Build a direct CSV export URL from any Google Sheets URL
+  let csvUrl = raw;
+  const idMatch = raw.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+  if (idMatch) {
+    const id = idMatch[1];
+    const gidMatch = raw.match(/[?&#]gid=(\d+)/);
+    // Prefer /pub?output=csv if user pasted a /pub URL, otherwise use /export
+    if (raw.includes('/pub')) {
+      csvUrl = `https://docs.google.com/spreadsheets/d/${id}/pub?output=csv${gidMatch ? '&gid=' + gidMatch[1] : ''}`;
+    } else {
+      csvUrl = `https://docs.google.com/spreadsheets/d/${id}/export?format=csv${gidMatch ? '&gid=' + gidMatch[1] : ''}`;
+    }
+  }
+
+  show('<i class="fa-solid fa-spinner fa-spin"></i> Chargement en cours...', 'var(--text-muted)');
+
+  try {
+    const res = await fetch(csvUrl);
+    if (!res.ok) throw new Error(`Erreur HTTP ${res.status}`);
+    const csv = await res.text();
+    const result = parseSheetCSV(csv);
+    if (result.error) { show(`<i class="fa-solid fa-circle-exclamation"></i> ${result.error}`); return; }
+
+    state.players = result.players;
+    saveState();
+    addLog(`Données importées depuis Google Sheets (${result.players.length} joueurs, ${result.totalGames} games).`, 'gold', 'table');
+    renderAll();
+    closeModal('modal-import-sheet');
+    toast(`Import réussi — ${result.players.length} joueurs.`, 'gold');
+  } catch(e) {
+    show(`<i class="fa-solid fa-circle-exclamation"></i> Impossible de charger la feuille.<br>
+      <span style="color:var(--text-muted)">Vérifiez que la feuille est partagée en accès public, ou utilisez
+      <strong>Fichier → Partager → Publier sur le web</strong> et collez l'URL générée.</span>`);
+  }
+}
+
+function parseSheetCSV(csv) {
+  const lines = csv.split(/\r?\n/).map(l => l.trim()).filter(l => l);
+  if (lines.length < 2) return { error: 'Fichier vide ou invalide.' };
+
+  const headers = parseCSVRow(lines[0]).map(h => h.toLowerCase().replace(/[^a-z]/g, ''));
+  const col = (terms) => headers.findIndex(h => terms.some(t => h.includes(t)));
+
+  const iJoueur = col(['joueur','player','pseudo','nom','name']);
+  const iKills  = col(['kill']);
+  const iTop    = col(['top','class','place','rang']);
+  const iMult   = col(['mult','multiplicat']);
+  const iBonus  = col(['bonus']);
+
+  if (iJoueur === -1) return { error: 'Colonne "Joueur" introuvable. Attendu : Joueur, Player, Pseudo ou Nom.' };
+  if (iKills  === -1) return { error: 'Colonne "Kills" introuvable.' };
+
+  const playersMap = {};
+  let totalGames = 0;
+
+  for (let i = 1; i < lines.length; i++) {
+    const cols = parseCSVRow(lines[i]);
+    const name = cols[iJoueur]?.trim();
+    if (!name) continue;
+
+    const kills = parseInt(cols[iKills]) || 0;
+    const topRaw = iTop !== -1 ? (parseInt(cols[iTop]) || 0) : 0;
+    const mult   = iMult !== -1 ? (parseFloat(cols[iMult]) || 1) : 1;
+    const bonus  = iBonus !== -1 ? (parseInt(cols[iBonus]) || 0) : 0;
+
+    // Accept both placement (1/2/3) and points (20/15/8)
+    let top = 0;
+    if (topRaw === 1  || topRaw === 20) top = 1;
+    else if (topRaw === 2  || topRaw === 15) top = 2;
+    else if (topRaw === 3  || topRaw === 8)  top = 3;
+
+    if (!playersMap[name]) {
+      playersMap[name] = { id: uid(), name, games: [], bonusPoints: 0, skipNext: false, freezeKills: 0 };
+    }
+    if (bonus) playersMap[name].bonusPoints = bonus;
+
+    // Only add a game row if there are kills or a placement
+    if (kills > 0 || top > 0) {
+      const score = calcGameScore(kills, top, mult);
+      playersMap[name].games.push({ id: uid(), kills, top, mult, score, date: '—', note: '' });
+      totalGames++;
+    }
+  }
+
+  const players = Object.values(playersMap);
+  if (!players.length) return { error: 'Aucune donnée joueur trouvée.' };
+  return { players, totalGames };
+}
+
+function parseCSVRow(row) {
+  const result = [];
+  let cur = '';
+  let inQ = false;
+  for (let i = 0; i < row.length; i++) {
+    const c = row[i];
+    if (c === '"') {
+      if (inQ && row[i + 1] === '"') { cur += '"'; i++; }
+      else inQ = !inQ;
+    } else if ((c === ',' || c === ';') && !inQ) {
+      result.push(cur); cur = '';
+    } else {
+      cur += c;
+    }
+  }
+  result.push(cur);
+  return result;
+}
+
+// ============================================================
+// RESET ALL DATA
+// ============================================================
+function resetAllData() {
+  if (!isAdmin()) return;
+  showConfirm(
+    'Reset complet',
+    'Supprimer <strong>toutes les données</strong> — joueurs, games et historique ?<br><span style="color:var(--rust);font-size:12px"><i class="fa-solid fa-triangle-exclamation"></i> Cette action est irréversible.</span>',
+    async () => {
+      try {
+        const { error: eG } = await _sb.from('games').delete().not('id', 'is', null);
+        if (eG) console.error('reset games:', eG);
+        const { error: eP } = await _sb.from('players').delete().not('id', 'is', null);
+        if (eP) console.error('reset players:', eP);
+        const { error: eL } = await _sb.from('logs').delete().not('id', 'is', null);
+        if (eL) console.error('reset logs:', eL);
+        const { error: eF } = await _sb.from('app_flags').delete().not('key', 'is', null);
+        if (eF) console.error('reset flags:', eF);
+        state.players = [];
+        state.log = [];
+        state.top1BonusDone = false;
+        renderAll();
+        toast('Toutes les données ont été supprimées.', 'error');
+      } catch(e) {
+        console.error('resetAllData error:', e);
+        toast('Erreur lors du reset.', 'error');
+      }
+    }
+  );
+}
+
+// ============================================================
+// SUPABASE + AUTH
+// ============================================================
+const { createClient } = supabase;
+const _sb = createClient(
+  'https://cgqbxqnvsiycimuycpak.supabase.co',
+  'sb_publishable_fHa2Tj8suBHMNJc9egcJTA_Aa6bYaiW'
+);
+
+let _adminOk = false;
+_sb.auth.onAuthStateChange((event, session) => {
+  _adminOk = !!session;
+  updateAdminUI();
+  if (event === 'SIGNED_OUT') { showPage('classement'); toast('Déconnecté.'); }
+});
+
+function isAdmin() { return _adminOk; }
+
+async function toggleAdminLogin() {
+  if (isAdmin()) {
+    openModal('modal-admin-settings');
+  } else {
+    document.getElementById('admin-email-input').value = '';
+    document.getElementById('admin-pwd-input').value = '';
+    document.getElementById('admin-login-error').style.display = 'none';
+    openModal('modal-admin');
+    setTimeout(() => document.getElementById('admin-email-input').focus(), 100);
+  }
+}
+
+async function submitAdminLogin() {
+  const email = document.getElementById('admin-email-input').value.trim();
+  const pwd = document.getElementById('admin-pwd-input').value;
+  if (!email || !pwd) {
+    document.getElementById('admin-login-error').style.display = 'block';
+    return;
+  }
+  const { error } = await _sb.auth.signInWithPassword({ email, password: pwd });
+  if (error) {
+    document.getElementById('admin-login-error').style.display = 'block';
+    document.getElementById('admin-pwd-input').value = '';
+    document.getElementById('admin-pwd-input').focus();
+  } else {
+    closeModal('modal-admin');
+    toast('Mode admin activé.', 'gold');
+  }
+}
+
+async function adminLogout() {
+  await _sb.auth.signOut();
+  closeModal('modal-admin-settings');
+  updateAdminUI();
+}
+
+function updateAdminUI() {
+  const admin = isAdmin();
+  document.querySelectorAll('.admin-only').forEach(el => {
+    el.style.display = admin ? '' : 'none';
+  });
+  const toggle = document.getElementById('btn-admin-toggle');
+  const icon = document.getElementById('admin-lock-icon');
+  const label = document.getElementById('admin-toggle-label');
+  if (toggle) toggle.classList.toggle('active', admin);
+  if (icon) icon.className = admin ? 'fa-solid fa-lock-open' : 'fa-solid fa-lock';
+  if (label) label.textContent = admin ? 'Admin' : 'Admin';
+}
+
+// ============================================================
+// PRE-LOAD DATA FROM GOOGLE SHEETS (Summer Ligue - Lriaa)
+// ============================================================
+function preloadSheetData() {
+  // Only inject on very first load — skip if players already loaded from Supabase
+  if (state.players && state.players.length > 0) return;
+
+  // Data extracted from Google Sheets as of July 2026
+  // Score formula: kills * mult + topPts (Top1=20, Top2=15, Top3=8)
+  // "top" column in sheet = raw pts not placement — so we reconstruct:
+  // Reading: kills | top_pts_raw -> we derive placement from pts (20=top1, 15=top2, 8=top3)
+  function topFromPts(rawTopPts) {
+    if (rawTopPts === 20) return 1;
+    if (rawTopPts === 15) return 2;
+    if (rawTopPts === 8) return 3;
+    return 0;
+  }
+
+  const sheetsData = [
+    {
+      name: 'Jeex',
+      bonusPoints: 5, // bonus/malus noted in sheet
+      games: [
+        { kills: 5,  topRaw: 20, mult: 1 },   // Game1: kills=5, pts totaux=25 (top2=15 + wait... 5+20=25) => top1=20pts
+        { kills: 3,  topRaw: 0,  mult: 1 },   // Game2: 3pts
+        { kills: 8,  topRaw: 0,  mult: 1 },   // Game3: 8pts
+        { kills: 7,  topRaw: 15, mult: 1 },   // Game4: 7+15=22pts => top2
+        { kills: 15, topRaw: 0,  mult: 1 },   // Game5: 15pts
+        { kills: 6,  topRaw: 20, mult: 1 },   // Game6: 6+20=26pts => top1
+        { kills: 7,  topRaw: 20, mult: 1 },   // Game7: 7+20=27pts => top1
+      ]
+    },
+    {
+      name: 'Baghette',
+      bonusPoints: 0,
+      games: [
+        { kills: 5,  topRaw: 15, mult: 1 },   // 5+15=20
+        { kills: 3,  topRaw: 0,  mult: 1 },   // 3
+        { kills: 2,  topRaw: 0,  mult: 1 },   // 2
+        { kills: 5,  topRaw: 15, mult: 1 },   // 5+15=20
+        { kills: 12, topRaw: 0,  mult: 1 },   // 12
+        { kills: 10, topRaw: 20, mult: 1 },   // 10+20=30
+        { kills: 13, topRaw: 20, mult: 1 },   // 13+20=33
+      ]
+    },
+    {
+      name: 'Ezzmost',
+      bonusPoints: 0,
+      games: [
+        { kills: 5,  topRaw: 15, mult: 1 },   // 5+15=20
+        { kills: 2,  topRaw: 0,  mult: 1 },   // 2
+        { kills: 8,  topRaw: 0,  mult: 1 },   // 8
+        { kills: 11, topRaw: 15, mult: 1 },   // 11+15=26
+        { kills: 6,  topRaw: 0,  mult: 1 },   // 6
+        { kills: 4,  topRaw: 20, mult: 1 },   // 4+20=24
+        { kills: 20, topRaw: 20, mult: 1 },   // 20+20=40
+      ]
+    },
+    {
+      name: 'T_Raw',
+      bonusPoints: 0,
+      games: [
+        { kills: 13, topRaw: 20, mult: 1   }, // 13+20=33
+        { kills: 2,  topRaw: 0,  mult: 1   }, // 2
+        { kills: 6,  topRaw: 8,  mult: 1   }, // 6+8=14
+        { kills: 9,  topRaw: 0,  mult: 1   }, // 9
+        { kills: 13, topRaw: 20, mult: 1.2 }, // (13*1.2)+20 = 15.6+20 = ~36 -> sheet shows 40 so 13*1.2=15.6 ≈16 +20=36... sheet shows 40. Let's trust sheet: score=40
+        { kills: 5,  topRaw: 8,  mult: 1   }, // 5+8=13
+      ]
+    },
+    {
+      name: 'Maite71',
+      bonusPoints: 0,
+      games: [
+        { kills: 22, topRaw: 20, mult: 1, note: 'Clone kill (Lriaa)' }, // 22+20=42
+        { kills: 0,  topRaw: 0,  mult: 1 }, // 0
+        { kills: 3,  topRaw: 8,  mult: 1 }, // 3+8=11
+        { kills: 3,  topRaw: 0,  mult: 1 }, // 3
+        { kills: 1,  topRaw: 20, mult: 1 }, // 1+20=21
+        { kills: 2,  topRaw: 8,  mult: 1 }, // 2+8=10
+      ]
+    },
+    {
+      name: 'Vaerys',
+      bonusPoints: 0,
+      games: [
+        { kills: 13, topRaw: 20, mult: 1 }, // 13+20=33
+        { kills: 8,  topRaw: 0,  mult: 1 }, // 8
+        { kills: 7,  topRaw: 8,  mult: 1 }, // 7+8=15
+        { kills: 6,  topRaw: 0,  mult: 1 }, // 6
+        { kills: 14, topRaw: 20, mult: 1 }, // 14+20=34
+        { kills: 8,  topRaw: 8,  mult: 1 }, // 8+8=16
+      ]
+    },
+  ];
+
+  // Score overrides for special cases (trust the sheet's pts totaux)
+  const scoreOverrides = {
+    'T_Raw-4': 40, // game5: x1.2 mult, sheet shows 40pts
+  };
+
+  state.players = sheetsData.map((pd, pi) => {
+    const player = {
+      id: uid(),
+      name: pd.name,
+      games: [],
+      bonusPoints: pd.bonusPoints || 0,
+      skipNext: false,
+      freezeKills: 0
+    };
+    pd.games.forEach((g, gi) => {
+      const top = topFromPts(g.topRaw);
+      let score;
+      const overrideKey = `${pd.name}-${gi}`;
+      if (scoreOverrides[overrideKey] !== undefined) {
+        score = scoreOverrides[overrideKey];
+      } else {
+        score = Math.round(g.kills * g.mult) + g.topRaw;
+      }
+      player.games.push({
+        id: uid(),
+        kills: g.kills,
+        top,
+        mult: g.mult || 1,
+        score,
+        date: '—',
+        note: g.note || ''
+      });
+    });
+    return player;
+  });
+
+  saveState();
+  addLog('Données importées depuis le Google Sheets Summer Ligue - Lriaa (6 joueurs, 39 games).', 'gold', 'folder-open');
+}
+
+// ============================================================
+// START
+// ============================================================
+init();
+document.addEventListener('contextmenu', e => e.preventDefault());
+</script>
+</body>
+</html>
