@@ -1946,6 +1946,7 @@ function updateSaisiePreview() {
     if (player.games.length >= 20) warning = 'Le joueur a déjà 20 games — seules les 20 meilleures sont comptabilisées.';
     if (player.freezeKills) warning += ` Kills gelés à ${player.freezeKills}.`;
     if (player.pendingMult) warning += `<div style="display:flex;align-items:center;gap:8px;margin-top:6px;padding:8px 10px;background:rgba(155,89,182,0.1);border:1px solid var(--purple);border-radius:4px"><i class="fa-solid fa-xmark" style="color:var(--purple)"></i><span style="flex:1;font-size:13px;color:var(--purple)">Multiplicateur ×${player.pendingMult} (roue) — kills arrondis</span><button onclick="cancelSaisieMult('${pid}')" style="background:none;border:1px solid var(--purple);color:var(--purple);border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer;line-height:1.4" title="Supprimer le multiplicateur">✕ Supprimer</button></div>`;
+    if (player.pendingBonus) warning += `<div style="display:flex;align-items:center;gap:8px;margin-top:6px;padding:8px 10px;background:rgba(76,175,119,0.1);border:1px solid var(--green);border-radius:4px"><i class="fa-solid fa-bolt-lightning" style="color:var(--green)"></i><span style="flex:1;font-size:13px;color:var(--green)">+${player.pendingBonus} pts top 10 Warzone — s'applique sur cette game</span><button onclick="cancelPendingBonus('${pid}')" style="background:none;border:1px solid var(--green);color:var(--green);border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer;line-height:1.4">✕ Annuler</button></div>`;
   }
   document.getElementById('prev-warning').innerHTML = warning;
 }
@@ -1969,7 +1970,16 @@ function cancelSaisieMult(pid) {
   saveState();
   renderClassement();
   updateSaisiePreview();
-  toast(`Multiplicateur supprimé pour ${player.name}.`, 'info');
+}
+
+function cancelPendingBonus(pid) {
+  const player = state.players.find(p => p.id === pid);
+  if (!player) return;
+  player.pendingBonus = 0;
+  saveState();
+  renderClassement();
+  updateSaisiePreview();
+  toast(`Bonus top 10 annulé pour ${player.name}.`, 'info');
 }
 
 function submitGame() {
