@@ -876,7 +876,8 @@ main {
   <button class="nav-tab active" onclick="showPage('classement')">Classement</button>
   <button class="nav-tab admin-only" style="display:none" onclick="showPage('actions')">Actions roues</button>
   <button class="nav-tab admin-only" style="display:none" onclick="showPage('joueurs')">Joueurs</button>
-  <button class="nav-tab admin-only" style="display:none" onclick="showPage('historique')">Historique</button>
+  <button class="nav-tab" onclick="showPage('evenements')">Évènements</button>
+  <button class="nav-tab admin-only" style="display:none" onclick="showPage('historique')">Logs</button>
 </nav>
 
 <main>
@@ -1209,9 +1210,18 @@ main {
 </div>
 
 <!-- PAGE HISTORIQUE -->
+<div id="page-evenements" class="page">
+  <div style="margin-bottom:20px">
+    <h1 class="section-title">Évènements <span>Live</span></h1>
+  </div>
+  <ul class="log-list" id="log-list-events">
+    <li style="padding:40px;text-align:center;color:var(--text-muted)">Aucun évènement enregistré.</li>
+  </ul>
+</div>
+
 <div id="page-historique" class="page">
   <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-    <h1 class="section-title">Historique des <span>Actions</span></h1>
+    <h1 class="section-title"><span>Logs</span></h1>
     <button class="btn btn-sm" style="color:var(--rust);border-color:var(--rust);margin-left:auto" onclick="clearLog()">Vider</button>
   </div>
   <ul class="log-list" id="log-list">
@@ -1729,28 +1739,30 @@ function renderPlayersList() {
 }
 
 function renderLog() {
-  const el = document.getElementById('log-list');
-  if (!state.log.length) {
-    el.innerHTML = '<li style="padding:40px;text-align:center;color:var(--text-muted)">Aucune action enregistrée.</li>';
-    return;
-  }
   const colorMap = { green: 'var(--green)', gold: 'var(--gold)', rust: 'var(--rust)', blue: 'var(--blue)', purple: 'var(--purple)' };
-  el.innerHTML = [...state.log].reverse().map(l => {
-    const color = colorMap[l.color] || colorMap.green;
-    const icon = l.icon || 'circle';
-    return `<li class="log-item">
-      <i class="fa-solid fa-${icon}" style="color:${color};font-size:13px;flex-shrink:0;margin-top:2px;width:16px;text-align:center"></i>
-      <div style="flex:1">${sanitizeMsg(l.msg)}</div>
-      <div class="log-time">${l.time}</div>
-    </li>`;
-  }).join('');
+  const empty = '<li style="padding:40px;text-align:center;color:var(--text-muted)">Aucun évènement enregistré.</li>';
+  const html = state.log.length
+    ? [...state.log].reverse().map(l => {
+        const color = colorMap[l.color] || colorMap.green;
+        const icon = l.icon || 'circle';
+        return `<li class="log-item">
+          <i class="fa-solid fa-${icon}" style="color:${color};font-size:13px;flex-shrink:0;margin-top:2px;width:16px;text-align:center"></i>
+          <div style="flex:1">${sanitizeMsg(l.msg)}</div>
+          <div class="log-time">${l.time}</div>
+        </li>`;
+      }).join('')
+    : empty;
+  const adminEl = document.getElementById('log-list');
+  const pubEl   = document.getElementById('log-list-events');
+  if (adminEl) adminEl.innerHTML = html;
+  if (pubEl)   pubEl.innerHTML   = html;
 }
 
 // ============================================================
 // NAVIGATION
 // ============================================================
 function showPage(name) {
-  const adminPages = ['actions', 'joueurs', 'historique'];
+  const adminPages = ['actions', 'joueurs', 'historique', 'logs'];
   if (adminPages.includes(name) && !isAdmin()) {
     document.getElementById('admin-email-input').value = '';
     document.getElementById('admin-pwd-input').value = '';
