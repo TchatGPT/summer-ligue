@@ -2474,6 +2474,8 @@ function deleteGame(playerId, gameId) {
 // ============================================================
 let _editCtx = { playerId: null, gameId: null, top: 0 };
 let _editBonus = 0;
+let _editNoteSegments = [];
+let _editBonusRemoved = 0;
 
 function openEditGame(playerId, gameId) {
   const p = state.players.find(x => x.id === playerId);
@@ -2493,13 +2495,21 @@ function openEditGame(playerId, gameId) {
   const topMap = { 0: 'edit-top-n', 1: 'edit-top-1', 2: 'edit-top-2', 3: 'edit-top-3' };
   document.getElementById(topMap[g.top]).classList.add('selected');
 
-  // Reset bonus
+  // Reset bonus and note state
   _editBonus = 0;
+  _editBonusRemoved = 0;
+  _editNoteSegments = g.note ? g.note.split(' · ') : [];
   document.getElementById('edit-bonus-display').style.display = 'none';
 
-  // Effets roue actifs du joueur + note de la game
+  renderEditBadges(p);
+
+  updateEditPreview();
+  openModal('modal-edit-game');
+}
+
+function renderEditBadges(p) {
   const badges = [];
-  if (g.note) g.note.split(' · ').forEach(part => badges.push(noteBadge(part)));
+  _editNoteSegments.forEach((part, idx) => badges.push(noteBadgeRemovable(part, idx)));
   if (p.skipNext) badges.push(
     `<div style="background:rgba(192,71,42,0.1);border:1px solid var(--rust);border-radius:4px;padding:6px 10px;font-size:12px;color:var(--rust-light)"><i class="fa-solid fa-forward-step" style="margin-right:6px"></i>Skip activé pour la prochaine game</div>`
   );
@@ -2512,13 +2522,36 @@ function openEditGame(playerId, gameId) {
   if (p.pendingBonus) badges.push(
     `<div style="background:rgba(76,175,119,0.1);border:1px solid var(--green);border-radius:4px;padding:6px 10px;font-size:12px;color:var(--green)"><i class="fa-solid fa-bolt-lightning" style="margin-right:6px"></i>+${p.pendingBonus} pts top 10 en attente (prochaine game)</div>`
   );
-
   const fx = document.getElementById('edit-roue-effects');
   if (badges.length) { fx.style.display = 'flex'; fx.innerHTML = badges.join(''); }
   else { fx.style.display = 'none'; fx.innerHTML = ''; }
+}
 
+function noteBadgeRemovable(part, idx) {
+  const t = part.toLowerCase();
+  let icon = 'fa-note-sticky', color = 'var(--gold)', bg = 'rgba(212,175,55,0.08)', border = 'var(--gold)';
+  if (t.includes('bonus') || t.includes('pts top')) {
+    icon = 'fa-bolt-lightning'; color = 'var(--blue)'; bg = 'rgba(74,142,201,0.1)'; border = 'var(--blue)';
+  } else if (t.includes('gel') || t.includes('❄')) {
+    icon = 'fa-snowflake'; color = '#7ecfff'; bg = 'rgba(74,142,201,0.12)'; border = '#7ecfff';
+  } else if (t.includes('×') || t.includes('x1.') || t.includes('mult') || t.includes('roue')) {
+    icon = 'fa-circle-xmark'; color = 'var(--purple)'; bg = 'rgba(155,89,182,0.12)'; border = 'var(--purple)';
+  } else if (t.includes('clone') || t.includes('kills')) {
+    icon = 'fa-clone'; color = 'var(--purple)'; bg = 'rgba(155,89,182,0.12)'; border = 'var(--purple)';
+  } else if (t.includes('échange')) {
+    icon = 'fa-arrow-right-arrow-left'; color = 'var(--gold)'; bg = 'rgba(212,175,55,0.1)'; border = 'var(--gold)';
+  }
+  return `<div style="display:flex;align-items:center;gap:8px;background:${bg};border:1px solid ${border};border-radius:4px;padding:7px 11px;font-size:12px;color:${color};font-weight:500"><i class="fa-solid ${icon}" style="font-size:11px;flex-shrink:0"></i><span style="flex:1">${escHtml(part)}</span><button onclick="removeNoteBadge(${idx})" style="background:none;border:none;color:${color};cursor:pointer;font-size:16px;padding:0 0 0 6px;line-height:1;opacity:0.6" title="Retirer cet effet">×</button></div>`;
+}
+
+function removeNoteBadge(idx) {
+  const part = _editNoteSegments[idx];
+  const bonusMatch = part.match(/\+(\d+)\s*pts\s*bonus/i);
+  if (bonusMatch) _editBonusRemoved += parseInt(bonusMatch[1]);
+  _editNoteSegments.splice(idx, 1);
+  const p = state.players.find(x => x.id === _editCtx.playerId);
+  if (p) renderEditBadges(p);
   updateEditPreview();
-  openModal('modal-edit-game');
 }
 
 function selectEditTop(n) {
@@ -2543,14 +2576,17 @@ function updateEditPreview() {
   const topPts   = top === 1 ? 20 : top === 2 ? 15 : top === 3 ? 8 : 0;
   document.getElementById('edit-prev-kills').textContent = `${kills}${mult !== 1 ? ' × ' + mult + ' = ' + killsPts : ''} pts`;
   document.getElementById('edit-prev-top').textContent   = topPts + ' pts';
+  const bonusNet = _editBonus - _editBonusRemoved;
   const bonusRow = document.getElementById('edit-prev-bonus-row');
-  if (_editBonus > 0) {
+  const bonusEl  = document.getElementById('edit-prev-bonus');
+  if (bonusNet !== 0) {
     bonusRow.style.display = '';
-    document.getElementById('edit-prev-bonus').textContent = `+${_editBonus} pts`;
+    bonusRow.style.color = bonusNet > 0 ? 'var(--blue)' : 'var(--rust)';
+    bonusEl.textContent = (bonusNet > 0 ? '+' : '') + bonusNet + ' pts';
   } else {
     bonusRow.style.display = 'none';
   }
-  document.getElementById('edit-prev-total').textContent = (killsPts + topPts + _editBonus) + ' pts';
+  document.getElementById('edit-prev-total').textContent = (killsPts + topPts + bonusNet) + ' pts';
 }
 
 function addBonusFromEdit(pts) {
@@ -2582,10 +2618,19 @@ function saveEditGame() {
   g.mult  = mult;
   g.score = calcGameScore(kills, top, mult);
 
-  if (_editBonus > 0) {
-    p.bonusPoints = (p.bonusPoints || 0) + _editBonus;
-    g.note = (g.note ? g.note + ' · ' : '') + `+${_editBonus}pts bonus`;
-    addLog(`<strong>${p.name}</strong> — +${_editBonus} pts bonus ajoutés.`, 'green', 'bolt-lightning', true);
+  // Rebuild note from remaining segments + any new bonus
+  const finalSegments = [..._editNoteSegments];
+  if (_editBonus > 0) finalSegments.push(`+${_editBonus}pts bonus`);
+  g.note = finalSegments.length ? finalSegments.join(' · ') : null;
+
+  // Apply net bonus delta to player
+  const bonusNet = _editBonus - _editBonusRemoved;
+  if (bonusNet > 0) {
+    p.bonusPoints = (p.bonusPoints || 0) + bonusNet;
+    addLog(`<strong>${p.name}</strong> — +${bonusNet} pts bonus ajoutés.`, 'green', 'bolt-lightning', true);
+  } else if (bonusNet < 0) {
+    p.bonusPoints = Math.max(0, (p.bonusPoints || 0) + bonusNet);
+    addLog(`<strong>${p.name}</strong> — ${Math.abs(bonusNet)} pts bonus retirés.`, 'rust', 'minus', true);
   }
 
   saveState();
