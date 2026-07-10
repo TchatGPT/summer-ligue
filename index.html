@@ -1734,8 +1734,7 @@ let saisieBonus = 0;
 // INIT & LOAD
 // ============================================================
 async function init() {
-  const { data: { session } } = await _sb.auth.getSession();
-  _auth.hydrate(session);
+  await _refreshAuth();
   await loadState();
   updateAdminUI();
   renderAll();
@@ -1795,7 +1794,8 @@ async function loadState() {
 }
 
 async function saveState() {
-  if (!isAdmin()) return;
+  // Double vérification : closure locale + JWT réel via SDK (non falsifiable)
+  if (!isAdmin() || !await _refreshAuth()) return;
 
   // Players
   try {
@@ -2070,10 +2070,8 @@ function renderLog() {
 async function showPage(name) {
   const adminPages = ['actions', 'joueurs', 'moderation'];
   if (adminPages.includes(name)) {
-    // Vérification cryptographique du JWT via le SDK Supabase — non falsifiable depuis la console
-    const { data: { session } } = await _sb.auth.getSession();
-    _auth.hydrate(session);
-    if (!_auth.ok()) {
+    const ok = await _refreshAuth();
+    if (!ok) {
       document.getElementById('admin-email-input').value = '';
       document.getElementById('admin-pwd-input').value = '';
       document.getElementById('admin-login-error').style.display = 'none';
@@ -2148,9 +2146,7 @@ function deletePlayer(id) {
 // SAISIE GAME
 // ============================================================
 async function openSaisieModal() {
-  const { data: { session } } = await _sb.auth.getSession();
-  _auth.hydrate(session);
-  if (!_auth.ok()) {
+  if (!await _refreshAuth()) {
     document.getElementById('admin-email-input').value = '';
     document.getElementById('admin-pwd-input').value = '';
     document.getElementById('admin-login-error').style.display = 'none';
@@ -2799,6 +2795,7 @@ function selectMult(v) {
 }
 
 function execAction() {
+  if (!isAdmin()) { toast('Action non autorisée.', 'error'); return; }
   const type = currentAction;
   const getP = (id) => {
     const el = document.getElementById('act-' + id);
@@ -3573,26 +3570,47 @@ const _sb = createClient(
   'sb_publishable_fHa2Tj8suBHMNJc9egcJTA_Aa6bYaiW'
 );
 
-// Auth module — inaccessible depuis la console globale
-const _auth = (() => {
+// ============================================================
+// AUTH — closure hermétique, rien d'exposé ni modifiable en console
+// ============================================================
+(function () {
   let _s = null;
-  return {
-    hydrate(session) {
-      // Valide qu'il s'agit d'un vrai JWT Supabase (3 segments, longueur > 200)
-      const tok = session?.access_token || '';
-      _s = (tok.split('.').length === 3 && tok.length > 200 && session?.user?.id) ? session : null;
-    },
-    ok() { return _s !== null; },
-    clear() { _s = null; }
-  };
-})();
-function isAdmin() { return _auth.ok(); }
 
-_sb.auth.onAuthStateChange((event, session) => {
-  _auth.hydrate(session);
-  updateAdminUI();
-  if (event === 'SIGNED_OUT') { _auth.clear(); showPage('classement'); toast('Déconnecté.'); }
-});
+  function _set(session) {
+    const tok = session?.access_token || '';
+    // JWT réel = 3 segments base64 séparés par ".", longueur > 200, user.id présent
+    _s = (tok.split('.').length === 3 && tok.length > 200 && session?.user?.id) ? session : null;
+  }
+
+  // _refreshAuth : appelle getSession() (validation cryptographique côté SDK)
+  // Exposé en non-writable/non-configurable → impossible à overrider depuis la console
+  Object.defineProperty(window, '_refreshAuth', {
+    value: async function () {
+      const { data: { session } } = await _sb.auth.getSession();
+      _set(session);
+      return _s !== null;
+    },
+    writable: false, configurable: false
+  });
+
+  // isAdmin : non-writable/non-configurable → isAdmin = () => true ne fonctionne pas
+  Object.defineProperty(window, 'isAdmin', {
+    value: function () { return _s !== null; },
+    writable: false, configurable: false
+  });
+
+  // Verrouiller getSession contre le monkey-patching
+  Object.defineProperty(_sb.auth, 'getSession', {
+    value: _sb.auth.getSession.bind(_sb.auth),
+    writable: false, configurable: false
+  });
+
+  _sb.auth.onAuthStateChange((event, session) => {
+    _set(session);
+    updateAdminUI();
+    if (event === 'SIGNED_OUT') { _s = null; showPage('classement'); toast('Déconnecté.'); }
+  });
+}());
 
 async function toggleAdminLogin() {
   if (isAdmin()) {
