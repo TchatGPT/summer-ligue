@@ -494,19 +494,19 @@ main {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(74,142,201,0.12);
-  border: 1px solid var(--blue);
+  background: rgba(180,60,60,0.15);
+  border: 1px solid var(--rust-light);
   border-radius: 2px;
   padding: 5px 10px;
   font-family: 'Barlow Condensed', sans-serif;
   font-weight: 700;
   font-size: 14px;
-  color: var(--blue);
+  color: var(--rust-light);
 }
 .bonus-display > button {
   background: none;
   border: none;
-  color: var(--text-muted);
+  color: var(--rust-light);
   cursor: pointer;
   font-size: 16px;
   line-height: 1;
@@ -1963,8 +1963,7 @@ function submitGame() {
     toast(`Multiplicateur ×${mult} (roue) appliqué automatiquement.`, 'info');
   }
 
-  const baseScore = calcGameScore(kills, top, mult);
-  const score = baseScore + saisieBonus;
+  const score = calcGameScore(kills, top, mult);
   const noteparts = [];
   if (multFromRoue) noteparts.push(`×${mult} roue`);
   if (saisieBonus > 0) noteparts.push(`+${saisieBonus}pts bonus`);
@@ -1979,12 +1978,14 @@ function submitGame() {
   };
 
   player.games.push(game);
+  if (saisieBonus > 0) player.bonusPoints = (player.bonusPoints || 0) + saisieBonus;
   saveState();
 
   const topStr = top === 1 ? 'Top 1' : top === 2 ? 'Top 2' : top === 3 ? 'Top 3' : '';
   const bonusStr = saisieBonus > 0 ? ` +${saisieBonus}pts bonus` : '';
-  addLog(`<strong>${player.name}</strong> — ${kills} kills${mult !== 1 ? ' ×'+mult : ''} ${topStr} = ${score} pts${bonusStr}`, 'green', 'gamepad');
-  toast(`Game enregistrée : ${score} pts !`);
+  const totalScore = score + saisieBonus;
+  addLog(`<strong>${player.name}</strong> — ${kills} kills${mult !== 1 ? ' ×'+mult : ''} ${topStr} = ${totalScore} pts${bonusStr}`, 'green', 'gamepad');
+  toast(`Game enregistrée : ${totalScore} pts !`);
   resetSaisie();
   renderAll();
   closeModal('modal-saisie');
