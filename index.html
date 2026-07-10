@@ -861,6 +861,8 @@ main {
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   text-align: left;
+  position: relative;
+  overflow: hidden;
 }
 .action-card:hover { transform: translateY(-2px); }
 .action-card:active { transform: translateY(0); opacity: 0.85; }
@@ -868,11 +870,24 @@ main {
 .action-card-gold:hover { border-color: var(--gold); background: rgba(212,175,55,0.06); }
 .action-card-purple { border-color: rgba(155,89,182,0.25); }
 .action-card-purple:hover { border-color: var(--purple); background: rgba(155,89,182,0.06); }
-.ac-icon { font-size: 20px; margin-bottom: 4px; }
+.ac-bg {
+  position: absolute;
+  right: -10px;
+  bottom: -14px;
+  font-size: 76px;
+  pointer-events: none;
+  line-height: 1;
+  opacity: 0.055;
+  transition: opacity 0.15s;
+}
+.action-card:hover .ac-bg { opacity: 0.1; }
+.action-card-gold .ac-bg { color: var(--gold); }
+.action-card-purple .ac-bg { color: var(--purple); }
+.ac-icon { font-size: 20px; margin-bottom: 4px; position: relative; }
 .action-card-gold .ac-icon { color: var(--gold); }
 .action-card-purple .ac-icon { color: var(--purple); }
-.ac-title { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.3; }
-.ac-desc { font-size: 10px; color: var(--text-muted); line-height: 1.4; }
+.ac-title { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.3; position: relative; }
+.ac-desc { font-size: 10px; color: var(--text-muted); line-height: 1.4; position: relative; }
 @media (max-width: 700px) { .action-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; } }
 @media (max-width: 380px) { .action-grid { grid-template-columns: 1fr; } }
 </style>
@@ -1090,54 +1105,63 @@ main {
     <div class="action-grid">
 
       <div class="action-card action-card-gold" onclick="openAction('best-x15')">
+        <div class="ac-bg"><i class="fa-solid fa-star"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-star"></i></div>
         <div class="ac-title">Meilleure game × 1.5</div>
         <div class="ac-desc">Multiplie le score de la meilleure game de chaque joueur par 1.5</div>
       </div>
 
       <div class="action-card action-card-gold" onclick="openAction('add-bonus-game')">
+        <div class="ac-bg"><i class="fa-solid fa-circle-plus"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-circle-plus"></i></div>
         <div class="ac-title">Ajout d'une game sup</div>
         <div class="ac-desc">Saisie d'une game supplémentaire pour un joueur (hors limite)</div>
       </div>
 
       <div class="action-card action-card-gold" onclick="openAction('remove-worst')">
+        <div class="ac-bg"><i class="fa-solid fa-trash-can"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-trash-can"></i></div>
         <div class="ac-title">Suppression de la pire game</div>
         <div class="ac-desc">Supprime la game avec le score le plus bas de chaque joueur</div>
       </div>
 
       <div class="action-card action-card-gold" onclick="openAction('joker-game')">
+        <div class="ac-bg"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
         <div class="ac-title">Joker — game au choix</div>
         <div class="ac-desc">Supprime une game spécifique au choix pour un joueur</div>
       </div>
 
       <div class="action-card action-card-gold" onclick="openModal('modal-echange')">
+        <div class="ac-bg"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
         <div class="ac-title">Échange meilleure ↔ pire</div>
         <div class="ac-desc">Échange la meilleure game de joueur A contre la pire de joueur B</div>
       </div>
 
       <div class="action-card action-card-gold" onclick="openAction('clone-best-worst')">
+        <div class="ac-bg"><i class="fa-solid fa-clone"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-clone"></i></div>
         <div class="ac-title">Clone meilleure → pire</div>
         <div class="ac-desc">Clone la meilleure game d'un joueur et remplace sa pire game</div>
       </div>
 
       <div class="action-card action-card-gold" onclick="openAction('top1-bonus')">
+        <div class="ac-bg"><i class="fa-solid fa-crown"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-crown"></i></div>
         <div class="ac-title">+5 pts par Top 1</div>
         <div class="ac-desc">Chaque top 1 dans le classement actuel ajoute +5 pts</div>
       </div>
 
       <div class="action-card action-card-gold" onclick="openAction('comm-worst-x2')">
+        <div class="ac-bg"><i class="fa-solid fa-angles-up"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-angles-up"></i></div>
         <div class="ac-title">Pire game × 2</div>
         <div class="ac-desc">Double le score de la pire game d'un joueur au choix</div>
       </div>
 
       <div class="action-card action-card-gold" onclick="openAction('comm-rand-x2')">
+        <div class="ac-bg"><i class="fa-solid fa-shuffle"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-shuffle"></i></div>
         <div class="ac-title">Game aléatoire × 2</div>
         <div class="ac-desc">Double le score d'une game tirée au sort pour un joueur</div>
@@ -1157,84 +1181,98 @@ main {
     <div class="action-grid">
 
       <div class="action-card action-card-purple" onclick="openAction('perso-echange')">
+        <div class="ac-bg"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
         <div class="ac-title">Échange de game</div>
         <div class="ac-desc">Échange la meilleure game de A contre la pire game de B</div>
       </div>
 
       <div class="action-card action-card-purple" onclick="openAction('perso-minus5')">
+        <div class="ac-bg"><i class="fa-solid fa-circle-minus"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-circle-minus"></i></div>
         <div class="ac-title">−5 pts à un joueur</div>
         <div class="ac-desc">Retire 5 points bonus à la personne de son choix</div>
       </div>
 
       <div class="action-card action-card-purple" onclick="openAction('perso-freeze')">
+        <div class="ac-bg"><i class="fa-solid fa-snowflake"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-snowflake"></i></div>
         <div class="ac-title">Gèle à 5 kills</div>
         <div class="ac-desc">Fixe les kills d'un joueur à 5 pour sa prochaine game</div>
       </div>
 
       <div class="action-card action-card-purple" onclick="openAction('perso-plus10')">
+        <div class="ac-bg"><i class="fa-solid fa-bolt-lightning"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
         <div class="ac-title">+10 pts bonus</div>
         <div class="ac-desc">Ajoute 10 points bonus au joueur de son choix</div>
       </div>
 
       <div class="action-card action-card-purple" onclick="openAction('perso-plus5')">
+        <div class="ac-bg"><i class="fa-solid fa-bolt"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-bolt"></i></div>
         <div class="ac-title">+5 pts bonus</div>
         <div class="ac-desc">Ajoute 5 points bonus au joueur de son choix</div>
       </div>
 
       <div class="action-card action-card-purple" onclick="openAction('perso-mult')">
+        <div class="ac-bg"><i class="fa-solid fa-xmark"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-xmark"></i></div>
         <div class="ac-title">Multiplicateur de kills</div>
         <div class="ac-desc">Applique ×1.1 à ×2 sur la prochaine game d'un joueur</div>
       </div>
 
       <div class="action-card action-card-purple" onclick="openAction('perso-clone-game')">
+        <div class="ac-bg"><i class="fa-solid fa-crosshairs"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-crosshairs"></i></div>
         <div class="ac-title">Clone kill du meilleur</div>
         <div class="ac-desc">Copie le nombre de kills du top killeur de la game</div>
       </div>
 
       <div class="action-card action-card-purple" onclick="openAction('perso-clone-kills')">
+        <div class="ac-bg"><i class="fa-solid fa-copy"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-copy"></i></div>
         <div class="ac-title">Clone kills d'un joueur</div>
         <div class="ac-desc">Copie les kills d'une game d'un autre joueur au choix</div>
       </div>
 
       <div class="action-card action-card-purple" onclick="openAction('perso-clone-lriaa')">
+        <div class="ac-bg"><i class="fa-solid fa-gamepad"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-gamepad"></i></div>
         <div class="ac-title">Clone kills de Lriaa</div>
         <div class="ac-desc">Copie les kills de Lriaa sur la game du joueur</div>
       </div>
 
       <div class="action-card action-card-purple" onclick="openAction('perso-del-worst')">
+        <div class="ac-bg"><i class="fa-solid fa-trash-can"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-trash-can"></i></div>
         <div class="ac-title">Enlève une mauvaise game</div>
         <div class="ac-desc">Retire une game au choix du joueur (pas forcément la pire)</div>
       </div>
 
       <div class="action-card action-card-purple" onclick="openAction('perso-del-rand')">
+        <div class="ac-bg"><i class="fa-solid fa-dice"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-dice"></i></div>
         <div class="ac-title">Enlève une game aléatoire</div>
         <div class="ac-desc">Supprime une game au hasard (ni la meilleure ni la pire)</div>
       </div>
 
       <div class="action-card action-card-purple" onclick="openAction('perso-skip')">
+        <div class="ac-bg"><i class="fa-solid fa-forward-step"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-forward-step"></i></div>
         <div class="ac-title">Skip ta game</div>
         <div class="ac-desc">La prochaine game du joueur ne sera pas comptabilisée</div>
       </div>
 
       <div class="action-card action-card-purple" onclick="openAction('perso-extra-game')">
+        <div class="ac-bg"><i class="fa-solid fa-plus"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-plus"></i></div>
         <div class="ac-title">Game supplémentaire</div>
         <div class="ac-desc">Ajoute un slot de game bonus hors limite globale</div>
       </div>
 
       <div class="action-card action-card-purple" onclick="openAction('perso-top10pts')">
+        <div class="ac-bg"><i class="fa-solid fa-trophy"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-trophy"></i></div>
         <div class="ac-title">+10 pts si top 10</div>
         <div class="ac-desc">Ajoute 10 pts bonus si le joueur est dans le top 10</div>
