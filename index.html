@@ -1439,7 +1439,6 @@ async function init() {
   const { data: { session } } = await _sb.auth.getSession();
   _adminOk = !!session;
   await loadState();
-  preloadSheetData();
   updateAdminUI();
   renderAll();
 }
