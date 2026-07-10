@@ -1221,6 +1221,14 @@ main {
 
       <div class="action-row">
         <div>
+          <div class="action-row-name"><i class="fa-solid fa-dice" style="font-size:11px"></i> Enlève une game aléatoire</div>
+          <div style="font-size:11px;color:var(--text-muted)">Supprime une game au hasard (ni la meilleure ni la pire)</div>
+        </div>
+        <button class="btn btn-purple btn-sm" onclick="openAction('perso-del-rand')">Appliquer</button>
+      </div>
+
+      <div class="action-row">
+        <div>
           <div class="action-row-name">Skip ta game</div>
           <div style="font-size:11px;color:var(--text-muted)">La prochaine game du joueur ne sera pas comptabilisée</div>
         </div>
@@ -2334,6 +2342,7 @@ function openAction(type) {
     'perso-clone-lriaa': 'Clone kills Lriaa',
     'perso-del-worst': 'Enlève une mauvaise game',
     'perso-skip': 'Skip ta game',
+    'perso-del-rand': 'Enlève une game aléatoire',
     'perso-extra-game': 'Game supplémentaire',
     'perso-top10pts': '+10 pts Top 10',
     'comm-worst-x2': 'Pire game × 2',
@@ -2478,6 +2487,11 @@ function buildActionBody(type) {
       ${playerSelect('p1', 'Joueur')}
       <p style="color:var(--text-muted);font-size:12px;margin-top:8px">La prochaine game saisie pour ce joueur sera ignorée.</p>
       <button class="btn btn-solid-rust" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Activer le skip</button>`;
+
+    case 'perso-del-rand': return `
+      ${playerSelect('p1', 'Joueur')}
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Une game tirée au sort sera supprimée — la meilleure et la pire sont protégées.</p>
+      <button class="btn btn-solid-rust" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-dice"></i> Tirer au sort et supprimer</button>`;
 
     case 'perso-extra-game': return `
       ${playerSelect('p1', 'Joueur')}
@@ -2716,6 +2730,19 @@ function execAction() {
       p.skipNext = true;
       addLog(`<strong>${p.name}</strong> — skip activé.`, 'rust', 'forward-step', true);
       toast(`Skip activé pour ${p.name}.`, 'info');
+      break;
+    }
+    case 'perso-del-rand': {
+      const p = getP('p1');
+      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
+      const best = getBestGame(p);
+      const worst = getWorstGame(p);
+      const pool = p.games.filter(g => g.id !== best?.id && g.id !== worst?.id);
+      if (!pool.length) { toast('Pas assez de games (meilleure et pire protégées).', 'error'); return; }
+      const rand = pool[Math.floor(Math.random() * pool.length)];
+      p.games = p.games.filter(g => g.id !== rand.id);
+      addLog(`<strong>${p.name}</strong> — game aléatoire supprimée (${rand.score} pts).`, 'rust', 'dice', true);
+      toast(`Game supprimée : ${rand.score} pts.`, 'error');
       break;
     }
     case 'perso-extra-game': {
