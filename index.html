@@ -3070,18 +3070,18 @@ function closeModal(id) {
 // ============================================================
 let _confirmCb = null;
 
-function showConfirm(title, message, onOk, danger = true) {
+function showConfirm(title, message, onOk, danger = true, okLabel = null) {
   document.getElementById('confirm-title').textContent = title;
   document.getElementById('confirm-message').innerHTML = message;
   const btn = document.getElementById('confirm-ok-btn');
   const header = document.getElementById('confirm-header');
   if (danger) {
     btn.style.cssText = 'background:var(--rust);color:white;border-color:var(--rust)';
-    btn.textContent = 'Supprimer';
+    btn.textContent = okLabel || 'Supprimer';
     header.style.borderBottom = '1px solid var(--rust)';
   } else {
-    btn.style.cssText = '';
-    btn.textContent = 'Confirmer';
+    btn.style.cssText = 'background:var(--green);color:var(--bg);border-color:var(--green)';
+    btn.textContent = okLabel || 'Valider';
     header.style.borderBottom = '';
   }
   _confirmCb = onOk;
@@ -3226,7 +3226,7 @@ function resetSubs() {
     saveState();
     renderModerationPage();
     toast('Compteur remis à 0.', 'info');
-  });
+  }, false);
 }
 
 function setSubsManual() {
@@ -3257,7 +3257,8 @@ function setMaxGames(n) {
       renderSaisieSelects();
       toast(`Limite de games mise à ${n}.`, 'green');
       addLog(`Limite de games modifiée : ${n} games par joueur.`, 'green', 'gamepad', false);
-    }
+    },
+    false
   );
 }
 
