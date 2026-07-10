@@ -43,7 +43,7 @@ body {
 header {
   background: linear-gradient(135deg, #070911 0%, #111520 55%, #0c0f18 100%);
   border-bottom: 2px solid var(--gold);
-  box-shadow: 0 0 40px rgba(201,149,74,0.15), 0 4px 20px rgba(0,0,0,0.6);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.6);
   padding: 14px 28px;
   display: flex;
   align-items: center;
@@ -845,6 +845,53 @@ main {
 .roue-comm-color { color: var(--gold); }
 .roue-perso-color { color: var(--purple); }
 
+/* SUMMER DECO */
+#page-classement { position: relative; overflow: hidden; }
+#page-classement::before {
+  content: '🌴';
+  position: absolute;
+  font-size: 200px;
+  opacity: 0.045;
+  left: -28px;
+  bottom: 60px;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  line-height: 1;
+  transform: scaleX(-1);
+}
+#page-classement::after {
+  content: '🌴';
+  position: absolute;
+  font-size: 200px;
+  opacity: 0.045;
+  right: -18px;
+  top: 30px;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  line-height: 1;
+}
+.deco-crate {
+  position: absolute;
+  font-size: 110px;
+  opacity: 0.03;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  color: var(--gold);
+}
+.deco-drop {
+  position: absolute;
+  font-size: 70px;
+  opacity: 0.035;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  color: var(--text-muted);
+}
+.page > *:not(.deco-crate):not(.deco-drop) { position: relative; z-index: 1; }
+
 .action-list-compact {
   display: flex;
   flex-direction: column;
@@ -954,6 +1001,12 @@ main {
 
 <!-- PAGE CLASSEMENT -->
 <div id="page-classement" class="page active">
+  <!-- Décos summer / Warzone -->
+  <i class="deco-crate fa-solid fa-box-open" style="right:90px;bottom:180px"></i>
+  <i class="deco-crate fa-solid fa-box-open" style="left:60px;top:120px;font-size:70px;opacity:0.025"></i>
+  <i class="deco-drop fa-solid fa-parachute-box" style="left:140px;bottom:240px"></i>
+  <i class="deco-drop fa-solid fa-skull" style="right:200px;top:80px;font-size:50px;opacity:0.025"></i>
+
   <div class="classement-header">
     <h1 class="section-title">Classement <span>Général</span></h1>
     <div class="badge" id="badge-games-count">0 joueurs</div>
