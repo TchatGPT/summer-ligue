@@ -2833,7 +2833,7 @@ function parseSheetCSV(csv) {
   // Wide format: each player = 3 rows (name row, label row "pts/pts totaux", values row)
   // Each game block at column C: nameRow[C]=kills, nameRow[C+1]=placement(1/2/3)
   //   ptsRow[C+1]=pts_totaux (authoritative score incl. mult), ptsRow[C+2]=mult note, ptsRow[C+3]=special note
-  const SKIP_RE = /^(pts|total|score|summer|classement|joueur|kills|\d+)$/i;
+  const SKIP_RE = /^(pts|total|score|summer|classement|joueur|kills|roue|\d)/i;
 
   const playersMap = {};
   let totalGames = 0;
@@ -2841,7 +2841,7 @@ function parseSheetCSV(csv) {
   for (let i = gameHeaderIdx + 1; i < allLines.length - 1; i++) {
     const nameRow = parseCSVRow(allLines[i] || '');
     const playerName = (nameRow[0] || '').trim();
-    if (!playerName || SKIP_RE.test(playerName)) continue;
+    if (!playerName || SKIP_RE.test(playerName) || playerName.includes('(')) continue;
 
     // Row i = name, i+1 = labels ("pts", "pts totaux"), i+2 = values
     const ptsRow = parseCSVRow(allLines[i + 2] || '');
