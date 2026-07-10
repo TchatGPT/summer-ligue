@@ -480,18 +480,22 @@ main {
   flex-wrap: wrap;
 }
 .bonus-btn {
+  -webkit-appearance: none;
+  appearance: none;
   background: rgba(74,142,201,0.12);
   border: 1px solid var(--blue);
   color: var(--blue);
   font-family: 'Barlow Condensed', sans-serif;
   font-weight: 700;
   font-size: 14px;
-  padding: 6px 16px;
+  padding: 8px 18px;
   border-radius: 2px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background 0.15s, color 0.15s;
+  min-height: 36px;
+  touch-action: manipulation;
 }
-.bonus-btn:hover { background: var(--blue); color: var(--bg); }
+.bonus-btn:hover, .bonus-btn:active { background: var(--blue); color: var(--bg); }
 .bonus-display {
   display: flex;
   align-items: center;
@@ -506,15 +510,24 @@ main {
   color: var(--rust-light);
 }
 .bonus-display > button {
+  -webkit-appearance: none;
+  appearance: none;
   background: none;
   border: none;
   color: var(--rust-light);
   cursor: pointer;
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1;
-  padding: 0 0 0 2px;
+  padding: 4px 6px;
+  margin: -4px -2px;
+  min-width: 32px;
+  min-height: 32px;
+  touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.bonus-display > button:hover { color: var(--rust); }
+.bonus-display > button:hover, .bonus-display > button:active { color: var(--rust); }
 
 /* TOAST */
 .toast-container {
@@ -771,7 +784,7 @@ main {
   .rank-table th:nth-child(6), .rank-table td:nth-child(6) { display: none; }
   .stats-row { grid-template-columns: repeat(2, 1fr); }
   .actions-grid { grid-template-columns: 1fr; }
-  .form-row-2, .form-row-3 { grid-template-columns: 1fr; }
+  .form-row-3 { grid-template-columns: 1fr; }
 }
 @media (max-width: 640px) {
   header { flex-wrap: wrap; gap: 10px; }
