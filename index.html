@@ -874,7 +874,6 @@ main {
 <!-- NAV -->
 <nav class="nav-tabs">
   <button class="nav-tab active" onclick="showPage('classement')">Classement</button>
-  <button class="nav-tab admin-only" style="display:none" onclick="openSaisieModal()">Saisir une game</button>
   <button class="nav-tab admin-only" style="display:none" onclick="showPage('actions')">Actions roues</button>
   <button class="nav-tab admin-only" style="display:none" onclick="showPage('joueurs')">Joueurs</button>
   <button class="nav-tab admin-only" style="display:none" onclick="showPage('historique')">Historique</button>
@@ -901,7 +900,7 @@ main {
   <div class="stats-row" id="stats-overview"></div>
 
   <div class="actions-bar admin-only" style="display:none">
-    <button class="btn btn-green btn-sm" onclick="openSaisieModal()"><i class="fa-solid fa-gamepad"></i> Saisir une game</button>
+    <button class="btn btn-green" style="font-size:15px;padding:10px 22px" onclick="openSaisieModal()"><i class="fa-solid fa-gamepad"></i> Saisir une game</button>
     <button class="btn btn-blue btn-sm" onclick="openImportSheetModal()"><i class="fa-solid fa-cloud-arrow-down"></i> Importer Google Sheets</button>
     <button class="btn btn-sm" style="color:var(--rust-light);border-color:var(--rust-light)" onclick="resetAllData()"><i class="fa-solid fa-trash-can"></i> Reset données</button>
   </div>
