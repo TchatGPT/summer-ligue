@@ -2582,7 +2582,7 @@ function updateEditPreview() {
     const m = part.match(/\+(\d+)\s*pts\s*bonus/i);
     if (m) existingBonus += parseInt(m[1]);
   });
-  const bonusTotal = existingBonus + _editBonus - _editBonusRemoved;
+  const bonusTotal = existingBonus + _editBonus;
   const bonusRow = document.getElementById('edit-prev-bonus-row');
   const bonusEl  = document.getElementById('edit-prev-bonus');
   if (bonusTotal > 0) {
