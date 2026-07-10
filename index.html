@@ -1564,21 +1564,40 @@ main {
 
 <!-- MODAL EDIT GAME -->
 <div class="modal-overlay modal-center" id="modal-edit-game">
-  <div class="modal" style="max-width:400px">
+  <div class="modal" style="max-width:500px">
     <div class="modal-header">
       <div class="modal-title" id="edit-game-title"><i class="fa-solid fa-pen-to-square"></i> Modifier la game</div>
       <button class="modal-close" onclick="closeModal('modal-edit-game')">×</button>
     </div>
     <div class="modal-body">
-      <div class="form-row">
-        <label class="form-label">Kills</label>
-        <div class="kills-input-group">
-          <button class="kills-btn" onclick="changeEditKills(-1)">−</button>
-          <input type="number" class="form-input" id="edit-kills" value="0" min="0" max="50" oninput="updateEditPreview()">
-          <button class="kills-btn" onclick="changeEditKills(1)">+</button>
+
+      <!-- Effets roue actifs du joueur -->
+      <div id="edit-roue-effects" style="display:none;margin-bottom:14px;display:flex;flex-direction:column;gap:6px"></div>
+
+      <div class="form-row-2" style="margin-top:4px">
+        <div class="form-row" style="margin-bottom:0">
+          <label class="form-label">Kills</label>
+          <div class="kills-input-group">
+            <button class="kills-btn" onclick="changeEditKills(-1)">−</button>
+            <input type="number" class="form-input" id="edit-kills" value="0" min="0" max="50" oninput="updateEditPreview()">
+            <button class="kills-btn" onclick="changeEditKills(1)">+</button>
+          </div>
+        </div>
+        <div class="form-row" style="margin-bottom:0">
+          <label class="form-label">Multiplicateur</label>
+          <select class="form-select" id="edit-mult" onchange="updateEditPreview()">
+            <option value="1">x1 (aucun)</option>
+            <option value="1.1">x1.1</option>
+            <option value="1.2">x1.2</option>
+            <option value="1.3">x1.3</option>
+            <option value="1.4">x1.4</option>
+            <option value="1.5">x1.5</option>
+            <option value="2">x2</option>
+          </select>
         </div>
       </div>
-      <div class="form-row">
+
+      <div class="form-row" style="margin-top:14px">
         <label class="form-label">Classement (Top)</label>
         <div class="top-selector">
           <button class="top-btn t1" id="edit-top-1" onclick="selectEditTop(1)">TOP 1<br><small>+20 pts</small></button>
@@ -1587,34 +1606,24 @@ main {
           <button class="top-btn tn" id="edit-top-n" onclick="selectEditTop(0)">Pas top<br><small>+0 pts</small></button>
         </div>
       </div>
-      <div class="form-row">
-        <label class="form-label">Multiplicateur</label>
-        <select class="form-select" id="edit-mult" onchange="updateEditPreview()">
-          <option value="1">x1 (aucun)</option>
-          <option value="1.1">x1.1</option>
-          <option value="1.2">x1.2</option>
-          <option value="1.3">x1.3</option>
-          <option value="1.4">x1.4</option>
-          <option value="1.5">x1.5</option>
-          <option value="2">x2</option>
-        </select>
+
+      <div class="form-row" style="margin-top:14px">
+        <label class="form-label">Bonus Points</label>
+        <div class="bonus-btns">
+          <button class="bonus-btn" onclick="addBonusFromEdit(5)"><i class="fa-solid fa-plus" style="font-size:10px"></i> 5 pts</button>
+          <button class="bonus-btn" onclick="addBonusFromEdit(10)"><i class="fa-solid fa-plus" style="font-size:10px"></i> 10 pts</button>
+        </div>
+        <div id="edit-bonus-info" style="display:none;font-size:11px;color:var(--green);margin-top:6px"></div>
       </div>
-      <div class="score-preview">
+
+      <div class="score-preview" style="margin-top:14px">
         <div class="sp-row"><span>Kills (×multiplicateur)</span><span id="edit-prev-kills">0 pts</span></div>
         <div class="sp-row"><span>Top placement</span><span id="edit-prev-top">0 pts</span></div>
         <div class="sp-row sp-total"><span>SCORE GAME</span><span id="edit-prev-total">0 pts</span></div>
       </div>
-      <div style="display:flex;gap:8px;margin-top:12px">
-        <button class="btn" id="edit-bonus-5-btn" style="flex:1;justify-content:center;border:1px solid var(--green);color:var(--green);background:rgba(76,175,119,0.08)" onclick="addBonusFromEdit(5)">
-          <i class="fa-solid fa-bolt"></i> +5 pts
-        </button>
-        <button class="btn" id="edit-bonus-10-btn" style="flex:1;justify-content:center;border:1px solid var(--green);color:var(--green);background:rgba(76,175,119,0.08)" onclick="addBonusFromEdit(10)">
-          <i class="fa-solid fa-bolt-lightning"></i> +10 pts
-        </button>
-      </div>
-      <div id="edit-bonus-info" style="display:none;font-size:11px;color:var(--green);margin-top:6px;text-align:center"></div>
-      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:12px" onclick="saveEditGame()">
-        <i class="fa-solid fa-check"></i> Sauvegarder
+
+      <button class="btn btn-solid-gold btn-lg" style="width:100%;justify-content:center;margin-top:14px" onclick="saveEditGame()">
+        <i class="fa-solid fa-check" style="margin-right:6px"></i>Sauvegarder
       </button>
     </div>
   </div>
@@ -2471,6 +2480,32 @@ function openEditGame(playerId, gameId) {
   ['edit-top-n','edit-top-1','edit-top-2','edit-top-3'].forEach(id => document.getElementById(id).classList.remove('selected'));
   const topMap = { 0: 'edit-top-n', 1: 'edit-top-1', 2: 'edit-top-2', 3: 'edit-top-3' };
   document.getElementById(topMap[g.top]).classList.add('selected');
+
+  // Reset bonus info
+  const bonusInfo = document.getElementById('edit-bonus-info');
+  bonusInfo.style.display = 'none'; bonusInfo.textContent = '';
+
+  // Effets roue actifs du joueur + note de la game
+  const badges = [];
+  if (g.note) badges.push(
+    `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:6px 10px;font-size:12px;color:var(--gold)"><i class="fa-solid fa-note-sticky" style="margin-right:6px"></i>${escHtml(g.note)}</div>`
+  );
+  if (p.skipNext) badges.push(
+    `<div style="background:rgba(192,71,42,0.1);border:1px solid var(--rust);border-radius:4px;padding:6px 10px;font-size:12px;color:var(--rust-light)"><i class="fa-solid fa-forward-step" style="margin-right:6px"></i>Skip activé pour la prochaine game</div>`
+  );
+  if (p.freezeKills) badges.push(
+    `<div style="background:rgba(74,142,201,0.1);border:1px solid var(--blue);border-radius:4px;padding:6px 10px;font-size:12px;color:var(--blue)"><i class="fa-solid fa-snowflake" style="margin-right:6px"></i>Gelé à ${p.freezeKills} kills (prochaine game)</div>`
+  );
+  if (p.pendingMult) badges.push(
+    `<div style="background:rgba(155,89,182,0.1);border:1px solid var(--purple);border-radius:4px;padding:6px 10px;font-size:12px;color:var(--purple)"><i class="fa-solid fa-xmark" style="margin-right:6px"></i>Multiplicateur ×${p.pendingMult} actif (roue — prochaine game)</div>`
+  );
+  if (p.pendingBonus) badges.push(
+    `<div style="background:rgba(76,175,119,0.1);border:1px solid var(--green);border-radius:4px;padding:6px 10px;font-size:12px;color:var(--green)"><i class="fa-solid fa-bolt-lightning" style="margin-right:6px"></i>+${p.pendingBonus} pts top 10 en attente (prochaine game)</div>`
+  );
+
+  const fx = document.getElementById('edit-roue-effects');
+  if (badges.length) { fx.style.display = 'flex'; fx.innerHTML = badges.join(''); }
+  else { fx.style.display = 'none'; fx.innerHTML = ''; }
 
   updateEditPreview();
   openModal('modal-edit-game');
