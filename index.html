@@ -2427,7 +2427,7 @@ function buildActionBody(type) {
 
     case 'perso-top10pts': return `
       ${playerSelect('p1', 'Joueur')}
-      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Ajoute <strong>+10 pts bonus</strong> si le joueur est dans le top 10 du classement actuel.</p>
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Ajoute <strong>+10 pts bonus</strong> pour un top 10 en jeu Warzone.</p>
       <button class="btn btn-purple" style="width:100%;justify-content:center;margin-top:16px;border-width:1px" onclick="execAction()">Appliquer</button>`;
 
     case 'comm-worst-x2': return `
@@ -2677,12 +2677,9 @@ function execAction() {
     case 'perso-top10pts': {
       const p = getP('p1');
       if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
-      const sorted = [...state.players].sort((a, b) => getPlayerTotal(b) - getPlayerTotal(a));
-      const rank = sorted.findIndex(x => x.id === p.id) + 1;
-      if (rank > 10) { toast(`${p.name} n'est pas dans le top 10 (position ${rank}).`, 'error'); return; }
       p.bonusPoints = (p.bonusPoints || 0) + 10;
-      addLog(`<strong>${p.name}</strong> — +10 pts bonus (top ${rank} du classement).`, 'purple', 'bolt-lightning', true);
-      toast(`+10 pts pour ${p.name} (top ${rank}) !`);
+      addLog(`<strong>${p.name}</strong> — +10 pts bonus (top 10 Warzone).`, 'purple', 'bolt-lightning', true);
+      toast(`+10 pts pour ${p.name} !`);
       break;
     }
     case 'comm-worst-x2': {
