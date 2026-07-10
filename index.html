@@ -1508,6 +1508,7 @@ async function loadState() {
       freezeKills: p.freeze_kills || 0,
       pendingMult: p.pending_mult || 0,
       pendingBonus: p.pending_bonus || 0,
+      extraGames: p.extra_games || 0,
       games: (games || [])
         .filter(g => g.player_id === p.id)
         .map(g => ({
@@ -1548,7 +1549,8 @@ async function saveState() {
       skip_next: !!p.skipNext,
       freeze_kills: p.freezeKills || 0,
       pending_mult: p.pendingMult || 0,
-      pending_bonus: p.pendingBonus || 0
+      pending_bonus: p.pendingBonus || 0,
+      extra_games: p.extraGames || 0
     }));
     if (playerRows.length > 0) await _sb.from('players').upsert(playerRows);
     const { data: dbP } = await _sb.from('players').select('id');
@@ -1606,10 +1608,9 @@ function calcGameScore(kills, top, mult) {
 
 function getPlayerTotal(player) {
   const games = player.games || [];
-  const MAX_GAMES = 20;
-  // Sort games by score desc, take top 20
+  const maxGames = 20 + (player.extraGames || 0);
   const sorted = [...games].sort((a, b) => b.score - a.score);
-  const counted = sorted.slice(0, MAX_GAMES);
+  const counted = sorted.slice(0, maxGames);
   const gamesSum = counted.reduce((s, g) => s + g.score, 0);
   return gamesSum + (player.bonusPoints || 0);
 }
@@ -1721,7 +1722,7 @@ function renderClassement() {
         ${p.pendingBonus ? `<div style="font-size:10px;color:var(--green)"><i class="fa-solid fa-bolt-lightning"></i> +${p.pendingBonus}pts top10</div>` : ''}
       </td>
       <td class="score-total">${total}<small style="font-size:12px;color:var(--text-muted);font-weight:400"> pts</small>${p.bonusPoints ? `<div style="font-size:11px;color:var(--green)">+${p.bonusPoints} bonus</div>` : ''}</td>
-      <td class="stat-games">${p.games.length}/${20}</td>
+      <td class="stat-games">${p.games.length}/${20 + (p.extraGames || 0)}</td>
       <td class="stat-kills">${totalKills}</td>
       <td class="stat-tops">
         ${top1count ? `<span style="color:#ffd700"><i class="fa-solid fa-trophy" style="font-size:9px"></i> ${top1count}</span> ` : ''}
@@ -1741,12 +1742,21 @@ function renderClassement() {
 function topLabel(top) { return ''; }
 
 function renderSaisieSelects() {
-  const selects = ['saisie-player', 'echange-a', 'echange-b'];
-  selects.forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
+  const el = document.getElementById('saisie-player');
+  if (el) {
     const current = el.value;
-    el.innerHTML = '<option value="">— Sélectionner —</option>' +
+    el.innerHTML = '<option value="">— Sélectionner un joueur —</option>' +
+      state.players.map(p => {
+        const maxG = 20 + (p.extraGames || 0);
+        const full = p.games.length >= maxG;
+        return `<option value="${p.id}" ${current === p.id ? 'selected' : ''} ${full ? 'disabled' : ''}>${escHtml(p.name)}${full ? ' (complet)' : ''}</option>`;
+      }).join('');
+  }
+  ['echange-a', 'echange-b'].forEach(id => {
+    const el2 = document.getElementById(id);
+    if (!el2) return;
+    const current = el2.value;
+    el2.innerHTML = '<option value="">— Sélectionner —</option>' +
       state.players.map(p => `<option value="${p.id}" ${current === p.id ? 'selected' : ''}>${escHtml(p.name)}</option>`).join('');
   });
 }
@@ -1960,7 +1970,8 @@ function updateSaisiePreview() {
 
   let warning = '';
   if (player) {
-    if (player.games.length >= 20) warning = 'Le joueur a déjà 20 games — seules les 20 meilleures sont comptabilisées.';
+    const maxG = 20 + (player.extraGames || 0);
+    if (player.games.length >= maxG) warning = `Le joueur a déjà ${maxG} games — seules les ${maxG} meilleures sont comptabilisées.`;
     if (player.freezeKills) warning += ` Kills gelés à ${player.freezeKills}.`;
     if (player.pendingBonus) warning += `<div style="display:flex;align-items:center;gap:8px;margin-top:6px;padding:8px 10px;background:rgba(76,175,119,0.1);border:1px solid var(--green);border-radius:4px"><i class="fa-solid fa-bolt-lightning" style="color:var(--green)"></i><span style="flex:1;font-size:13px;color:var(--green)">+${player.pendingBonus} pts top 10 Warzone — s'applique sur cette game</span><button onclick="cancelPendingBonus('${pid}')" style="background:none;border:1px solid var(--green);color:var(--green);border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer;line-height:1.4">✕ Annuler</button></div>`;
   }
@@ -2333,23 +2344,8 @@ function buildActionBody(type) {
 
     case 'add-bonus-game': return `
       ${playerSelect('p1', 'Joueur')}
-      <div class="form-row-2">
-        <div class="form-row" style="margin-bottom:0">
-          <label class="form-label">Kills</label>
-          <input type="number" class="form-input" id="act-kills" value="5" min="0">
-        </div>
-        <div class="form-row" style="margin-bottom:0">
-          <label class="form-label">Multiplicateur</label>
-          <select class="form-select" id="act-mult">
-            <option value="1">x1</option><option value="1.1">x1.1</option><option value="1.2">x1.2</option><option value="1.3">x1.3</option><option value="1.4">x1.4</option><option value="1.5">x1.5</option><option value="2">x2</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row" style="margin-top:12px">
-        <label class="form-label">Top</label>
-        <select class="form-select" id="act-top"><option value="0">Pas de top</option><option value="1">Top 1 (+20)</option><option value="2">Top 2 (+15)</option><option value="3">Top 3 (+8)</option></select>
-      </div>
-      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Ajouter la game</button>`;
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Accorde un slot de game supplémentaire — la game sera saisie via le formulaire principal.</p>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Accorder +1 game</button>`;
 
     case 'joker-game': return `
       ${playerSelect('p1', 'Joueur', "populateGameSelect('act-game-idx',this.value,false)")}
@@ -2449,23 +2445,8 @@ function buildActionBody(type) {
 
     case 'perso-extra-game': return `
       ${playerSelect('p1', 'Joueur')}
-      <div class="form-row-2" style="margin-top:12px">
-        <div class="form-row" style="margin-bottom:0">
-          <label class="form-label">Kills</label>
-          <input type="number" class="form-input" id="act-kills" value="5" min="0">
-        </div>
-        <div class="form-row" style="margin-bottom:0">
-          <label class="form-label">Multiplicateur</label>
-          <select class="form-select" id="act-mult">
-            <option value="1">x1</option><option value="1.1">x1.1</option><option value="1.2">x1.2</option><option value="1.3">x1.3</option><option value="1.4">x1.4</option><option value="1.5">x1.5</option><option value="2">x2</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row" style="margin-top:12px">
-        <label class="form-label">Top</label>
-        <select class="form-select" id="act-top"><option value="0">Pas de top</option><option value="1">Top 1 (+20)</option><option value="2">Top 2 (+15)</option><option value="3">Top 3 (+8)</option></select>
-      </div>
-      <button class="btn btn-purple" style="width:100%;justify-content:center;margin-top:16px;border-width:1px" onclick="execAction()">Ajouter la game</button>`;
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Accorde un slot de game supplémentaire — la game sera saisie via le formulaire principal.</p>
+      <button class="btn btn-purple" style="width:100%;justify-content:center;margin-top:16px;border-width:1px" onclick="execAction()">Accorder +1 game</button>`;
 
     case 'perso-top10pts': return `
       ${playerSelect('p1', 'Joueur')}
@@ -2561,13 +2542,10 @@ function execAction() {
     case 'add-bonus-game': {
       const p = getP('p1');
       if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
-      const kills = parseInt(document.getElementById('act-kills').value || 0);
-      const mult = parseFloat(document.getElementById('act-mult').value || 1);
-      const top = parseInt(document.getElementById('act-top').value || 0);
-      const score = calcGameScore(kills, top, mult);
-      p.games.push({ id: uid(), kills, top, mult, score, date: now(), note: 'bonus game (roue)' });
-      addLog(`<strong>${p.name}</strong> — game bonus ajoutée : ${score} pts.`, 'green', 'plus', true);
-      toast(`Game bonus ajoutée : ${score} pts !`);
+      p.extraGames = (p.extraGames || 0) + 1;
+      const newMax = 20 + p.extraGames;
+      addLog(`<strong>${p.name}</strong> — game supplémentaire accordée (max ${newMax} games).`, 'gold', 'plus', true);
+      toast(`${p.name} peut saisir 1 game supplémentaire !`, 'gold');
       break;
     }
     case 'joker-game': {
@@ -2707,13 +2685,10 @@ function execAction() {
     case 'perso-extra-game': {
       const p = getP('p1');
       if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
-      const kills = parseInt(document.getElementById('act-kills').value || 0);
-      const mult = parseFloat(document.getElementById('act-mult').value || 1);
-      const top = parseInt(document.getElementById('act-top').value || 0);
-      const score = calcGameScore(kills, top, mult);
-      p.games.push({ id: uid(), kills, top, mult, score, date: now(), note: 'game sup (roue perso)' });
-      addLog(`<strong>${p.name}</strong> — game supplémentaire ajoutée : ${score} pts.`, 'purple', 'plus', true);
-      toast(`Game sup ajoutée : ${score} pts !`);
+      p.extraGames = (p.extraGames || 0) + 1;
+      const newMax = 20 + p.extraGames;
+      addLog(`<strong>${p.name}</strong> — game supplémentaire accordée (max ${newMax} games).`, 'purple', 'plus', true);
+      toast(`${p.name} peut saisir 1 game supplémentaire !`);
       break;
     }
     case 'perso-top10pts': {
