@@ -2576,17 +2576,27 @@ function updateEditPreview() {
   const topPts   = top === 1 ? 20 : top === 2 ? 15 : top === 3 ? 8 : 0;
   document.getElementById('edit-prev-kills').textContent = `${kills}${mult !== 1 ? ' × ' + mult + ' = ' + killsPts : ''} pts`;
   document.getElementById('edit-prev-top').textContent   = topPts + ' pts';
-  const bonusNet = _editBonus - _editBonusRemoved;
+  // Existing bonus still in note segments (not yet removed)
+  let existingBonus = 0;
+  _editNoteSegments.forEach(part => {
+    const m = part.match(/\+(\d+)\s*pts\s*bonus/i);
+    if (m) existingBonus += parseInt(m[1]);
+  });
+  const bonusTotal = existingBonus + _editBonus - _editBonusRemoved;
   const bonusRow = document.getElementById('edit-prev-bonus-row');
   const bonusEl  = document.getElementById('edit-prev-bonus');
-  if (bonusNet !== 0) {
+  if (bonusTotal > 0) {
     bonusRow.style.display = '';
-    bonusRow.style.color = bonusNet > 0 ? 'var(--blue)' : 'var(--rust)';
-    bonusEl.textContent = (bonusNet > 0 ? '+' : '') + bonusNet + ' pts';
+    bonusRow.style.color = 'var(--blue)';
+    bonusEl.textContent = `+${bonusTotal} pts`;
+  } else if (bonusTotal < 0) {
+    bonusRow.style.display = '';
+    bonusRow.style.color = 'var(--rust)';
+    bonusEl.textContent = `${bonusTotal} pts`;
   } else {
     bonusRow.style.display = 'none';
   }
-  document.getElementById('edit-prev-total').textContent = (killsPts + topPts + bonusNet) + ' pts';
+  document.getElementById('edit-prev-total').textContent = (killsPts + topPts + bonusTotal) + ' pts';
 }
 
 function addBonusFromEdit(pts) {
