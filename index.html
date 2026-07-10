@@ -977,7 +977,12 @@ main {
             <div class="kills-input-group">
               <button class="kills-btn" onclick="changeKills(-1)">−</button>
               <input type="number" class="form-input" id="saisie-kills" value="0" min="0" max="50" oninput="updateSaisiePreview()">
-              <button class="kills-btn" onclick="changeKills(1)">+</button>
+              <button class="kills-btn" id="kills-plus-btn" onclick="changeKills(1)">+</button>
+            </div>
+            <div id="freeze-badge" style="display:none;margin-top:5px;align-items:center;gap:6px">
+              <i class="fa-solid fa-snowflake" style="color:var(--blue);font-size:11px"></i>
+              <span style="background:var(--blue);color:white;font-size:10px;padding:2px 7px;border-radius:3px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Gelé à 5 kills</span>
+              <button id="freeze-cancel-btn" onclick="" style="background:none;border:1px solid var(--blue);color:var(--blue);border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer;line-height:1.4;touch-action:manipulation">✕ Annuler</button>
             </div>
           </div>
           <div class="form-row" style="margin-bottom:0">
@@ -1939,8 +1944,11 @@ function clearBonus() {
 }
 
 function changeKills(delta) {
+  const pid = document.getElementById('saisie-player').value;
+  const player = state.players.find(p => p.id === pid);
   const inp = document.getElementById('saisie-kills');
-  inp.value = Math.max(0, parseInt(inp.value || 0) + delta);
+  const maxKills = (player && player.freezeKills) ? player.freezeKills : 50;
+  inp.value = Math.min(maxKills, Math.max(0, parseInt(inp.value || 0) + delta));
   updateSaisiePreview();
 }
 
@@ -1960,7 +1968,22 @@ function updateSaisiePreview() {
   document.getElementById('saisie-form-fields').style.display = isSkip ? 'none' : 'block';
   if (isSkip) return;
 
-  const kills = parseInt(document.getElementById('saisie-kills').value || 0);
+  const killsInp = document.getElementById('saisie-kills');
+  const freezeBadge = document.getElementById('freeze-badge');
+  const freezeCancelBtn = document.getElementById('freeze-cancel-btn');
+  const killsPlusBtn = document.getElementById('kills-plus-btn');
+  if (player && player.freezeKills) {
+    if (parseInt(killsInp.value) > player.freezeKills) killsInp.value = player.freezeKills;
+    killsInp.max = player.freezeKills;
+    if (killsPlusBtn) killsPlusBtn.disabled = parseInt(killsInp.value) >= player.freezeKills;
+    freezeBadge.style.display = 'flex';
+    freezeCancelBtn.onclick = () => cancelFreeze(pid);
+  } else {
+    killsInp.max = 50;
+    if (killsPlusBtn) killsPlusBtn.disabled = false;
+    freezeBadge.style.display = 'none';
+  }
+  const kills = parseInt(killsInp.value || 0);
   const multSel = document.getElementById('saisie-mult');
   const badge = document.getElementById('mult-roue-badge');
   const cancelBtn = document.getElementById('mult-roue-cancel');
@@ -2002,7 +2025,6 @@ function updateSaisiePreview() {
   if (player) {
     const maxG = 20 + (player.extraGames || 0);
     if (player.games.length >= maxG) warning = `Le joueur a déjà ${maxG} games — seules les ${maxG} meilleures sont comptabilisées.`;
-    if (player.freezeKills) warning += ` Kills gelés à ${player.freezeKills}.`;
     if (player.pendingBonus) warning += `<div style="display:flex;align-items:center;gap:8px;margin-top:6px;padding:8px 10px;background:rgba(76,175,119,0.1);border:1px solid var(--green);border-radius:4px"><i class="fa-solid fa-bolt-lightning" style="color:var(--green)"></i><span style="flex:1;font-size:13px;color:var(--green)">+${player.pendingBonus} pts top 10 Warzone — s'applique sur cette game</span><button onclick="cancelPendingBonus('${pid}')" style="background:none;border:1px solid var(--green);color:var(--green);border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer;line-height:1.4">✕ Annuler</button></div>`;
   }
   document.getElementById('prev-warning').innerHTML = warning;
@@ -2027,6 +2049,19 @@ function cancelSaisieMult(pid) {
   saveState();
   renderClassement();
   updateSaisiePreview();
+}
+
+function cancelFreeze(pid) {
+  const player = state.players.find(p => p.id === pid);
+  if (!player) return;
+  player.freezeKills = 0;
+  document.getElementById('saisie-kills').max = 50;
+  const btn = document.getElementById('kills-plus-btn');
+  if (btn) btn.disabled = false;
+  saveState();
+  renderClassement();
+  updateSaisiePreview();
+  toast(`Gel annulé pour ${player.name}.`, 'info');
 }
 
 function cancelPendingBonus(pid) {
