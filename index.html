@@ -396,6 +396,7 @@ main {
 }
 .form-input:focus, .form-select:focus { border-color: var(--gold); }
 .form-select option { background: var(--bg2); }
+#saisie-mult.mult-roue-active { border-color: var(--purple); color: var(--purple); background: rgba(155,89,182,0.08); font-weight: 700; }
 .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
 
@@ -967,7 +968,7 @@ main {
             </div>
           </div>
           <div class="form-row" style="margin-bottom:0">
-            <label class="form-label">Multiplicateur</label>
+            <label class="form-label" id="mult-label">Multiplicateur</label>
             <select class="form-select" id="saisie-mult" onchange="updateSaisiePreview()">
               <option value="1">x1 (aucun)</option>
               <option value="1.1">x1.1</option>
@@ -977,6 +978,10 @@ main {
               <option value="1.5">x1.5</option>
               <option value="2">x2</option>
             </select>
+            <div id="mult-roue-badge" style="display:none;margin-top:5px;align-items:center;gap:6px">
+              <span style="background:var(--purple);color:white;font-size:10px;padding:2px 7px;border-radius:3px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Roue actif</span>
+              <button id="mult-roue-cancel" onclick="" style="background:none;border:1px solid var(--purple);color:var(--purple);border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer;line-height:1.4">✕ Supprimer</button>
+            </div>
           </div>
         </div>
 
@@ -1916,7 +1921,19 @@ function updateSaisiePreview() {
   if (isSkip) return;
 
   const kills = parseInt(document.getElementById('saisie-kills').value || 0);
-  const selectMult = parseFloat(document.getElementById('saisie-mult').value || 1);
+  const multSel = document.getElementById('saisie-mult');
+  const badge = document.getElementById('mult-roue-badge');
+  const cancelBtn = document.getElementById('mult-roue-cancel');
+  if (player && player.pendingMult) {
+    multSel.value = player.pendingMult;
+    multSel.classList.add('mult-roue-active');
+    badge.style.display = 'flex';
+    cancelBtn.onclick = () => cancelSaisieMult(pid);
+  } else {
+    multSel.classList.remove('mult-roue-active');
+    badge.style.display = 'none';
+  }
+  const selectMult = parseFloat(multSel.value || 1);
   const effectiveMult = (player && player.pendingMult) ? player.pendingMult : selectMult;
   const top = currentTop;
   const killsPts = Math.round(kills * effectiveMult);
@@ -1945,7 +1962,6 @@ function updateSaisiePreview() {
   if (player) {
     if (player.games.length >= 20) warning = 'Le joueur a déjà 20 games — seules les 20 meilleures sont comptabilisées.';
     if (player.freezeKills) warning += ` Kills gelés à ${player.freezeKills}.`;
-    if (player.pendingMult) warning += `<div style="display:flex;align-items:center;gap:8px;margin-top:6px;padding:8px 10px;background:rgba(155,89,182,0.1);border:1px solid var(--purple);border-radius:4px"><i class="fa-solid fa-xmark" style="color:var(--purple)"></i><span style="flex:1;font-size:13px;color:var(--purple)">Multiplicateur ×${player.pendingMult} (roue) — kills arrondis</span><button onclick="cancelSaisieMult('${pid}')" style="background:none;border:1px solid var(--purple);color:var(--purple);border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer;line-height:1.4" title="Supprimer le multiplicateur">✕ Supprimer</button></div>`;
     if (player.pendingBonus) warning += `<div style="display:flex;align-items:center;gap:8px;margin-top:6px;padding:8px 10px;background:rgba(76,175,119,0.1);border:1px solid var(--green);border-radius:4px"><i class="fa-solid fa-bolt-lightning" style="color:var(--green)"></i><span style="flex:1;font-size:13px;color:var(--green)">+${player.pendingBonus} pts top 10 Warzone — s'applique sur cette game</span><button onclick="cancelPendingBonus('${pid}')" style="background:none;border:1px solid var(--green);color:var(--green);border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer;line-height:1.4">✕ Annuler</button></div>`;
   }
   document.getElementById('prev-warning').innerHTML = warning;
