@@ -751,7 +751,7 @@ main {
   top: 50%;
   transform: translateY(-50%);
   font-size: 32px;
-  opacity: 0.08;
+  opacity: 0.55;
 }
 .sc-gold { color: var(--gold-light); }
 .sc-rust { color: var(--rust-light); }
@@ -1609,27 +1609,27 @@ function renderStats() {
     <div class="stat-card" style="border-top-color:var(--gold-light)">
       <div class="sc-label">Joueurs</div>
       <div class="sc-val sc-gold">${state.players.length}</div>
-      <i class="fa-solid fa-users sc-icon"></i>
+      <i class="fa-solid fa-users sc-icon" style="color:var(--gold-light);filter:drop-shadow(0 0 8px var(--gold-light))"></i>
     </div>
     <div class="stat-card" style="border-top-color:var(--blue)">
       <div class="sc-label">Games jouées</div>
       <div class="sc-val sc-blue">${totalGames}</div>
-      <i class="fa-solid fa-gamepad sc-icon"></i>
+      <i class="fa-solid fa-gamepad sc-icon" style="color:var(--blue);filter:drop-shadow(0 0 8px var(--blue))"></i>
     </div>
     <div class="stat-card" style="border-top-color:var(--rust-light)">
       <div class="sc-label">Total kills</div>
       <div class="sc-val sc-rust">${totalKills}</div>
-      <i class="fa-solid fa-skull sc-icon"></i>
+      <i class="fa-solid fa-skull sc-icon" style="color:var(--rust-light);filter:drop-shadow(0 0 8px var(--rust-light))"></i>
     </div>
     <div class="stat-card" style="border-top-color:var(--green)">
       <div class="sc-label">Top 1 <i class="fa-solid fa-trophy" style="color:#ffd700;font-size:10px"></i></div>
       <div class="sc-val sc-green">${top1s}</div>
-      <i class="fa-solid fa-trophy sc-icon"></i>
+      <i class="fa-solid fa-trophy sc-icon" style="color:var(--green);filter:drop-shadow(0 0 8px var(--green))"></i>
     </div>
     ${best ? `<div class="stat-card" style="border-top-color:var(--gold)">
       <div class="sc-label">Leader</div>
       <div class="sc-val" style="font-size:22px;color:var(--gold-light);margin-top:6px;line-height:1.1">${escHtml(best.name)}</div>
-      <i class="fa-solid fa-crown sc-icon"></i>
+      <i class="fa-solid fa-crown sc-icon" style="color:var(--gold);filter:drop-shadow(0 0 8px var(--gold))"></i>
     </div>` : ''}
   `;
 }
@@ -1740,22 +1740,21 @@ function renderPlayersList() {
 
 function renderLog() {
   const colorMap = { green: 'var(--green)', gold: 'var(--gold)', rust: 'var(--rust)', blue: 'var(--blue)', purple: 'var(--purple)' };
-  const empty = '<li style="padding:40px;text-align:center;color:var(--text-muted)">Aucun évènement enregistré.</li>';
-  const html = state.log.length
-    ? [...state.log].reverse().map(l => {
+  const toHtml = logs => logs.length
+    ? [...logs].reverse().map(l => {
         const color = colorMap[l.color] || colorMap.green;
-        const icon = l.icon || 'circle';
         return `<li class="log-item">
-          <i class="fa-solid fa-${icon}" style="color:${color};font-size:13px;flex-shrink:0;margin-top:2px;width:16px;text-align:center"></i>
+          <i class="fa-solid fa-${l.icon || 'circle'}" style="color:${color};font-size:13px;flex-shrink:0;margin-top:2px;width:16px;text-align:center"></i>
           <div style="flex:1">${sanitizeMsg(l.msg)}</div>
           <div class="log-time">${l.time}</div>
         </li>`;
       }).join('')
-    : empty;
+    : '<li style="padding:40px;text-align:center;color:var(--text-muted)">Aucun évènement enregistré.</li>';
+
   const adminEl = document.getElementById('log-list');
   const pubEl   = document.getElementById('log-list-events');
-  if (adminEl) adminEl.innerHTML = html;
-  if (pubEl)   pubEl.innerHTML   = html;
+  if (adminEl) adminEl.innerHTML = toHtml(state.log);
+  if (pubEl)   pubEl.innerHTML   = toHtml(state.log.filter(l => l.pub));
 }
 
 // ============================================================
@@ -2188,7 +2187,7 @@ function doEchange() {
   saveState();
   closeModal('modal-echange');
   renderAll();
-  addLog(`Échange : <strong>${pa.name}</strong> (best ${bestA.score}pts) ↔ <strong>${pb.name}</strong> (pire ${worstB.score}pts)`, 'gold', 'arrow-right-arrow-left');
+  addLog(`Échange : <strong>${pa.name}</strong> (best ${bestA.score}pts) ↔ <strong>${pb.name}</strong> (pire ${worstB.score}pts)`, 'gold', 'arrow-right-arrow-left', true);
   toast('Échange effectué !', 'gold');
 }
 
@@ -2414,7 +2413,7 @@ function execAction() {
           count++;
         }
       });
-      addLog(`Meilleure game ×1.5 appliquée à ${count} joueur(s)${skipped ? `, ignoré pour ${skipped} (non cumulable)` : ''}.`, 'gold', 'star');
+      addLog(`Meilleure game ×1.5 appliquée à ${count} joueur(s)${skipped ? `, ignoré pour ${skipped} (non cumulable)` : ''}.`, 'gold', 'star', true);
       toast(`×1.5 sur ${count} meilleures games !${skipped ? ` (${skipped} ignoré)` : ''}`, 'gold');
       break;
     }
@@ -2427,7 +2426,7 @@ function execAction() {
           count++;
         }
       });
-      addLog(`Pire game supprimée pour ${count} joueurs.`, 'rust', 'trash');
+      addLog(`Pire game supprimée pour ${count} joueurs.`, 'rust', 'trash', true);
       toast(`Pire game retirée pour ${count} joueurs.`);
       break;
     }
@@ -2441,7 +2440,7 @@ function execAction() {
         const top1s = p.games.filter(g => g.top === 1).length;
         if (top1s > 0) {
           p.bonusPoints = (p.bonusPoints || 0) + top1s * 5;
-          addLog(`<strong>${p.name}</strong> +${top1s * 5} pts (${top1s} Top 1)`, 'gold', 'crown');
+          addLog(`<strong>${p.name}</strong> +${top1s * 5} pts (${top1s} Top 1)`, 'gold', 'crown', true);
         }
       });
       toast('Bonus Top 1 appliqués !', 'gold');
@@ -2455,7 +2454,7 @@ function execAction() {
       const top = parseInt(document.getElementById('act-top').value || 0);
       const score = calcGameScore(kills, top, mult);
       p.games.push({ id: uid(), kills, top, mult, score, date: now(), note: 'bonus game (roue)' });
-      addLog(`<strong>${p.name}</strong> — game bonus ajoutée : ${score} pts.`, 'green', 'plus');
+      addLog(`<strong>${p.name}</strong> — game bonus ajoutée : ${score} pts.`, 'green', 'plus', true);
       toast(`Game bonus ajoutée : ${score} pts !`);
       break;
     }
@@ -2466,7 +2465,7 @@ function execAction() {
       const game = p.games.find(g => g.id === gameId);
       if (!game) { toast('Game introuvable.', 'error'); return; }
       p.games = p.games.filter(g => g.id !== gameId);
-      addLog(`<strong>${p.name}</strong> — Joker : game ${game.score} pts supprimée.`, 'gold', 'wand-magic-sparkles');
+      addLog(`<strong>${p.name}</strong> — Joker : game ${game.score} pts supprimée.`, 'gold', 'wand-magic-sparkles', true);
       toast(`Game supprimée : ${game.score} pts.`, 'gold');
       break;
     }
@@ -2479,7 +2478,7 @@ function execAction() {
       if (best.id === worst?.id) { toast('Même game, impossible.', 'error'); return; }
       p.games = p.games.filter(g => g.id !== worst.id);
       p.games.push({ ...best, id: uid(), note: 'clone best→pire' });
-      addLog(`<strong>${p.name}</strong> — meilleure game (${best.score} pts) clonée sur pire (${worst?.score} pts).`, 'gold', 'clone');
+      addLog(`<strong>${p.name}</strong> — meilleure game (${best.score} pts) clonée sur pire (${worst?.score} pts).`, 'gold', 'clone', true);
       toast('Clone effectué !', 'gold');
       break;
     }
@@ -2493,7 +2492,7 @@ function execAction() {
       pb.games = pb.games.filter(g => g.id !== worstB.id);
       pa.games.push({ ...worstB, id: uid() });
       pb.games.push({ ...bestA, id: uid() });
-      addLog(`<strong>${pa.name}</strong> ↔ <strong>${pb.name}</strong> échange perso.`, 'purple', 'arrow-right-arrow-left');
+      addLog(`<strong>${pa.name}</strong> ↔ <strong>${pb.name}</strong> échange perso.`, 'purple', 'arrow-right-arrow-left', true);
       toast('Échange effectué !', 'purple');
       break;
     }
@@ -2501,7 +2500,7 @@ function execAction() {
       const p = getP('p1');
       if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
       p.bonusPoints = (p.bonusPoints || 0) - 5;
-      addLog(`<strong>${p.name}</strong> — 5 pts retirés (bonus now: ${p.bonusPoints}).`, 'rust', 'skull');
+      addLog(`<strong>${p.name}</strong> — 5 pts retirés (bonus: ${p.bonusPoints}).`, 'rust', 'skull', true);
       toast(`-5 pts pour ${p.name}.`, 'error');
       break;
     }
@@ -2510,7 +2509,7 @@ function execAction() {
       if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
       if (p.pendingMult) { toast(`${p.name} a déjà un multiplicateur actif — impossible de cumuler.`, 'error'); return; }
       p.freezeKills = 5;
-      addLog(`<strong>${p.name}</strong> — gelé à 5 kills pour sa prochaine game.`, 'blue', 'snowflake');
+      addLog(`<strong>${p.name}</strong> — gelé à 5 kills pour sa prochaine game.`, 'blue', 'snowflake', true);
       toast(`${p.name} gelé à 5 kills !`, 'info');
       break;
     }
@@ -2518,7 +2517,7 @@ function execAction() {
       const p = getP('p1');
       if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
       p.bonusPoints = (p.bonusPoints || 0) + 10;
-      addLog(`<strong>${p.name}</strong> +10 pts bonus.`, 'green', 'bolt-lightning');
+      addLog(`<strong>${p.name}</strong> +10 pts bonus.`, 'green', 'bolt-lightning', true);
       toast(`+10 pts pour ${p.name} !`);
       break;
     }
@@ -2526,7 +2525,7 @@ function execAction() {
       const p = getP('p1');
       if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
       p.bonusPoints = (p.bonusPoints || 0) + 5;
-      addLog(`<strong>${p.name}</strong> +5 pts bonus.`, 'green', 'bolt');
+      addLog(`<strong>${p.name}</strong> +5 pts bonus.`, 'green', 'bolt', true);
       toast(`+5 pts pour ${p.name} !`);
       break;
     }
@@ -2536,7 +2535,7 @@ function execAction() {
       if (!selectedMult) { toast('Choisissez un multiplicateur.', 'error'); return; }
       if (p.freezeKills) { toast(`${p.name} a déjà un gèle de kills actif — impossible de cumuler.`, 'error'); return; }
       p.pendingMult = parseFloat(selectedMult);
-      addLog(`<strong>${p.name}</strong> — multiplicateur ×${selectedMult} activé pour la prochaine game.`, 'purple', 'crosshairs');
+      addLog(`<strong>${p.name}</strong> — multiplicateur ×${selectedMult} activé pour la prochaine game.`, 'purple', 'crosshairs', true);
       toast(`×${selectedMult} activé pour ${p.name} !`, 'purple');
       selectedMult = null;
       break;
@@ -2547,7 +2546,7 @@ function execAction() {
       if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
       const score = kills;
       p.games.push({ id: uid(), kills, top: 0, mult: 1, score, date: now(), note: 'clone kills meilleur killeur' });
-      addLog(`<strong>${p.name}</strong> — clone kill du meilleur killeur (${kills} kills = ${score} pts).`, 'purple', 'crosshairs');
+      addLog(`<strong>${p.name}</strong> — clone kill du meilleur killeur (${kills} kills = ${score} pts).`, 'purple', 'crosshairs', true);
       toast(`Clone kills : ${kills} kills pour ${p.name} !`, 'purple');
       break;
     }
@@ -2559,7 +2558,7 @@ function execAction() {
       if (!srcGame) { toast('Game source introuvable.', 'error'); return; }
       const newGame = { id: uid(), kills: srcGame.kills, top: 0, mult: 1, score: srcGame.kills, date: now(), note: `kills clonés de ${p2.name}` };
       p1.games.push(newGame);
-      addLog(`<strong>${p1.name}</strong> — kills de <strong>${p2.name}</strong> (${srcGame.kills} kills) clonés.`, 'purple', 'copy');
+      addLog(`<strong>${p1.name}</strong> — kills de <strong>${p2.name}</strong> (${srcGame.kills} kills) clonés.`, 'purple', 'copy', true);
       toast(`Kills clonés : ${srcGame.kills} kills !`, 'purple');
       break;
     }
@@ -2569,7 +2568,7 @@ function execAction() {
       if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
       const score = kills;
       p.games.push({ id: uid(), kills, top: 0, mult: 1, score, date: now(), note: 'kills Lriaa' });
-      addLog(`<strong>${p.name}</strong> — kills de Lriaa (${kills}) clonés.`, 'purple', 'gamepad');
+      addLog(`<strong>${p.name}</strong> — kills de Lriaa (${kills}) clonés.`, 'purple', 'gamepad', true);
       toast(`Kills de Lriaa clonés : ${kills} kills !`, 'purple');
       break;
     }
@@ -2581,7 +2580,7 @@ function execAction() {
       const game = p.games.find(g => g.id === gameId);
       if (!game) { toast('Game introuvable.', 'error'); return; }
       p.games = p.games.filter(g => g.id !== gameId);
-      addLog(`<strong>${p.name}</strong> — game (${game.score} pts) supprimée.`, 'rust', 'trash-can');
+      addLog(`<strong>${p.name}</strong> — game (${game.score} pts) supprimée.`, 'rust', 'trash-can', true);
       toast(`Game supprimée pour ${p.name}.`, 'error');
       break;
     }
@@ -2589,7 +2588,7 @@ function execAction() {
       const p = getP('p1');
       if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
       p.skipNext = true;
-      addLog(`<strong>${p.name}</strong> — skip activé.`, 'rust', 'forward-step');
+      addLog(`<strong>${p.name}</strong> — skip activé.`, 'rust', 'forward-step', true);
       toast(`Skip activé pour ${p.name}.`, 'info');
       break;
     }
@@ -2692,11 +2691,11 @@ function importData(event) {
 // ============================================================
 // LOG
 // ============================================================
-function addLog(msg, color, icon) {
+function addLog(msg, color, icon, pub = false) {
   // Strip legacy <i> icon tags, then sanitize (only <strong> allowed)
   const stripped = msg.replace(/<i[^>]*>.*?<\/i>/g, '').replace(/<i[^>]*\/>/g, '').trim();
   const cleanMsg = sanitizeMsg(stripped);
-  state.log.push({ id: uid(), msg: cleanMsg, color: color || 'green', icon: icon || 'circle-dot', time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) });
+  state.log.push({ id: uid(), msg: cleanMsg, color: color || 'green', icon: icon || 'circle-dot', time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), pub });
   if (state.log.length > 200) state.log.shift();
   saveState();
   renderLog();
