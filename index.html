@@ -3246,13 +3246,19 @@ function confirmSubsManual() {
 }
 
 function setMaxGames(n) {
-  state.maxGames = n;
-  saveState();
-  renderModerationPage();
-  renderClassement();
-  renderSaisieSelects();
-  toast(`Limite de games mise à ${n}.`, 'green');
-  addLog(`Limite de games modifiée : ${n} games par joueur.`, 'green', 'gamepad', false);
+  showConfirm(
+    'Modifier la limite de games',
+    `Passer la limite à <strong>${n} games</strong> par joueur ?`,
+    () => {
+      state.maxGames = n;
+      saveState();
+      renderModerationPage();
+      renderClassement();
+      renderSaisieSelects();
+      toast(`Limite de games mise à ${n}.`, 'green');
+      addLog(`Limite de games modifiée : ${n} games par joueur.`, 'green', 'gamepad', false);
+    }
+  );
 }
 
 function setMaxGamesCustom() {
