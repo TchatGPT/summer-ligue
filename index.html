@@ -2783,55 +2783,114 @@ async function importFromSheetURL() {
 }
 
 function parseSheetCSV(csv) {
-  const lines = csv.split(/\r?\n/).map(l => l.trim()).filter(l => l);
-  if (lines.length < 2) return { error: 'Fichier vide ou invalide.' };
+  const allLines = csv.split(/\r?\n/);
 
-  const headers = parseCSVRow(lines[0]).map(h => h.toLowerCase().replace(/[^a-z]/g, ''));
-  const col = (terms) => headers.findIndex(h => terms.some(t => h.includes(t)));
+  // Find the row containing "GAME 1", "GAME 2" ... to locate game column positions
+  let gameHeaderIdx = -1;
+  let gameStartCols = [];
 
-  const iJoueur = col(['joueur','player','pseudo','nom','name']);
-  const iKills  = col(['kill']);
-  const iTop    = col(['top','class','place','rang']);
-  const iMult   = col(['mult','multiplicat']);
-  const iBonus  = col(['bonus']);
+  for (let i = 0; i < allLines.length; i++) {
+    const cols = parseCSVRow(allLines[i]);
+    const found = [];
+    for (let c = 0; c < cols.length; c++) {
+      if (/^[\(\s]*GAME\s*\d+[\)\s]*$/i.test((cols[c] || '').trim())) found.push(c);
+    }
+    if (found.length >= 2) { gameHeaderIdx = i; gameStartCols = found; break; }
+  }
 
-  if (iJoueur === -1) return { error: 'Colonne "Joueur" introuvable. Attendu : Joueur, Player, Pseudo ou Nom.' };
-  if (iKills  === -1) return { error: 'Colonne "Kills" introuvable.' };
+  // Fallback: try flat/long format (one row per game, columns: name, kills, top, mult, bonus)
+  if (gameHeaderIdx === -1) {
+    const lines = allLines.map(l => l.trim()).filter(l => l);
+    if (lines.length < 2) return { error: 'Fichier vide ou invalide.' };
+    const headers = parseCSVRow(lines[0]).map(h => h.toLowerCase().replace(/[^a-z]/g, ''));
+    const col = terms => headers.findIndex(h => terms.some(t => h.includes(t)));
+    const iJoueur = col(['joueur','player','pseudo','nom','name']);
+    const iKills  = col(['kill']);
+    const iTop    = col(['top','class','place','rang']);
+    const iMult   = col(['mult','multiplicat']);
+    const iBonus  = col(['bonus']);
+    if (iJoueur === -1 || iKills === -1) return { error: 'Format non reconnu. Attendu : colonnes "GAME 1"/"GAME 2" (format Summer Ligue) ou colonnes Joueur/Kills (format tabulaire).' };
+    const playersMap = {};
+    let totalGames = 0;
+    for (let i = 1; i < lines.length; i++) {
+      const cols = parseCSVRow(lines[i]);
+      const name = cols[iJoueur]?.trim(); if (!name) continue;
+      const kills = parseInt(cols[iKills]) || 0;
+      const topRaw = iTop !== -1 ? (parseInt(cols[iTop]) || 0) : 0;
+      const mult = iMult !== -1 ? (parseFloat(cols[iMult]) || 1) : 1;
+      const bonus = iBonus !== -1 ? (parseInt(cols[iBonus]) || 0) : 0;
+      let top = 0;
+      if (topRaw===1||topRaw===20) top=1; else if (topRaw===2||topRaw===15) top=2; else if (topRaw===3||topRaw===8) top=3;
+      if (!playersMap[name]) playersMap[name] = { id: uid(), name, games: [], bonusPoints: 0, skipNext: false, freezeKills: 0, pendingMult: 0 };
+      if (bonus) playersMap[name].bonusPoints = bonus;
+      if (kills > 0 || top > 0) { playersMap[name].games.push({ id: uid(), kills, top, mult, score: calcGameScore(kills, top, mult), date: '—', note: '' }); totalGames++; }
+    }
+    const players = Object.values(playersMap);
+    if (!players.length) return { error: 'Aucune donnée joueur trouvée.' };
+    return { players, totalGames };
+  }
+
+  // Wide format: each player = 3 rows (name row, label row "pts/pts totaux", values row)
+  // Each game block at column C: nameRow[C]=kills, nameRow[C+1]=placement(1/2/3)
+  //   ptsRow[C+1]=pts_totaux (authoritative score incl. mult), ptsRow[C+2]=mult note, ptsRow[C+3]=special note
+  const SKIP_RE = /^(pts|total|score|summer|classement|joueur|kills|\d+)$/i;
 
   const playersMap = {};
   let totalGames = 0;
 
-  for (let i = 1; i < lines.length; i++) {
-    const cols = parseCSVRow(lines[i]);
-    const name = cols[iJoueur]?.trim();
-    if (!name) continue;
+  for (let i = gameHeaderIdx + 1; i < allLines.length - 1; i++) {
+    const nameRow = parseCSVRow(allLines[i] || '');
+    const playerName = (nameRow[0] || '').trim();
+    if (!playerName || SKIP_RE.test(playerName)) continue;
 
-    const kills = parseInt(cols[iKills]) || 0;
-    const topRaw = iTop !== -1 ? (parseInt(cols[iTop]) || 0) : 0;
-    const mult   = iMult !== -1 ? (parseFloat(cols[iMult]) || 1) : 1;
-    const bonus  = iBonus !== -1 ? (parseInt(cols[iBonus]) || 0) : 0;
+    // Row i = name, i+1 = labels ("pts", "pts totaux"), i+2 = values
+    const ptsRow = parseCSVRow(allLines[i + 2] || '');
 
-    // Accept both placement (1/2/3) and points (20/15/8)
-    let top = 0;
-    if (topRaw === 1  || topRaw === 20) top = 1;
-    else if (topRaw === 2  || topRaw === 15) top = 2;
-    else if (topRaw === 3  || topRaw === 8)  top = 3;
-
-    if (!playersMap[name]) {
-      playersMap[name] = { id: uid(), name, games: [], bonusPoints: 0, skipNext: false, freezeKills: 0 };
+    if (!playersMap[playerName]) {
+      playersMap[playerName] = { id: uid(), name: playerName, games: [], bonusPoints: 0, skipNext: false, freezeKills: 0, pendingMult: 0 };
     }
-    if (bonus) playersMap[name].bonusPoints = bonus;
+    const player = playersMap[playerName];
 
-    // Only add a game row if there are kills or a placement
-    if (kills > 0 || top > 0) {
-      const score = calcGameScore(kills, top, mult);
-      playersMap[name].games.push({ id: uid(), kills, top, mult, score, date: '—', note: '' });
+    for (const C of gameStartCols) {
+      const killsStr     = (nameRow[C]     || '').trim();
+      const topStr       = (nameRow[C + 1] || '').trim();
+      const ptsTotauxStr = (ptsRow[C + 1]  || '').trim();
+      const multNoteStr  = (ptsRow[C + 2]  || '').trim();
+      const ptsNoteStr   = (ptsRow[C + 3]  || '').trim();
+      const nameNoteStr  = (nameRow[C + 3] || '').trim();
+
+      // Skip empty game slots (no kills AND no score)
+      if (killsStr === '' && ptsTotauxStr === '') continue;
+
+      const kills = parseInt(killsStr) || 0;
+      const topRaw = parseInt(topStr) || 0;
+      const top = topRaw === 1 ? 1 : topRaw === 2 ? 2 : topRaw === 3 ? 3 : 0;
+      const ptsTotaux = parseInt(ptsTotauxStr) || 0;
+
+      // Parse mult from pts row (e.g. "x1,2" → 1.2, French decimal)
+      let mult = 1;
+      if (multNoteStr) {
+        const m = multNoteStr.replace(/x/i, '').replace(',', '.').match(/[\d.]+/);
+        if (m) { const v = parseFloat(m[0]); if (v > 0) mult = v; }
+      }
+
+      // Score: pts_totaux is the authoritative sheet value (includes mult & bonuses)
+      const placementPts = top === 1 ? 20 : top === 2 ? 15 : top === 3 ? 8 : 0;
+      const score = ptsTotaux > 0 ? ptsTotaux : Math.round(kills * mult) + placementPts;
+
+      // Notes: keep non-numeric annotations (e.g. "gèle 5 kills", "5 pts", "> roue commu")
+      const noteParts = [ptsNoteStr, nameNoteStr].filter(n => n && !/^\d+$/.test(n));
+      const note = noteParts.join(' | ');
+
+      player.games.push({ id: uid(), kills, top, mult, score, date: '—', note });
       totalGames++;
     }
+
+    i += 2; // jump past label row and pts row, loop's i++ gives next player name row
   }
 
-  const players = Object.values(playersMap);
-  if (!players.length) return { error: 'Aucune donnée joueur trouvée.' };
+  const players = Object.values(playersMap).filter(p => p.games.length > 0);
+  if (!players.length) return { error: 'Aucune donnée joueur trouvée. Vérifiez que les noms sont en colonne A et que la feuille est partagée publiquement.' };
   return { players, totalGames };
 }
 
