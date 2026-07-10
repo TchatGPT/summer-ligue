@@ -845,6 +845,27 @@ main {
 .roue-comm-color { color: var(--gold); }
 .roue-perso-color { color: var(--purple); }
 
+.action-list-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  gap: 12px;
+}
+.action-row-name {
+  font-size: 13px;
+  font-weight: 500;
+  flex: 1;
+}
+
 .action-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
