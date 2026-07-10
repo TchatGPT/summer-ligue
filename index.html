@@ -893,6 +893,7 @@ main {
   <button class="nav-tab admin-only" style="display:none" onclick="showPage('actions')">Actions roues</button>
   <button class="nav-tab admin-only" style="display:none" onclick="showPage('joueurs')">Joueurs</button>
   <button class="nav-tab" onclick="showPage('evenements')">Évènements</button>
+  <button class="nav-tab" onclick="showPage('regles')">Règles</button>
   <button class="nav-tab admin-only" style="display:none" onclick="showPage('historique')">Logs</button>
 </nav>
 
@@ -1282,6 +1283,113 @@ main {
   <ul class="log-list" id="log-list-events">
     <li style="padding:40px;text-align:center;color:var(--text-muted)">Aucun évènement enregistré.</li>
   </ul>
+</div>
+
+<!-- PAGE RÈGLES -->
+<div id="page-regles" class="page">
+  <h1 class="section-title" style="margin-bottom:24px">Règles <span>de la Ligue</span></h1>
+
+  <!-- SYSTÈME DE POINTS -->
+  <div class="roue-section" style="margin-bottom:20px">
+    <div class="roue-header">
+      <div class="roue-title" style="color:var(--gold)"><i class="fa-solid fa-calculator" style="font-size:14px;margin-right:6px"></i>Système de points</div>
+    </div>
+    <div style="padding:4px 0">
+      <div class="action-row" style="border-left:3px solid var(--rust-light)">
+        <div><div class="action-row-name"><i class="fa-solid fa-crosshairs" style="color:var(--rust-light)"></i> Kills</div><div style="font-size:11px;color:var(--text-muted)">1 kill = 1 pt (multiplié par le multiplicateur actif)</div></div>
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--rust-light)">×mult</span>
+      </div>
+      <div class="action-row" style="border-left:3px solid #ffd700">
+        <div><div class="action-row-name"><i class="fa-solid fa-trophy" style="color:#ffd700"></i> Top 1</div><div style="font-size:11px;color:var(--text-muted)">Victoire Warzone</div></div>
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:#ffd700">+20 pts</span>
+      </div>
+      <div class="action-row" style="border-left:3px solid #c0c0c0">
+        <div><div class="action-row-name"><i class="fa-solid fa-medal" style="color:#c0c0c0"></i> Top 2</div><div style="font-size:11px;color:var(--text-muted)">Deuxième place</div></div>
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:#c0c0c0">+15 pts</span>
+      </div>
+      <div class="action-row" style="border-left:3px solid #cd7f32">
+        <div><div class="action-row-name"><i class="fa-solid fa-medal" style="color:#cd7f32"></i> Top 3</div><div style="font-size:11px;color:var(--text-muted)">Troisième place</div></div>
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:#cd7f32">+8 pts</span>
+      </div>
+      <div class="action-row" style="border-left:3px solid var(--border)">
+        <div><div class="action-row-name"><i class="fa-solid fa-minus" style="color:var(--text-muted)"></i> Pas de top</div><div style="font-size:11px;color:var(--text-muted)">Aucun classement</div></div>
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text-muted)">+0 pts</span>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:10px 14px;margin-top:12px;font-size:12px;color:var(--text-muted);line-height:1.7">
+        <strong style="color:var(--gold)">Formule :</strong> Score game = (kills × multiplicateur) + pts classement + bonus<br>
+        <strong style="color:var(--gold)">Multiplicateurs disponibles :</strong> ×1.1 · ×1.2 · ×1.3 · ×1.4 · ×1.5 · ×2
+      </div>
+    </div>
+  </div>
+
+  <!-- RÈGLES GÉNÉRALES -->
+  <div class="roue-section" style="margin-bottom:20px">
+    <div class="roue-header">
+      <div class="roue-title" style="color:var(--green)"><i class="fa-solid fa-book" style="font-size:14px;margin-right:6px"></i>Règles générales</div>
+    </div>
+    <div style="padding:4px 0">
+      <div class="action-row">
+        <div><div class="action-row-name"><i class="fa-solid fa-gamepad"></i> Nombre de games</div><div style="font-size:11px;color:var(--text-muted)">Chaque joueur joue jusqu'à 20 games, toutes comptabilisées</div></div>
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--gold)">20 max</span>
+      </div>
+      <div class="action-row">
+        <div><div class="action-row-name"><i class="fa-solid fa-circle-plus"></i> Game supplémentaire</div><div style="font-size:11px;color:var(--text-muted)">Via la Roue : une game bonus s'ajoute hors limite, le compteur passe à 21, 22...</div></div>
+      </div>
+      <div class="action-row">
+        <div><div class="action-row-name"><i class="fa-solid fa-bolt-lightning"></i> Points bonus</div><div style="font-size:11px;color:var(--text-muted)">Certaines actions de roue accordent des pts bonus permanents (hors score game)</div></div>
+      </div>
+      <div class="action-row">
+        <div><div class="action-row-name"><i class="fa-solid fa-forward-step"></i> Skip</div><div style="font-size:11px;color:var(--text-muted)">Si skip activé, la prochaine game saisie est ignorée (ne compte pas)</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROUE COMMUNAUTAIRE -->
+  <div class="roue-section" style="margin-bottom:20px">
+    <div class="roue-header">
+      <div>
+        <div class="roue-title roue-comm-color">Roue Communautaire <span style="font-size:13px;color:var(--text-muted);font-weight:400">(par palier de 50 subgifts)</span></div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">S'applique à tous les joueurs ou à un joueur ciblé selon l'action</div>
+      </div>
+    </div>
+    <div class="action-list-compact">
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-star"></i> Meilleure game × 1.5</div><div style="font-size:11px;color:var(--text-muted)">Multiplie le score de la meilleure game de chaque joueur par 1.5</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-circle-plus"></i> Ajout d'une game sup</div><div style="font-size:11px;color:var(--text-muted)">Saisie d'une game supplémentaire pour un joueur (hors limite des 20)</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-trash-can"></i> Suppression de la pire game</div><div style="font-size:11px;color:var(--text-muted)">Supprime la game avec le score le plus bas de chaque joueur</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-wand-magic-sparkles"></i> Joker sur la game de son choix</div><div style="font-size:11px;color:var(--text-muted)">Supprime une game spécifique au choix pour un joueur</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-arrow-right-arrow-left"></i> Échange de game (meilleure ↔ pire)</div><div style="font-size:11px;color:var(--text-muted)">Échange la meilleure game de joueur A contre la pire game de joueur B</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-clone"></i> Clone meilleure game → pire</div><div style="font-size:11px;color:var(--text-muted)">Clone la meilleure game d'un joueur et remplace sa pire game (tiré au hasard)</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-crown"></i> +5 pts par Top 1</div><div style="font-size:11px;color:var(--text-muted)">Chaque top 1 dans le classement actuel ajoute +5 pts de bonus permanent</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-angles-up"></i> Pire game d'une personne × 2</div><div style="font-size:11px;color:var(--text-muted)">Double le score de la pire game d'un joueur ciblé</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shuffle"></i> Game au hasard × 2</div><div style="font-size:11px;color:var(--text-muted)">Double le score d'une game tirée au sort pour un joueur ciblé</div></div></div>
+    </div>
+  </div>
+
+  <!-- ROUE PERSONNELLE -->
+  <div class="roue-section">
+    <div class="roue-header">
+      <div>
+        <div class="roue-title roue-perso-color">Roue Personnelle <span style="font-size:13px;color:var(--text-muted);font-weight:400">(5 subgifts avant la game)</span></div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Applicable à toi-même ou à un autre joueur de ton choix</div>
+      </div>
+    </div>
+    <div class="action-list-compact">
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-arrow-right-arrow-left"></i> Échange de game avec joueur au choix</div><div style="font-size:11px;color:var(--text-muted)">Échange une game spécifique entre deux joueurs</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-circle-minus"></i> Enlève -5 pts à un joueur</div><div style="font-size:11px;color:var(--text-muted)">Retire 5 points de bonus au joueur ciblé</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-snowflake"></i> Gèle un mate à 5 kills</div><div style="font-size:11px;color:var(--text-muted)">Force les kills du joueur ciblé à 5 pour sa prochaine game</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-bolt-lightning"></i> +10 pts</div><div style="font-size:11px;color:var(--text-muted)">Ajoute 10 pts de bonus permanent au joueur</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-bolt"></i> +5 pts</div><div style="font-size:11px;color:var(--text-muted)">Ajoute 5 pts de bonus permanent au joueur</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-xmark"></i> Multiplicateur de kills</div><div style="font-size:11px;color:var(--text-muted)">Applique ×1.1 / ×1.2 / ×1.3 / ×1.4 / ×1.5 / ×2 sur les kills de la prochaine game</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-crosshairs" style="font-size:11px"></i> Clone kill du meilleur killeur</div><div style="font-size:11px;color:var(--text-muted)">Copie le nombre de kills du top killeur de la game pour un joueur</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-copy"></i> Clone kills d'un joueur au choix</div><div style="font-size:11px;color:var(--text-muted)">Copie les kills d'une game d'un autre joueur pour la saisie</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-copy"></i> Clone kill de Lriaa</div><div style="font-size:11px;color:var(--text-muted)">Copie les kills de Lriaa sur une game</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-trash-can" style="font-size:11px"></i> Enlève une mauvaise game</div><div style="font-size:11px;color:var(--text-muted)">Retire une game au choix du joueur (pas forcément la pire)</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-dice" style="font-size:11px"></i> Enlève une game aléatoire</div><div style="font-size:11px;color:var(--text-muted)">Supprime une game au hasard, ni la meilleure ni la pire (protégées)</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-forward-step"></i> Skip ta game</div><div style="font-size:11px;color:var(--text-muted)">La prochaine game du joueur ne sera pas comptabilisée</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-plus"></i> Game supplémentaire</div><div style="font-size:11px;color:var(--text-muted)">Ajoute une game bonus hors limite des 20 pour le joueur ciblé</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-trophy"></i> +10 pts à partir du top 10</div><div style="font-size:11px;color:var(--text-muted)">Si le joueur finit dans le top 10 Warzone, +10 pts s'appliquent sur sa prochaine game</div></div></div>
+    </div>
+  </div>
 </div>
 
 <div id="page-historique" class="page">
