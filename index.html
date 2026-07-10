@@ -2332,7 +2332,9 @@ function submitGame() {
   const top = currentTop;
 
   // Apply freeze
+  let frozenAt = 0;
   if (player.freezeKills) {
+    frozenAt = player.freezeKills;
     kills = player.freezeKills;
     player.freezeKills = 0;
     toast(`Kills gelés à ${kills} pour ${player.name}.`, 'info');
@@ -2359,6 +2361,7 @@ function submitGame() {
 
   const score = baseScore + pendingBonusApplied;
   const noteparts = [];
+  if (frozenAt) noteparts.push(`❄ gelé ${frozenAt} kills`);
   if (multFromRoue) noteparts.push(`×${mult} roue`);
   if (pendingBonusApplied) noteparts.push(`+${pendingBonusApplied}pts top10`);
   if (saisieBonus > 0) noteparts.push(`+${saisieBonus}pts bonus`);
