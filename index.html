@@ -586,6 +586,7 @@ main {
 .game-card .gc-score { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 22px; color: var(--gold-light); }
 .game-card .gc-detail { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 .game-card .gc-mult { font-size: 11px; color: var(--purple); margin-top: 2px; }
+.game-card .gc-note { font-size: 10px; color: var(--gold); margin-top: 3px; font-style: italic; line-height: 1.3; }
 .game-card .gc-tag {
   position: absolute;
   top: 4px;
@@ -1487,7 +1488,8 @@ async function loadState() {
       msg: l.msg || '',
       color: l.color || 'green',
       icon: l.icon || 'circle-dot',
-      time: l.time || ''
+      time: l.time || '',
+      pub: !!l.pub
     }));
 
     const top1Flag = (flags || []).find(f => f.key === 'top1BonusDone');
@@ -1534,7 +1536,7 @@ async function saveState() {
   // Logs (sans seq — ordre par created_at)
   try {
     const logRows = state.log.map(l => ({
-      id: l.id, msg: l.msg, color: l.color, icon: l.icon, time: l.time
+      id: l.id, msg: l.msg, color: l.color, icon: l.icon, time: l.time, pub: !!l.pub
     }));
     if (logRows.length > 0) await _sb.from('logs').upsert(logRows);
     const { data: dbL } = await _sb.from('logs').select('id');
@@ -2024,6 +2026,7 @@ function showPlayerDetail(id) {
         <div class="gc-score">${g.score}</div>
         <div class="gc-detail">${g.kills} kills · ${g.top === 1 ? 'Top 1' : g.top === 2 ? 'Top 2' : g.top === 3 ? 'Top 3' : '—'}</div>
         ${g.mult !== 1 ? `<div class="gc-mult">×${g.mult}</div>` : ''}
+        ${g.note ? `<div class="gc-note">${escHtml(g.note)}</div>` : ''}
         ${!isCounted ? '<div style="font-size:9px;color:var(--rust);margin-top:2px">non comptée</div>' : ''}
         ${isAdmin() ? `
           <button onclick="openEditGame('${p.id}','${g.id}')" style="position:absolute;bottom:5px;left:6px;background:none;border:none;color:var(--blue);cursor:pointer;padding:2px" title="Modifier">
@@ -2775,11 +2778,38 @@ async function importFromSheetURL() {
     if (result.error) { show(`<i class="fa-solid fa-circle-exclamation"></i> ${result.error}`); return; }
 
     state.players = result.players;
+
+    // Generate public event logs from game notes (roue, vol, gel, etc.)
+    const importEvents = [];
+    const importTime = new Date().toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    result.players.forEach(p => {
+      p.games.forEach((g, idx) => {
+        if (!g.note || !g.note.trim()) return;
+        const n = g.note.trim();
+        let color = 'gold', icon = 'wand-magic-sparkles';
+        if (/vol/i.test(n))              { color = 'rust';   icon = 'right-left'; }
+        else if (/gel|snow|frig/i.test(n)) { color = 'blue';   icon = 'snowflake'; }
+        else if (/roue.?commu/i.test(n) || />\s*roue/i.test(n)) { color = 'gold'; icon = 'rotate'; }
+        else if (/clone/i.test(n))       { color = 'purple'; icon = 'copy'; }
+        importEvents.push({
+          id: uid(),
+          msg: `<strong>${escHtml(p.name)}</strong> — ${escHtml(n)} (game ${idx + 1})`,
+          color, icon, time: importTime, pub: true
+        });
+      });
+    });
+
+    // Summary log (admin-only) + all event logs
+    state.log.push(
+      { id: uid(), msg: `Données importées depuis Google Sheets (${result.players.length} joueurs, ${result.totalGames} games, ${importEvents.length} évènements).`, color: 'gold', icon: 'table', time: importTime, pub: false },
+      ...importEvents
+    );
+    if (state.log.length > 200) state.log = state.log.slice(-200);
+
     saveState();
-    addLog(`Données importées depuis Google Sheets (${result.players.length} joueurs, ${result.totalGames} games).`, 'gold', 'table');
     renderAll();
     closeModal('modal-import-sheet');
-    toast(`Import réussi — ${result.players.length} joueurs.`, 'gold');
+    toast(`Import réussi — ${result.players.length} joueurs · ${importEvents.length} évènements.`, 'gold');
   } catch(e) {
     show(`<i class="fa-solid fa-circle-exclamation"></i> Impossible de charger la feuille.<br>
       <span style="color:var(--text-muted)">Vérifiez que la feuille est partagée en accès public, ou utilisez
