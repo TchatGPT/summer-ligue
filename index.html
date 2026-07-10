@@ -2582,21 +2582,23 @@ function updateEditPreview() {
     const m = part.match(/\+(\d+)\s*pts\s*bonus/i);
     if (m) existingBonus += parseInt(m[1]);
   });
-  const bonusTotal = existingBonus + _editBonus;
+  const bonusPositive = existingBonus + _editBonus;
+  // If nothing positive is active, show removal as a red negative to confirm
+  const displayBonus = bonusPositive !== 0 ? bonusPositive : (_editBonusRemoved > 0 ? -_editBonusRemoved : 0);
   const bonusRow = document.getElementById('edit-prev-bonus-row');
   const bonusEl  = document.getElementById('edit-prev-bonus');
-  if (bonusTotal > 0) {
+  if (displayBonus > 0) {
     bonusRow.style.display = '';
     bonusRow.style.color = 'var(--blue)';
-    bonusEl.textContent = `+${bonusTotal} pts`;
-  } else if (bonusTotal < 0) {
+    bonusEl.textContent = `+${displayBonus} pts`;
+  } else if (displayBonus < 0) {
     bonusRow.style.display = '';
     bonusRow.style.color = 'var(--rust)';
-    bonusEl.textContent = `${bonusTotal} pts`;
+    bonusEl.textContent = `${displayBonus} pts`;
   } else {
     bonusRow.style.display = 'none';
   }
-  document.getElementById('edit-prev-total').textContent = (killsPts + topPts + bonusTotal) + ' pts';
+  document.getElementById('edit-prev-total').textContent = (killsPts + topPts + bonusPositive) + ' pts';
 }
 
 function addBonusFromEdit(pts) {
