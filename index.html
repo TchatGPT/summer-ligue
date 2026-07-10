@@ -1061,7 +1061,7 @@ main {
 
       <div class="action-row">
         <div>
-          <div class="action-row-name">Meilleure game × 1.5</div>
+          <div class="action-row-name"><i class="fa-solid fa-star"></i> Meilleure game × 1.5</div>
           <div style="font-size:11px;color:var(--text-muted)">Multiplie le score de la meilleure game de chaque joueur par 1.5</div>
         </div>
         <button class="btn btn-gold btn-sm" onclick="openAction('best-x15')">Appliquer</button>
@@ -1069,7 +1069,7 @@ main {
 
       <div class="action-row">
         <div>
-          <div class="action-row-name">Ajout d'une game sup</div>
+          <div class="action-row-name"><i class="fa-solid fa-circle-plus"></i> Ajout d'une game sup</div>
           <div style="font-size:11px;color:var(--text-muted)">Saisie d'une game supplémentaire pour un joueur (hors limite des 20)</div>
         </div>
         <button class="btn btn-gold btn-sm" onclick="openAction('add-bonus-game')">Appliquer</button>
@@ -1077,7 +1077,7 @@ main {
 
       <div class="action-row">
         <div>
-          <div class="action-row-name">Suppression de la pire game</div>
+          <div class="action-row-name"><i class="fa-solid fa-trash-can"></i> Suppression de la pire game</div>
           <div style="font-size:11px;color:var(--text-muted)">Supprime la game avec le score le plus bas de chaque joueur</div>
         </div>
         <button class="btn btn-gold btn-sm" onclick="openAction('remove-worst')">Appliquer</button>
@@ -1085,7 +1085,7 @@ main {
 
       <div class="action-row">
         <div>
-          <div class="action-row-name">Joker sur la game de son choix</div>
+          <div class="action-row-name"><i class="fa-solid fa-wand-magic-sparkles"></i> Joker sur la game de son choix</div>
           <div style="font-size:11px;color:var(--text-muted)">Supprime une game spécifique au choix pour un joueur</div>
         </div>
         <button class="btn btn-gold btn-sm" onclick="openAction('joker-game')">Appliquer</button>
@@ -1093,7 +1093,7 @@ main {
 
       <div class="action-row">
         <div>
-          <div class="action-row-name">Échange de game (meilleure ↔ pire)</div>
+          <div class="action-row-name"><i class="fa-solid fa-arrow-right-arrow-left"></i> Échange de game (meilleure ↔ pire)</div>
           <div style="font-size:11px;color:var(--text-muted)">Échange la meilleure game de joueur A contre la pire game de joueur B</div>
         </div>
         <button class="btn btn-gold btn-sm" onclick="openModal('modal-echange')">Appliquer</button>
@@ -1101,7 +1101,7 @@ main {
 
       <div class="action-row">
         <div>
-          <div class="action-row-name">Clone meilleure game → pire (hasard)</div>
+          <div class="action-row-name"><i class="fa-solid fa-clone"></i> Clone meilleure game → pire (hasard)</div>
           <div style="font-size:11px;color:var(--text-muted)">Clone la meilleure game d'un joueur et remplace sa pire game</div>
         </div>
         <button class="btn btn-gold btn-sm" onclick="openAction('clone-best-worst')">Appliquer</button>
@@ -1117,7 +1117,7 @@ main {
 
       <div class="action-row">
         <div>
-          <div class="action-row-name">Pire game d'une personne × 2</div>
+          <div class="action-row-name"><i class="fa-solid fa-angles-up"></i> Pire game d'une personne × 2</div>
           <div style="font-size:11px;color:var(--text-muted)">Double le score de la pire game d'un joueur</div>
         </div>
         <button class="btn btn-gold btn-sm" onclick="openAction('comm-worst-x2')">Appliquer</button>
@@ -1125,7 +1125,7 @@ main {
 
       <div class="action-row">
         <div>
-          <div class="action-row-name">Game au hasard × 2</div>
+          <div class="action-row-name"><i class="fa-solid fa-shuffle"></i> Game au hasard × 2</div>
           <div style="font-size:11px;color:var(--text-muted)">Double le score d'une game tirée au sort pour un joueur</div>
         </div>
         <button class="btn btn-gold btn-sm" onclick="openAction('comm-rand-x2')">Appliquer</button>
@@ -1146,7 +1146,7 @@ main {
 
       <div class="action-row">
         <div>
-          <div class="action-row-name">Échange de game avec joueur au choix</div>
+          <div class="action-row-name"><i class="fa-solid fa-arrow-right-arrow-left"></i> Échange de game avec joueur au choix</div>
           <div style="font-size:11px;color:var(--text-muted)">Échange une game spécifique entre deux joueurs</div>
         </div>
         <button class="btn btn-purple btn-sm" onclick="openAction('perso-echange')">Appliquer</button>
@@ -1154,7 +1154,7 @@ main {
 
       <div class="action-row">
         <div>
-          <div class="action-row-name">Enlève -5 pts à un joueur</div>
+          <div class="action-row-name"><i class="fa-solid fa-circle-minus"></i> Enlève -5 pts à un joueur</div>
           <div style="font-size:11px;color:var(--text-muted)">Retire 5 points à la personne de son choix</div>
         </div>
         <button class="btn btn-purple btn-sm" onclick="openAction('perso-minus5')">Appliquer</button>
@@ -1162,7 +1162,7 @@ main {
 
       <div class="action-row">
         <div>
-          <div class="action-row-name">Gèle un mate à 5 kills</div>
+          <div class="action-row-name"><i class="fa-solid fa-snowflake"></i> Gèle un mate à 5 kills</div>
           <div style="font-size:11px;color:var(--text-muted)">Fixe les kills d'un joueur à 5 pour sa prochaine game</div>
         </div>
         <button class="btn btn-purple btn-sm" onclick="openAction('perso-freeze')">Appliquer</button>
@@ -1186,7 +1186,7 @@ main {
 
       <div class="action-row">
         <div>
-          <div class="action-row-name">Multiplicateur de kills</div>
+          <div class="action-row-name"><i class="fa-solid fa-xmark"></i> Multiplicateur de kills</div>
           <div style="font-size:11px;color:var(--text-muted)">Applique x1.1 / x1.2 / x1.3 / x1.4 / x1.5 / x2 sur la prochaine game</div>
         </div>
         <button class="btn btn-purple btn-sm" onclick="openAction('perso-mult')">Appliquer</button>
@@ -1202,7 +1202,7 @@ main {
 
       <div class="action-row">
         <div>
-          <div class="action-row-name">Clone kills d'un joueur au choix</div>
+          <div class="action-row-name"><i class="fa-solid fa-copy"></i> Clone kills d'un joueur au choix</div>
           <div style="font-size:11px;color:var(--text-muted)">Copie les kills d'une game d'un autre joueur</div>
         </div>
         <button class="btn btn-purple btn-sm" onclick="openAction('perso-clone-kills')">Appliquer</button>
@@ -1210,7 +1210,7 @@ main {
 
       <div class="action-row">
         <div>
-          <div class="action-row-name">Clone kill de Lriaa</div>
+          <div class="action-row-name"><i class="fa-solid fa-copy"></i> Clone kill de Lriaa</div>
           <div style="font-size:11px;color:var(--text-muted)">Copie les kills de Lriaa sur une game</div>
         </div>
         <button class="btn btn-purple btn-sm" onclick="openAction('perso-clone-lriaa')">Appliquer</button>
@@ -1234,7 +1234,7 @@ main {
 
       <div class="action-row">
         <div>
-          <div class="action-row-name">Skip ta game</div>
+          <div class="action-row-name"><i class="fa-solid fa-forward-step"></i> Skip ta game</div>
           <div style="font-size:11px;color:var(--text-muted)">La prochaine game du joueur ne sera pas comptabilisée</div>
         </div>
         <button class="btn btn-purple btn-sm" onclick="openAction('perso-skip')">Appliquer</button>
@@ -1242,7 +1242,7 @@ main {
 
       <div class="action-row">
         <div>
-          <div class="action-row-name">Game supplémentaire</div>
+          <div class="action-row-name"><i class="fa-solid fa-plus"></i> Game supplémentaire</div>
           <div style="font-size:11px;color:var(--text-muted)">Ajoute une game bonus hors limite des 20</div>
         </div>
         <button class="btn btn-purple btn-sm" onclick="openAction('perso-extra-game')">Appliquer</button>
@@ -1250,7 +1250,7 @@ main {
 
       <div class="action-row">
         <div>
-          <div class="action-row-name">+10 pts à partir du top 10</div>
+          <div class="action-row-name"><i class="fa-solid fa-trophy"></i> +10 pts à partir du top 10</div>
           <div style="font-size:11px;color:var(--text-muted)">Ajoute 10 pts bonus si le joueur est dans le top 10 du classement</div>
         </div>
         <button class="btn btn-purple btn-sm" onclick="openAction('perso-top10pts')">Appliquer</button>
@@ -1828,7 +1828,7 @@ function renderLog() {
         const color = colorMap[l.color] || colorMap.green;
         return `<li class="log-item">
           <i class="fa-solid fa-${l.icon || 'circle'}" style="color:${color};font-size:13px;flex-shrink:0;margin-top:2px;width:16px;text-align:center"></i>
-          <div style="flex:1">${sanitizeMsg(l.msg)}</div>
+          <div style="flex:1">${l.msg}</div>
           <div class="log-time">${l.time}</div>
         </li>`;
       }).join('')
@@ -3016,6 +3016,7 @@ async function importFromSheetURL() {
       p.games.forEach((g, idx) => {
         if (!g.note || !g.note.trim()) return;
         const n = g.note.trim();
+        const displayNote = n.replace(/^>\s*/, '').trim();
         let color = 'gold', icon = 'wand-magic-sparkles';
         if (/vol/i.test(n))              { color = 'rust';   icon = 'right-left'; }
         else if (/gel|snow|frig/i.test(n)) { color = 'blue';   icon = 'snowflake'; }
@@ -3023,7 +3024,7 @@ async function importFromSheetURL() {
         else if (/clone/i.test(n))       { color = 'purple'; icon = 'copy'; }
         importEvents.push({
           id: uid(),
-          msg: `<strong>${escHtml(p.name)}</strong> — ${escHtml(n)} (game ${idx + 1})`,
+          msg: `<strong>${escHtml(p.name)}</strong> — ${escHtml(displayNote)} (game ${idx + 1})`,
           color, icon, time: importTime, pub: true
         });
       });
