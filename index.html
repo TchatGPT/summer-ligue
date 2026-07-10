@@ -1351,13 +1351,11 @@ main {
       <button class="modal-close" onclick="closeModal('modal-import-sheet')">×</button>
     </div>
     <div class="modal-body">
-      <p style="font-size:12px;color:var(--text-muted);margin-bottom:6px;line-height:1.6">
-        Collez l'URL de votre Google Sheets (doit être partagé en <strong style="color:var(--gold)">accès public</strong> ou <strong style="color:var(--gold)">publié sur le web</strong>).<br>
-        Structure attendue :
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.7">
+        Collez l'URL de l'onglet <strong style="color:var(--gold)">SCORE</strong> de votre Google Sheets.<br>
+        <span style="color:var(--rust-light)"><i class="fa-solid fa-triangle-exclamation"></i> Important :</span> naviguez d'abord sur l'onglet <strong>"score"</strong> dans le sheet, puis copiez l'URL du navigateur (elle contiendra <code style="color:var(--gold)">#gid=…</code>).<br>
+        La feuille doit être partagée en <strong style="color:var(--gold)">accès public</strong>.
       </p>
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:2px;padding:8px 12px;font-family:'Barlow Condensed',sans-serif;font-size:12px;margin-bottom:14px;color:var(--text-muted)">
-        <span style="color:var(--gold)">Joueur</span> | <span style="color:var(--blue)">Kills</span> | <span style="color:var(--green)">Top</span> (1/2/3 ou 20/15/8) | <span style="color:var(--purple)">Mult</span> (optionnel) | <span style="color:var(--rust-light)">Bonus</span> (optionnel)
-      </div>
       <div class="form-row">
         <label class="form-label">URL Google Sheets</label>
         <input type="url" class="form-input" id="sheet-url-input" placeholder="https://docs.google.com/spreadsheets/d/..." onkeydown="if(event.key==='Enter')importFromSheetURL()">
