@@ -2841,6 +2841,12 @@ function parseSheetCSV(csv) {
     const playerName = (nameRow[0] || '').trim();
     if (!playerName || SKIP_RE.test(playerName) || playerName.includes('(')) continue;
 
+    // Validate: the row after the name row must be the label row containing "pts"
+    // in at least one game column — this is the signature of a real player group
+    const labelRow = parseCSVRow(allLines[i + 1] || '');
+    const isPlayerGroup = gameStartCols.some(C => /pts/i.test(labelRow[C] || ''));
+    if (!isPlayerGroup) continue;
+
     // Row i = name, i+1 = labels ("pts", "pts totaux"), i+2 = values
     const ptsRow = parseCSVRow(allLines[i + 2] || '');
 
