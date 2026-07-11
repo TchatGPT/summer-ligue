@@ -1333,6 +1333,7 @@ main {
   <ul class="log-list" id="log-list-events">
     <li style="padding:40px;text-align:center;color:var(--text-muted)">Aucun évènement enregistré.</li>
   </ul>
+  <div id="log-pagination"></div>
 </div>
 
 <!-- PAGE RÈGLES -->
@@ -2106,9 +2107,41 @@ function renderLog() {
     : '<li style="padding:40px;text-align:center;color:var(--text-muted)">Aucun évènement enregistré.</li>';
 
   const adminEl = document.getElementById('log-list');
-  const pubEl   = document.getElementById('log-list-events');
   if (adminEl) adminEl.innerHTML = toHtml(state.log);
-  if (pubEl)   pubEl.innerHTML   = toHtml(state.log.filter(l => l.pub));
+
+  const pubEl = document.getElementById('log-list-events');
+  const pagEl = document.getElementById('log-pagination');
+  if (pubEl) {
+    const PAGE_SIZE = 50;
+    const pubLogs = state.log.filter(l => l.pub).reverse();
+    const totalPages = Math.max(1, Math.ceil(pubLogs.length / PAGE_SIZE));
+    _logPage = Math.min(_logPage, totalPages - 1);
+    const pageItems = pubLogs.slice(_logPage * PAGE_SIZE, (_logPage + 1) * PAGE_SIZE);
+    pubEl.innerHTML = pageItems.length
+      ? pageItems.map(l => {
+          const color = colorMap[l.color] || colorMap.green;
+          return `<li class="log-item">
+            <i class="fa-solid fa-${l.icon || 'circle'}" style="color:${color};font-size:13px;flex-shrink:0;margin-top:2px;width:16px;text-align:center"></i>
+            <div style="flex:1">${l.msg}</div>
+            <div class="log-time">${l.time}</div>
+          </li>`;
+        }).join('')
+      : '<li style="padding:40px;text-align:center;color:var(--text-muted)">Aucun évènement enregistré.</li>';
+    if (pagEl) {
+      pagEl.innerHTML = totalPages > 1
+        ? `<div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:16px 0;margin-top:8px;border-top:1px solid var(--border)">
+            <button onclick="setLogPage(${_logPage - 1})" ${_logPage === 0 ? 'disabled' : ''} class="btn" style="font-size:13px;padding:6px 14px">← Précédent</button>
+            <span style="font-size:13px;color:var(--text-muted)">Page ${_logPage + 1} / ${totalPages}</span>
+            <button onclick="setLogPage(${_logPage + 1})" ${_logPage >= totalPages - 1 ? 'disabled' : ''} class="btn" style="font-size:13px;padding:6px 14px">Suivant →</button>
+          </div>`
+        : '';
+    }
+  }
+}
+
+function setLogPage(n) {
+  _logPage = n;
+  renderLog();
 }
 
 // ============================================================
@@ -3216,6 +3249,7 @@ function closeModal(id) {
 // ============================================================
 let _confirmCb = null;
 let _confirmCancelCb = null;
+let _logPage = 0;
 
 function showConfirm(title, message, onOk, danger = true, okLabel = null, onCancel = null) {
   document.getElementById('confirm-title').textContent = title;
@@ -3300,6 +3334,7 @@ function addLog(msg, color, icon, pub = false) {
   const cleanMsg = sanitizeMsg(stripped);
   state.log.push({ id: uid(), msg: cleanMsg, color: color || 'green', icon: icon || 'circle-dot', time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), pub });
   if (state.log.length > 200) state.log.shift();
+  _logPage = 0;
   saveState();
   renderLog();
 }
