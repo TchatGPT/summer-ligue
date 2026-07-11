@@ -2108,9 +2108,9 @@ function renderClassement() {
       <td class="stat-games">${p.games.length}/${(state.maxGames || 20) + (p.extraGames || 0)}</td>
       <td class="stat-kills">${totalKills}</td>
       <td class="stat-tops">
-        ${top1count ? `<span style="color:#ffd700"><i class="fa-solid fa-trophy" style="font-size:9px"></i> ${top1count}</span> ` : ''}
-        ${top2count ? `<span style="color:#c0c0c0"><i class="fa-solid fa-medal" style="font-size:9px"></i> ${top2count}</span> ` : ''}
-        ${top3count ? `<span style="color:#cd7f32"><i class="fa-solid fa-medal" style="font-size:9px"></i> ${top3count}</span>` : ''}
+        ${top1count ? `<span style="color:#ffd700;display:inline-flex;align-items:center;gap:3px"><i class="fa-solid fa-trophy" style="font-size:9px"></i>${top1count}</span> ` : ''}
+        ${top2count ? `<span style="color:#c0c0c0;display:inline-flex;align-items:center;gap:3px"><i class="fa-solid fa-medal" style="font-size:9px"></i>${top2count}</span> ` : ''}
+        ${top3count ? `<span style="color:#cd7f32;display:inline-flex;align-items:center;gap:3px"><i class="fa-solid fa-medal" style="font-size:9px"></i>${top3count}</span>` : ''}
         ${!top1count && !top2count && !top3count ? '<span style="color:var(--text-muted)">—</span>' : ''}
       </td>
       <td>${best ? `<span class="game-pill best" style="background:rgba(201,149,74,0.1)">${best.score} pts · ${best.kills} kills</span>` : '<span style="color:var(--text-muted)">—</span>'}</td>
