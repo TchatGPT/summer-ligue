@@ -1542,7 +1542,34 @@ main {
     </div>
   </div>
 
-  <!-- ZONE DANGER -->
+  <!-- SAUVEGARDE & RESTAURATION -->
+  <div class="roue-section" style="margin-top:20px">
+    <div class="roue-header">
+      <div class="roue-title" style="color:var(--blue)"><i class="fa-solid fa-floppy-disk" style="font-size:14px;margin-right:6px"></i>Sauvegarde &amp; Restauration</div>
+    </div>
+    <div style="padding:12px 0">
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;line-height:1.6">
+        Sauvegardez l'intégralité des données (joueurs, games, scores, événements) dans un fichier JSON horodaté. Restaurez à tout moment depuis un fichier de sauvegarde.
+      </div>
+
+      <div style="margin-bottom:20px">
+        <label class="form-label">Télécharger une sauvegarde</label>
+        <button class="btn btn-blue" onclick="exportData()"><i class="fa-solid fa-floppy-disk"></i> Sauvegarder maintenant</button>
+      </div>
+
+      <div>
+        <label class="form-label">Restaurer depuis une sauvegarde</label>
+        <label for="restore-file-input" class="import-area" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;gap:6px">
+          <i class="fa-solid fa-folder-open" style="font-size:22px;color:var(--text-muted)"></i>
+          <div style="font-size:13px;font-weight:500;color:var(--text)">Cliquez pour choisir un fichier</div>
+          <div style="font-size:11px;color:var(--text-muted)">Fichier JSON de sauvegarde uniquement</div>
+          <input type="file" id="restore-file-input" accept=".json" style="display:none" onchange="importData(event)">
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- PURGE DES DONNÉES -->
   <div class="roue-section" style="margin-top:20px;border-color:var(--rust);background:rgba(180,60,40,0.05)">
     <div class="roue-header" style="border-bottom-color:rgba(180,60,40,0.3)">
       <div class="roue-title" style="color:var(--rust-light)"><i class="fa-solid fa-skull" style="font-size:14px;margin-right:6px"></i>Purge des Données</div>
@@ -3340,14 +3367,18 @@ document.querySelectorAll('.modal-overlay').forEach(m => {
 // EXPORT / IMPORT
 // ============================================================
 function exportData() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const fname = `Sauvegarde_Ligue_${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}.json`;
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `summer-ligue-${new Date().toISOString().slice(0,10)}.json`;
+  a.download = fname;
   a.click();
   URL.revokeObjectURL(url);
-  toast('Export téléchargé !');
+  addLog('Sauvegarde téléchargée.', 'blue', 'floppy-disk');
+  toast('Sauvegarde téléchargée !', 'info');
 }
 
 function importData(event) {
