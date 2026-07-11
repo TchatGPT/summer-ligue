@@ -1924,6 +1924,7 @@ async function loadState() {
 async function saveState() {
   // Double vérification : closure locale + JWT réel via SDK (non falsifiable)
   if (!isAdmin() || !await _refreshAuth()) return;
+  _savePending = true;
 
   // Players
   try {
@@ -1978,6 +1979,7 @@ async function saveState() {
       { key: 'maxGames',      value: String(state.maxGames  || 20) }
     ]);
   } catch(e) { console.error('saveState flags:', e); }
+  _savePending = false;
 }
 
 // ============================================================
@@ -4106,6 +4108,7 @@ function preloadSheetData() {
 // AUTO-REFRESH
 // ============================================================
 let _refreshPending = false;
+let _savePending = false;
 
 function _stateFingerprint() {
   return state.players.map(p => `${p.id}:${p.games.length}:${p.bonusPoints}`).join('|')
@@ -4114,7 +4117,7 @@ function _stateFingerprint() {
 }
 
 async function autoRefresh() {
-  if (_refreshPending) return;
+  if (_refreshPending || _savePending) return;
   if (document.querySelector('.modal-overlay[style*="flex"]')) return;
   _refreshPending = true;
   try {
