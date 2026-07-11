@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script defer src="/_vercel/insights/script.js"></script>
 <title>Summer Ligue Warzone — by Lriaa</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌴</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
@@ -2952,24 +2953,16 @@ function execAction() {
   switch(type) {
     case 'best-x15': {
       let count = 0;
-      let skipped = 0;
       state.players.forEach(p => {
         const best = getBestGame(p);
         if (best) {
-          const isOtherRoueGame = best.mult > 1
-            || (best.note && (best.note.includes('clone') || best.note.includes('Lriaa') || best.note === 'bonus game (roue)'));
-          if (isOtherRoueGame) {
-            addLog(`<strong>${p.name}</strong> — ×1.5 non appliqué (autre bonus roue déjà actif sur la meilleure game).`, 'gold', 'ban');
-            skipped++;
-            return;
-          }
           best.score = Math.round(best.score * 1.5);
-          best.note = 'x1.5 (roue comm)';
+          best.note = (best.note ? best.note + ' · ' : '') + 'x1.5 (roue comm)';
           count++;
         }
       });
-      addLog(`Meilleure game ×1.5 appliquée à ${count} joueur(s)${skipped ? `, ignoré pour ${skipped} (non cumulable)` : ''}.`, 'gold', 'star', true);
-      toast(`×1.5 sur ${count} meilleures games !${skipped ? ` (${skipped} ignoré)` : ''}`, 'gold');
+      addLog(`Meilleure game ×1.5 appliquée à ${count} joueur(s).`, 'gold', 'star', true);
+      toast(`×1.5 sur ${count} meilleures games !`, 'gold');
       break;
     }
     case 'remove-worst': {
