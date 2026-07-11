@@ -984,6 +984,7 @@ main {
   <button class="nav-tab active" onclick="showPage('classement')">Classement</button>
   <button class="nav-tab admin-only" style="display:none" onclick="showPage('actions')">Actions roues</button>
   <button class="nav-tab admin-only" style="display:none" onclick="showPage('joueurs')">Joueurs</button>
+  <button class="nav-tab" onclick="showPage('stats')">Stats</button>
   <button class="nav-tab" onclick="showPage('evenements')">Évènements</button>
   <button class="nav-tab" onclick="showPage('regles')">Règles</button>
   <button class="nav-tab admin-only" style="display:none" onclick="showPage('moderation')">Modération</button>
@@ -1604,6 +1605,47 @@ main {
     </div>
   </div>
 
+</div>
+
+<!-- PAGE STATS -->
+<div id="page-stats" class="page">
+  <div style="margin-bottom:20px">
+    <h1 class="section-title">Statistiques <span>Joueurs</span></h1>
+  </div>
+
+  <!-- Filtres -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center">
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <label style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px">Métrique</label>
+      <select id="stats-metric" class="form-input" style="width:auto;font-size:13px" onchange="renderStatsChart()">
+        <option value="score">Score cumulatif</option>
+        <option value="score_game">Score par game</option>
+        <option value="kills">Kills par game</option>
+        <option value="top">Top moyen (avg)</option>
+      </select>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <label style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px">Joueurs affichés</label>
+      <select id="stats-filter" class="form-input" style="width:auto;font-size:13px" onchange="renderStatsChart()">
+        <option value="5">Top 5</option>
+        <option value="10" selected>Top 10</option>
+        <option value="999">Tous</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Graphique -->
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:20px;position:relative;min-height:400px">
+    <canvas id="stats-chart"></canvas>
+    <div id="stats-empty" style="display:none;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:14px">
+      Pas assez de données pour afficher le graphique.
+    </div>
+  </div>
+
+  <!-- Légende info -->
+  <div style="margin-top:12px;font-size:11px;color:var(--text-muted)">
+    L'axe X représente le numéro de game joué par chaque joueur (game 1, 2, 3...).
+  </div>
 </div>
 
 <div id="page-historique" class="page" style="display:none!important"></div>
@@ -2259,6 +2301,120 @@ function setLogPage(n) {
 }
 
 // ============================================================
+// STATS CHART
+// ============================================================
+let _statsChart = null;
+let _chartJsLoaded = false;
+
+async function ensureChartJs() {
+  if (window.Chart) return;
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js';
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+async function renderStatsChart() {
+  await ensureChartJs();
+
+  const metric = document.getElementById('stats-metric')?.value || 'score';
+  const filterN = parseInt(document.getElementById('stats-filter')?.value || '10');
+  const canvas = document.getElementById('stats-chart');
+  const emptyEl = document.getElementById('stats-empty');
+  if (!canvas) return;
+
+  // Trier par score total, garder top N
+  const sorted = [...state.players]
+    .filter(p => p.games.length > 0)
+    .sort((a, b) => getPlayerTotal(b) - getPlayerTotal(a))
+    .slice(0, filterN);
+
+  if (sorted.length === 0) {
+    if (emptyEl) emptyEl.style.display = 'flex';
+    return;
+  }
+  if (emptyEl) emptyEl.style.display = 'none';
+
+  const maxGames = Math.max(...sorted.map(p => p.games.length));
+  const labels = Array.from({ length: maxGames }, (_, i) => `Game ${i + 1}`);
+
+  const PALETTE = [
+    '#ffd700','#4a8ec9','#9b59b6','#e74c3c','#2ecc71',
+    '#e67e22','#1abc9c','#e91e63','#00bcd4','#8bc34a',
+    '#ff5722','#607d8b','#f06292','#aed581','#4db6ac'
+  ];
+
+  const datasets = sorted.map((p, i) => {
+    const games = [...p.games].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+    let runScore = 0, runTop = 0;
+    const data = games.map((g, idx) => {
+      if (metric === 'score') { runScore += g.score; return runScore; }
+      if (metric === 'score_game') return g.score;
+      if (metric === 'kills') return g.kills;
+      if (metric === 'top') { runTop += (g.top || 0); return Math.round((runTop / (idx + 1)) * 10) / 10; }
+    });
+    return {
+      label: p.name,
+      data,
+      borderColor: PALETTE[i % PALETTE.length],
+      backgroundColor: PALETTE[i % PALETTE.length] + '22',
+      borderWidth: 2,
+      pointRadius: 3,
+      pointHoverRadius: 5,
+      tension: 0.3,
+      fill: false,
+    };
+  });
+
+  const metricLabels = {
+    score: 'Score cumulatif (pts)',
+    score_game: 'Score par game (pts)',
+    kills: 'Kills',
+    top: 'Top moyen'
+  };
+
+  if (_statsChart) { _statsChart.destroy(); _statsChart = null; }
+
+  _statsChart = new Chart(canvas, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { color: '#9aa0b0', font: { size: 11 }, boxWidth: 12, padding: 16 }
+        },
+        tooltip: {
+          backgroundColor: '#1a1d24',
+          borderColor: '#2a2d35',
+          borderWidth: 1,
+          titleColor: '#e8e0cc',
+          bodyColor: '#9aa0b0',
+          padding: 10,
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#9aa0b0', font: { size: 11 } },
+          grid: { color: 'rgba(255,255,255,0.05)' }
+        },
+        y: {
+          ticks: { color: '#9aa0b0', font: { size: 11 } },
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          title: { display: true, text: metricLabels[metric], color: '#9aa0b0', font: { size: 11 } }
+        }
+      }
+    }
+  });
+}
+
+// ============================================================
 // NAVIGATION
 // ============================================================
 async function showPage(name) {
@@ -2283,6 +2439,7 @@ async function showPage(name) {
     if (t.getAttribute('onclick')?.includes("'" + name + "'")) t.classList.add('active');
   });
   renderAll();
+  if (name === 'stats') renderStatsChart();
 }
 
 // ============================================================
