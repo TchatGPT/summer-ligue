@@ -1917,7 +1917,13 @@ let saisieBonus = 0;
 async function init() {
   await Promise.all([_refreshAuth(), loadState()]);
   updateAdminUI();
-  renderAll();
+  const hashPage = window.location.hash.slice(1);
+  const validPages = ['classement','actions','joueurs','evenements','regles','moderation'];
+  if (hashPage && validPages.includes(hashPage)) {
+    await showPage(hashPage);
+  } else {
+    renderAll();
+  }
 }
 
 async function loadState() {
@@ -2476,6 +2482,7 @@ async function showPage(name) {
   document.querySelectorAll('.nav-tab').forEach(t => {
     if (t.getAttribute('onclick')?.includes("'" + name + "'")) t.classList.add('active');
   });
+  history.replaceState(null, '', '#' + name);
   renderAll();
 }
 
