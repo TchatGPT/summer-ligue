@@ -984,7 +984,6 @@ main {
   <button class="nav-tab active" onclick="showPage('classement')">Classement</button>
   <button class="nav-tab admin-only" style="display:none" onclick="showPage('actions')">Actions roues</button>
   <button class="nav-tab admin-only" style="display:none" onclick="showPage('joueurs')">Joueurs</button>
-  <button class="nav-tab" onclick="showPage('stats')">Stats</button>
   <button class="nav-tab" onclick="showPage('evenements')">Évènements</button>
   <button class="nav-tab" onclick="showPage('regles')">Règles</button>
   <button class="nav-tab admin-only" style="display:none" onclick="showPage('moderation')">Modération</button>
@@ -1050,6 +1049,53 @@ main {
         <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-muted)">Aucun joueur enregistré.</td></tr>
       </tbody>
     </table>
+  </div>
+
+  <!-- Stats globales + graphiques -->
+  <div style="margin-top:28px">
+    <h2 class="section-title" style="font-size:16px;margin-bottom:16px">Statistiques <span>Joueurs</span></h2>
+
+    <!-- Cards globales -->
+    <div id="stats-global-cards" class="stats-row" style="margin-bottom:20px"></div>
+
+    <!-- Bar chart classement par métrique -->
+    <div class="roue-section" style="margin-bottom:20px">
+      <div class="roue-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div class="roue-title" style="color:var(--gold)"><i class="fa-solid fa-chart-bar" style="font-size:13px;margin-right:6px"></i>Classement par métrique</div>
+        <select id="stats-bar-metric" class="form-input" style="width:auto;font-size:12px" onchange="renderStatsBarChart()">
+          <option value="avg_score">Score moyen / game</option>
+          <option value="total_score">Score total</option>
+          <option value="avg_kills">Kills moyens / game (hors bonus)</option>
+          <option value="top1">Nombre de Top 1</option>
+          <option value="best_game">Meilleure game</option>
+        </select>
+      </div>
+      <div style="padding:12px 0;position:relative;min-height:200px">
+        <canvas id="stats-bar-chart"></canvas>
+        <div id="stats-bar-empty" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;color:var(--text-muted);font-size:14px">Aucune donnée.</div>
+      </div>
+    </div>
+
+    <!-- Courbe progression individuelle -->
+    <div class="roue-section">
+      <div class="roue-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div class="roue-title" style="color:var(--blue)"><i class="fa-solid fa-chart-line" style="font-size:13px;margin-right:6px"></i>Progression individuelle</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select id="stats-line-player" class="form-input" style="width:auto;font-size:12px" onchange="renderStatsLineChart()">
+            <option value="">— Choisir un joueur —</option>
+          </select>
+          <select id="stats-line-metric" class="form-input" style="width:auto;font-size:12px" onchange="renderStatsLineChart()">
+            <option value="score_cum">Score cumulatif</option>
+            <option value="score_game">Score par game</option>
+            <option value="kills">Kills par game</option>
+          </select>
+        </div>
+      </div>
+      <div style="padding:12px 0;position:relative;min-height:200px">
+        <canvas id="stats-line-chart"></canvas>
+        <div id="stats-line-empty" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:13px">Sélectionne un joueur pour voir sa progression.</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1607,55 +1653,6 @@ main {
 
 </div>
 
-<!-- PAGE STATS -->
-<div id="page-stats" class="page">
-  <div style="margin-bottom:20px">
-    <h1 class="section-title">Statistiques <span>Joueurs</span></h1>
-  </div>
-
-  <!-- Cards globales -->
-  <div id="stats-global-cards" class="stats-row" style="margin-bottom:24px"></div>
-
-  <!-- Section bar chart classement -->
-  <div class="roue-section" style="margin-bottom:20px">
-    <div class="roue-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-      <div class="roue-title" style="color:var(--gold)"><i class="fa-solid fa-chart-bar" style="font-size:13px;margin-right:6px"></i>Classement par métrique</div>
-      <select id="stats-bar-metric" class="form-input" style="width:auto;font-size:12px" onchange="renderStatsChart()">
-        <option value="avg_score">Score moyen / game</option>
-        <option value="total_score">Score total</option>
-        <option value="avg_kills">Kills moyens / game</option>
-        <option value="top1">Nombre de Top 1</option>
-        <option value="best_game">Meilleure game</option>
-      </select>
-    </div>
-    <div style="padding:12px 0;position:relative;min-height:200px">
-      <canvas id="stats-bar-chart"></canvas>
-      <div id="stats-bar-empty" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;color:var(--text-muted);font-size:14px">Aucune donnée.</div>
-    </div>
-  </div>
-
-  <!-- Section courbe joueur individuel -->
-  <div class="roue-section">
-    <div class="roue-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-      <div class="roue-title" style="color:var(--blue)"><i class="fa-solid fa-chart-line" style="font-size:13px;margin-right:6px"></i>Progression individuelle</div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <select id="stats-line-player" class="form-input" style="width:auto;font-size:12px" onchange="renderStatsLineChart()">
-          <option value="">— Choisir un joueur —</option>
-        </select>
-        <select id="stats-line-metric" class="form-input" style="width:auto;font-size:12px" onchange="renderStatsLineChart()">
-          <option value="score_cum">Score cumulatif</option>
-          <option value="score_game">Score par game</option>
-          <option value="kills">Kills par game</option>
-        </select>
-      </div>
-    </div>
-    <div style="padding:12px 0;position:relative;min-height:200px">
-      <canvas id="stats-line-chart"></canvas>
-      <div id="stats-line-empty" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:13px">Sélectionne un joueur pour voir sa progression.</div>
-    </div>
-  </div>
-</div>
-
 <div id="page-historique" class="page" style="display:none!important"></div>
 
 </main>
@@ -2086,6 +2083,7 @@ function renderAll() {
   renderLog();
   renderStats();
   renderModerationPage();
+  renderStatsChart();
 }
 
 function renderStats() {
@@ -2330,12 +2328,22 @@ const CHART_DEFAULTS = {
   tick: '#9aa0b0'
 };
 
+function isOrganicGame(g) {
+  if ((g.mult || 1) !== 1) return false;
+  const note = (g.note || '').toLowerCase();
+  return !/(roue|clone|lriaa|x1\.5|bonus game)/i.test(note);
+}
+
 function _playerStatValue(p, metric) {
   const games = p.games;
   if (!games.length) return 0;
   if (metric === 'avg_score') return Math.round(games.reduce((s,g) => s+g.score,0) / games.length * 10) / 10;
   if (metric === 'total_score') return getPlayerTotal(p);
-  if (metric === 'avg_kills') return Math.round(games.reduce((s,g) => s+g.kills,0) / games.length * 10) / 10;
+  if (metric === 'avg_kills') {
+    const organic = games.filter(isOrganicGame);
+    if (!organic.length) return 0;
+    return Math.round(organic.reduce((s,g) => s+g.kills,0) / organic.length * 10) / 10;
+  }
   if (metric === 'top1') return games.filter(g => g.top === 1).length;
   if (metric === 'best_game') return Math.max(...games.map(g => g.score));
   return 0;
@@ -2506,7 +2514,6 @@ async function showPage(name) {
     if (t.getAttribute('onclick')?.includes("'" + name + "'")) t.classList.add('active');
   });
   renderAll();
-  if (name === 'stats') renderStatsChart();
 }
 
 // ============================================================
