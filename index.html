@@ -809,10 +809,11 @@ main {
   .form-row-3 { grid-template-columns: 1fr; }
 }
 @media (max-width: 640px) {
-  header { flex-wrap: wrap; gap: 10px; }
+  header { flex-wrap: wrap; gap: 10px; position: static; }
   .header-dates { display: none; }
   main { padding: 16px; }
-  .nav-tabs { position: sticky; top: 0; z-index: 200; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+  .nav-tabs { position: static; }
+  .sticky-wrap { position: sticky; top: 0; z-index: 200; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
 }
 @media (max-width: 480px) {
   header { padding: 14px 16px; gap: 10px; }
@@ -938,6 +939,9 @@ main {
 </head>
 <body>
 
+<!-- HEADER + NAV WRAPPER -->
+<div class="sticky-wrap">
+
 <!-- HEADER -->
 <header>
   <div class="header-logo">
@@ -972,6 +976,8 @@ main {
   <button class="nav-tab" onclick="showPage('regles')">Règles</button>
   <button class="nav-tab admin-only" style="display:none" onclick="showPage('moderation')">Modération</button>
 </nav>
+
+</div>
 
 <main>
 
