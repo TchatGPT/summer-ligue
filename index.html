@@ -1613,38 +1613,46 @@ main {
     <h1 class="section-title">Statistiques <span>Joueurs</span></h1>
   </div>
 
-  <!-- Filtres -->
-  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center">
-    <div style="display:flex;flex-direction:column;gap:4px">
-      <label style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px">Métrique</label>
-      <select id="stats-metric" class="form-input" style="width:auto;font-size:13px" onchange="renderStatsChart()">
-        <option value="score">Score cumulatif</option>
-        <option value="score_game">Score par game</option>
-        <option value="kills">Kills par game</option>
-        <option value="top">Top moyen (avg)</option>
+  <!-- Cards globales -->
+  <div id="stats-global-cards" class="stats-row" style="margin-bottom:24px"></div>
+
+  <!-- Section bar chart classement -->
+  <div class="roue-section" style="margin-bottom:20px">
+    <div class="roue-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <div class="roue-title" style="color:var(--gold)"><i class="fa-solid fa-chart-bar" style="font-size:13px;margin-right:6px"></i>Classement par métrique</div>
+      <select id="stats-bar-metric" class="form-input" style="width:auto;font-size:12px" onchange="renderStatsChart()">
+        <option value="avg_score">Score moyen / game</option>
+        <option value="total_score">Score total</option>
+        <option value="avg_kills">Kills moyens / game</option>
+        <option value="top1">Nombre de Top 1</option>
+        <option value="best_game">Meilleure game</option>
       </select>
     </div>
-    <div style="display:flex;flex-direction:column;gap:4px">
-      <label style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px">Joueurs affichés</label>
-      <select id="stats-filter" class="form-input" style="width:auto;font-size:13px" onchange="renderStatsChart()">
-        <option value="5">Top 5</option>
-        <option value="10" selected>Top 10</option>
-        <option value="999">Tous</option>
-      </select>
+    <div style="padding:12px 0;position:relative;min-height:200px">
+      <canvas id="stats-bar-chart"></canvas>
+      <div id="stats-bar-empty" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;color:var(--text-muted);font-size:14px">Aucune donnée.</div>
     </div>
   </div>
 
-  <!-- Graphique -->
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:20px;position:relative;min-height:400px">
-    <canvas id="stats-chart"></canvas>
-    <div id="stats-empty" style="display:none;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:14px">
-      Pas assez de données pour afficher le graphique.
+  <!-- Section courbe joueur individuel -->
+  <div class="roue-section">
+    <div class="roue-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <div class="roue-title" style="color:var(--blue)"><i class="fa-solid fa-chart-line" style="font-size:13px;margin-right:6px"></i>Progression individuelle</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <select id="stats-line-player" class="form-input" style="width:auto;font-size:12px" onchange="renderStatsLineChart()">
+          <option value="">— Choisir un joueur —</option>
+        </select>
+        <select id="stats-line-metric" class="form-input" style="width:auto;font-size:12px" onchange="renderStatsLineChart()">
+          <option value="score_cum">Score cumulatif</option>
+          <option value="score_game">Score par game</option>
+          <option value="kills">Kills par game</option>
+        </select>
+      </div>
     </div>
-  </div>
-
-  <!-- Légende info -->
-  <div style="margin-top:12px;font-size:11px;color:var(--text-muted)">
-    L'axe X représente le numéro de game joué par chaque joueur (game 1, 2, 3...).
+    <div style="padding:12px 0;position:relative;min-height:200px">
+      <canvas id="stats-line-chart"></canvas>
+      <div id="stats-line-empty" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:13px">Sélectionne un joueur pour voir sa progression.</div>
+    </div>
   </div>
 </div>
 
@@ -2303,115 +2311,174 @@ function setLogPage(n) {
 // ============================================================
 // STATS CHART
 // ============================================================
-let _statsChart = null;
-let _chartJsLoaded = false;
+let _statsBarChart = null;
+let _statsLineChart = null;
 
 async function ensureChartJs() {
   if (window.Chart) return;
   return new Promise((resolve, reject) => {
     const s = document.createElement('script');
     s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js';
-    s.onload = resolve;
-    s.onerror = reject;
+    s.onload = resolve; s.onerror = reject;
     document.head.appendChild(s);
   });
 }
 
+const CHART_DEFAULTS = {
+  tooltip: { backgroundColor:'#1a1d24', borderColor:'#2a2d35', borderWidth:1, titleColor:'#e8e0cc', bodyColor:'#9aa0b0', padding:10 },
+  grid: 'rgba(255,255,255,0.05)',
+  tick: '#9aa0b0'
+};
+
+function _playerStatValue(p, metric) {
+  const games = p.games;
+  if (!games.length) return 0;
+  if (metric === 'avg_score') return Math.round(games.reduce((s,g) => s+g.score,0) / games.length * 10) / 10;
+  if (metric === 'total_score') return getPlayerTotal(p);
+  if (metric === 'avg_kills') return Math.round(games.reduce((s,g) => s+g.kills,0) / games.length * 10) / 10;
+  if (metric === 'top1') return games.filter(g => g.top === 1).length;
+  if (metric === 'best_game') return Math.max(...games.map(g => g.score));
+  return 0;
+}
+
 async function renderStatsChart() {
   await ensureChartJs();
+  renderStatsGlobalCards();
+  renderStatsBarChart();
+  renderStatsPlayerSelect();
+  renderStatsLineChart();
+}
 
-  const metric = document.getElementById('stats-metric')?.value || 'score';
-  const filterN = parseInt(document.getElementById('stats-filter')?.value || '10');
-  const canvas = document.getElementById('stats-chart');
-  const emptyEl = document.getElementById('stats-empty');
+function renderStatsGlobalCards() {
+  const el = document.getElementById('stats-global-cards');
+  if (!el) return;
+  const players = state.players.filter(p => p.games.length > 0);
+  if (!players.length) { el.innerHTML = ''; return; }
+  const allGames = players.flatMap(p => p.games);
+  const avgKills = allGames.length ? (allGames.reduce((s,g) => s+g.kills,0) / allGames.length).toFixed(1) : 0;
+  const avgScore = allGames.length ? Math.round(allGames.reduce((s,g) => s+g.score,0) / allGames.length) : 0;
+  const top1Total = allGames.filter(g => g.top === 1).length;
+  const totalGames = allGames.length;
+  el.innerHTML = `
+    <div class="stat-card" style="border-top-color:var(--gold)">
+      <div class="sc-label" style="color:var(--gold)">Games jouées</div>
+      <div class="sc-val sc-gold">${totalGames}</div>
+      <i class="fa-solid fa-gamepad sc-icon" style="color:var(--gold);opacity:0.3"></i>
+    </div>
+    <div class="stat-card" style="border-top-color:var(--rust-light)">
+      <div class="sc-label" style="color:var(--rust-light)">Kills moyens</div>
+      <div class="sc-val" style="color:var(--rust-light)">${avgKills}</div>
+      <i class="fa-solid fa-crosshairs sc-icon" style="color:var(--rust-light);opacity:0.3"></i>
+    </div>
+    <div class="stat-card" style="border-top-color:var(--blue)">
+      <div class="sc-label" style="color:var(--blue)">Score moyen / game</div>
+      <div class="sc-val" style="color:var(--blue)">${avgScore} pts</div>
+      <i class="fa-solid fa-star sc-icon" style="color:var(--blue);opacity:0.3"></i>
+    </div>
+    <div class="stat-card" style="border-top-color:#ffd700">
+      <div class="sc-label" style="color:#ffd700">Top 1 total</div>
+      <div class="sc-val" style="color:#ffd700">${top1Total}</div>
+      <i class="fa-solid fa-trophy sc-icon" style="color:#ffd700;opacity:0.3"></i>
+    </div>`;
+}
+
+function renderStatsBarChart() {
+  const canvas = document.getElementById('stats-bar-chart');
+  const emptyEl = document.getElementById('stats-bar-empty');
+  const metric = document.getElementById('stats-bar-metric')?.value || 'avg_score';
   if (!canvas) return;
 
-  // Trier par score total, garder top N
-  const sorted = [...state.players]
+  const players = [...state.players]
     .filter(p => p.games.length > 0)
-    .sort((a, b) => getPlayerTotal(b) - getPlayerTotal(a))
-    .slice(0, filterN);
+    .map(p => ({ name: p.name, val: _playerStatValue(p, metric) }))
+    .sort((a, b) => b.val - a.val);
 
-  if (sorted.length === 0) {
-    if (emptyEl) emptyEl.style.display = 'flex';
-    return;
-  }
+  if (!players.length) { if (emptyEl) emptyEl.style.display = 'flex'; return; }
   if (emptyEl) emptyEl.style.display = 'none';
 
-  const maxGames = Math.max(...sorted.map(p => p.games.length));
-  const labels = Array.from({ length: maxGames }, (_, i) => `Game ${i + 1}`);
+  const metricLabels = { avg_score:'Score moyen / game (pts)', total_score:'Score total (pts)', avg_kills:'Kills moyens / game', top1:'Nombre de Top 1', best_game:'Meilleure game (pts)' };
+  const barColor = '#c9954a';
 
-  const PALETTE = [
-    '#ffd700','#4a8ec9','#9b59b6','#e74c3c','#2ecc71',
-    '#e67e22','#1abc9c','#e91e63','#00bcd4','#8bc34a',
-    '#ff5722','#607d8b','#f06292','#aed581','#4db6ac'
-  ];
-
-  const datasets = sorted.map((p, i) => {
-    const games = [...p.games].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-    let runScore = 0, runTop = 0;
-    const data = games.map((g, idx) => {
-      if (metric === 'score') { runScore += g.score; return runScore; }
-      if (metric === 'score_game') return g.score;
-      if (metric === 'kills') return g.kills;
-      if (metric === 'top') { runTop += (g.top || 0); return Math.round((runTop / (idx + 1)) * 10) / 10; }
-    });
-    return {
-      label: p.name,
-      data,
-      borderColor: PALETTE[i % PALETTE.length],
-      backgroundColor: PALETTE[i % PALETTE.length] + '22',
-      borderWidth: 2,
-      pointRadius: 3,
-      pointHoverRadius: 5,
-      tension: 0.3,
-      fill: false,
-    };
-  });
-
-  const metricLabels = {
-    score: 'Score cumulatif (pts)',
-    score_game: 'Score par game (pts)',
-    kills: 'Kills',
-    top: 'Top moyen'
-  };
-
-  if (_statsChart) { _statsChart.destroy(); _statsChart = null; }
-
-  _statsChart = new Chart(canvas, {
-    type: 'line',
-    data: { labels, datasets },
+  if (_statsBarChart) { _statsBarChart.destroy(); _statsBarChart = null; }
+  _statsBarChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: players.map(p => p.name),
+      datasets: [{ data: players.map(p => p.val), backgroundColor: players.map((_, i) => i === 0 ? '#ffd700' : i === 1 ? '#c0c0c0' : i === 2 ? '#cd7f32' : barColor + '99'), borderColor: 'transparent', borderRadius: 3 }]
+    },
     options: {
-      responsive: true,
-      maintainAspectRatio: true,
-      interaction: { mode: 'index', intersect: false },
+      responsive: true, maintainAspectRatio: false, indexAxis: 'y',
       plugins: {
-        legend: {
-          position: 'bottom',
-          labels: { color: '#9aa0b0', font: { size: 11 }, boxWidth: 12, padding: 16 }
-        },
-        tooltip: {
-          backgroundColor: '#1a1d24',
-          borderColor: '#2a2d35',
-          borderWidth: 1,
-          titleColor: '#e8e0cc',
-          bodyColor: '#9aa0b0',
-          padding: 10,
-        }
+        legend: { display: false },
+        tooltip: { ...CHART_DEFAULTS.tooltip, callbacks: { label: ctx => ` ${ctx.parsed.x}` } }
       },
       scales: {
-        x: {
-          ticks: { color: '#9aa0b0', font: { size: 11 } },
-          grid: { color: 'rgba(255,255,255,0.05)' }
-        },
-        y: {
-          ticks: { color: '#9aa0b0', font: { size: 11 } },
-          grid: { color: 'rgba(255,255,255,0.05)' },
-          title: { display: true, text: metricLabels[metric], color: '#9aa0b0', font: { size: 11 } }
-        }
+        x: { ticks: { color: CHART_DEFAULTS.tick, font:{size:11} }, grid: { color: CHART_DEFAULTS.grid }, title: { display:true, text: metricLabels[metric], color: CHART_DEFAULTS.tick, font:{size:11} } },
+        y: { ticks: { color: '#e8e0cc', font:{size:12} }, grid: { display:false } }
       }
     }
   });
+  canvas.style.height = Math.max(200, players.length * 32) + 'px';
+}
+
+function renderStatsPlayerSelect() {
+  const sel = document.getElementById('stats-line-player');
+  if (!sel) return;
+  const current = sel.value;
+  const players = [...state.players].filter(p => p.games.length > 0).sort((a,b) => getPlayerTotal(b)-getPlayerTotal(a));
+  sel.innerHTML = '<option value="">— Choisir un joueur —</option>' + players.map(p => `<option value="${p.id}" ${p.id===current?'selected':''}>${escHtml(p.name)}</option>`).join('');
+}
+
+function renderStatsLineChart() {
+  const canvas = document.getElementById('stats-line-chart');
+  const emptyEl = document.getElementById('stats-line-empty');
+  const playerId = document.getElementById('stats-line-player')?.value;
+  const metric = document.getElementById('stats-line-metric')?.value || 'score_cum';
+  if (!canvas) return;
+
+  if (!playerId) { if (emptyEl) emptyEl.style.display = 'flex'; if (_statsLineChart) { _statsLineChart.destroy(); _statsLineChart=null; } return; }
+  if (emptyEl) emptyEl.style.display = 'none';
+
+  const p = state.players.find(x => x.id === playerId);
+  if (!p) return;
+  const games = [...p.games].sort((a,b) => (a.date||'').localeCompare(b.date||''));
+  const labels = games.map((_,i) => `Game ${i+1}`);
+
+  let runScore = 0;
+  const data = games.map((g,i) => {
+    if (metric === 'score_cum') { runScore += g.score; return runScore; }
+    if (metric === 'score_game') return g.score;
+    if (metric === 'kills') return g.kills;
+  });
+
+  const metricLabels = { score_cum:'Score cumulatif (pts)', score_game:'Score par game (pts)', kills:'Kills' };
+  const avgVal = data.length ? data.reduce((s,v)=>s+v,0)/data.length : 0;
+  const avgData = data.map(() => Math.round(avgVal * 10) / 10);
+
+  if (_statsLineChart) { _statsLineChart.destroy(); _statsLineChart=null; }
+  _statsLineChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: p.name, data, borderColor:'#4a8ec9', backgroundColor:'rgba(74,142,201,0.1)', borderWidth:2, pointRadius:4, pointHoverRadius:6, tension:0.3, fill:true },
+        { label:'Moyenne', data: avgData, borderColor:'rgba(212,175,55,0.5)', borderDash:[5,5], borderWidth:1.5, pointRadius:0, tension:0, fill:false }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins: {
+        legend: { position:'bottom', labels:{ color:'#9aa0b0', font:{size:11}, boxWidth:12, padding:16 } },
+        tooltip: CHART_DEFAULTS.tooltip
+      },
+      scales: {
+        x: { ticks:{color:CHART_DEFAULTS.tick,font:{size:11}}, grid:{color:CHART_DEFAULTS.grid} },
+        y: { ticks:{color:CHART_DEFAULTS.tick,font:{size:11}}, grid:{color:CHART_DEFAULTS.grid}, title:{display:true,text:metricLabels[metric],color:CHART_DEFAULTS.tick,font:{size:11}} }
+      }
+    }
+  });
+  canvas.style.height = '280px';
 }
 
 // ============================================================
