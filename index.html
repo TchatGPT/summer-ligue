@@ -4103,9 +4103,42 @@ function preloadSheetData() {
 }
 
 // ============================================================
+// AUTO-REFRESH
+// ============================================================
+let _refreshPending = false;
+
+async function autoRefresh() {
+  if (_refreshPending) return;
+  // Ne pas rafraîchir si une modale est ouverte (admin en cours de saisie)
+  if (document.querySelector('.modal-overlay[style*="flex"]')) return;
+  _refreshPending = true;
+  try {
+    await loadState();
+    renderAll();
+  } finally {
+    _refreshPending = false;
+  }
+}
+
+function setupAutoRefresh() {
+  // Polling toutes les 30 secondes (fallback fiable)
+  setInterval(autoRefresh, 30000);
+
+  // Supabase Realtime — instantané si la réplication est activée sur les tables
+  try {
+    _sb.channel('public-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'players' }, () => autoRefresh())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'games' },   () => autoRefresh())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'logs' },    () => autoRefresh())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'app_flags'},() => autoRefresh())
+      .subscribe();
+  } catch(e) { /* Realtime non dispo, le polling prend le relais */ }
+}
+
+// ============================================================
 // START
 // ============================================================
-init();
+init().then(setupAutoRefresh);
 document.addEventListener('contextmenu', e => e.preventDefault());
 </script>
 </body>
