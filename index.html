@@ -4121,8 +4121,16 @@ async function autoRefresh() {
 }
 
 function setupAutoRefresh() {
-  // Polling toutes les 30 secondes (fallback fiable)
-  setInterval(autoRefresh, 30000);
+  // Polling toutes les 20 secondes
+  setInterval(autoRefresh, 20000);
+
+  // Refresh immédiat quand l'onglet redevient visible (mobile en arrière-plan, retour sur l'onglet)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') autoRefresh();
+  });
+
+  // Refresh quand la connexion réseau revient (mobile qui perd le réseau)
+  window.addEventListener('online', () => autoRefresh());
 
   // Supabase Realtime — instantané si la réplication est activée sur les tables
   try {
