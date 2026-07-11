@@ -4107,14 +4107,21 @@ function preloadSheetData() {
 // ============================================================
 let _refreshPending = false;
 
+function _stateFingerprint() {
+  return state.players.map(p => `${p.id}:${p.games.length}:${p.bonusPoints}`).join('|')
+    + '|logs:' + state.log.length
+    + '|subs:' + state.subsCount;
+}
+
 async function autoRefresh() {
   if (_refreshPending) return;
-  // Ne pas rafraîchir si une modale est ouverte (admin en cours de saisie)
   if (document.querySelector('.modal-overlay[style*="flex"]')) return;
   _refreshPending = true;
   try {
+    const before = _stateFingerprint();
     await loadState();
-    renderAll();
+    // Re-render seulement si quelque chose a changé
+    if (_stateFingerprint() !== before) renderAll();
   } finally {
     _refreshPending = false;
   }
