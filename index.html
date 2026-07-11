@@ -88,6 +88,20 @@ header {
   letter-spacing: 1px;
 }
 .header-dates strong { color: var(--gold); display: block; font-size: 13px; }
+.header-twitch {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #9146FF;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+.header-twitch:hover { opacity: 0.75; }
 .header-admin-btns { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .btn-admin {
   display: flex;
@@ -932,8 +946,10 @@ main {
   <div class="header-right">
     <div class="header-dates">
       <strong>8 Juil — 31 Août 2026</strong>
-      by Lriaa • Twitch /LRIAA
     </div>
+    <a href="https://www.twitch.tv/lriaa" target="_blank" rel="noopener" class="header-twitch">
+      <i class="fa-brands fa-twitch"></i> by Lriaa · /LRIAA
+    </a>
     <div class="header-admin-btns">
       <button class="btn-admin admin-only" style="display:none" id="btn-admin-settings" onclick="openModal('modal-admin-settings')" title="Paramètres admin">
         <i class="fa-solid fa-gear"></i>
