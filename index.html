@@ -2184,9 +2184,9 @@ function renderPlayersList() {
   if (pagEl) {
     pagEl.innerHTML = totalPages > 1
       ? `<div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:16px 0;margin-top:8px;border-top:1px solid var(--border)">
-          <button onclick="setPlayersPage(${_playersPage - 1})" ${_playersPage === 0 ? 'disabled' : ''} class="btn" style="font-size:13px;padding:6px 14px">← Précédent</button>
-          <span style="font-size:13px;color:var(--text-muted)">Page ${_playersPage + 1} / ${totalPages} <span style="opacity:0.5">(${sorted.length} joueurs)</span></span>
-          <button onclick="setPlayersPage(${_playersPage + 1})" ${_playersPage >= totalPages - 1 ? 'disabled' : ''} class="btn" style="font-size:13px;padding:6px 14px">Suivant →</button>
+          <button onclick="setPlayersPage(${_playersPage - 1})" ${_playersPage === 0 ? 'disabled style="opacity:0.3;cursor:not-allowed"' : ''} class="btn" style="font-size:13px;padding:6px 14px;color:var(--text);border-color:var(--gold)">← Précédent</button>
+          <span style="font-size:13px;color:var(--text)">Page ${_playersPage + 1} / ${totalPages} <span style="color:var(--text-muted)">(${sorted.length} joueurs)</span></span>
+          <button onclick="setPlayersPage(${_playersPage + 1})" ${_playersPage >= totalPages - 1 ? 'disabled style="opacity:0.3;cursor:not-allowed"' : ''} class="btn" style="font-size:13px;padding:6px 14px;color:var(--text);border-color:var(--gold)">Suivant →</button>
         </div>`
       : '';
   }
@@ -2234,9 +2234,9 @@ function renderLog() {
     if (pagEl) {
       pagEl.innerHTML = totalPages > 1
         ? `<div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:16px 0;margin-top:8px;border-top:1px solid var(--border)">
-            <button onclick="setLogPage(${_logPage - 1})" ${_logPage === 0 ? 'disabled' : ''} class="btn" style="font-size:13px;padding:6px 14px">← Précédent</button>
-            <span style="font-size:13px;color:var(--text-muted)">Page ${_logPage + 1} / ${totalPages}</span>
-            <button onclick="setLogPage(${_logPage + 1})" ${_logPage >= totalPages - 1 ? 'disabled' : ''} class="btn" style="font-size:13px;padding:6px 14px">Suivant →</button>
+            <button onclick="setLogPage(${_logPage - 1})" ${_logPage === 0 ? 'disabled style="opacity:0.3;cursor:not-allowed"' : ''} class="btn" style="font-size:13px;padding:6px 14px;color:var(--text);border-color:var(--gold)">← Précédent</button>
+            <span style="font-size:13px;color:var(--text)">Page ${_logPage + 1} / ${totalPages}</span>
+            <button onclick="setLogPage(${_logPage + 1})" ${_logPage >= totalPages - 1 ? 'disabled style="opacity:0.3;cursor:not-allowed"' : ''} class="btn" style="font-size:13px;padding:6px 14px;color:var(--text);border-color:var(--gold)">Suivant →</button>
           </div>`
         : '';
     }
