@@ -51,9 +51,7 @@ header {
   display: flex;
   align-items: center;
   gap: 16px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  position: static;
 }
 
 .header-logo {
@@ -153,6 +151,8 @@ header {
 }
 .nav-tab:hover { color: var(--text); }
 .nav-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+.sticky-wrap { position: sticky; top: 0; z-index: 200; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
 
 /* MAIN LAYOUT */
 main {
@@ -817,7 +817,6 @@ main {
   .header-dates { display: none; }
   main { padding: 16px; }
   .nav-tabs { position: static; }
-  .sticky-wrap { position: sticky; top: 0; z-index: 200; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
 }
 @media (max-width: 480px) {
   header { padding: 14px 16px; gap: 10px; }
