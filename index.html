@@ -1016,7 +1016,6 @@ main {
   <div class="actions-bar admin-only" style="display:none">
     <button class="btn btn-green" style="font-size:15px;padding:10px 22px" onclick="openSaisieModal()"><i class="fa-solid fa-gamepad"></i> Saisir une game</button>
     <button class="btn btn-blue btn-sm" onclick="openImportSheetModal()"><i class="fa-solid fa-cloud-arrow-down"></i> Importer Google Sheets</button>
-    <button class="btn btn-sm" style="color:var(--rust-light);border-color:var(--rust-light)" onclick="resetAllData()"><i class="fa-solid fa-trash-can"></i> Reset données</button>
   </div>
 
   <div class="rank-table-wrap">
@@ -1542,6 +1541,29 @@ main {
       </div>
     </div>
   </div>
+
+  <!-- ZONE DANGER -->
+  <div class="roue-section" style="margin-top:20px;border-color:var(--rust);background:rgba(180,60,40,0.05)">
+    <div class="roue-header" style="border-bottom-color:rgba(180,60,40,0.3)">
+      <div class="roue-title" style="color:var(--rust-light)"><i class="fa-solid fa-skull" style="font-size:14px;margin-right:6px"></i>Zone Danger</div>
+    </div>
+    <div style="padding:12px 0">
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:14px;background:rgba(180,60,40,0.08);border:1px solid rgba(180,60,40,0.25);border-radius:6px;margin-bottom:16px">
+        <i class="fa-solid fa-triangle-exclamation" style="color:var(--rust-light);font-size:18px;flex-shrink:0;margin-top:2px"></i>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--rust-light);margin-bottom:4px">Reset complet de la base de données</div>
+          <div style="font-size:12px;color:var(--text-muted);line-height:1.6">
+            Cette action <strong style="color:var(--rust-light)">supprime absolument tout</strong> : joueurs, games, scores, événements, compteur de subs.<br>
+            La ligue repart à zéro. <strong style="color:var(--text)">Irréversible.</strong> À n'utiliser qu'en cas d'extrême nécessité.
+          </div>
+        </div>
+      </div>
+      <button class="btn" style="color:var(--rust-light);border-color:var(--rust);background:rgba(180,60,40,0.1);font-weight:600" onclick="resetAllData()">
+        <i class="fa-solid fa-trash-can"></i> Vider la base de données
+      </button>
+    </div>
+  </div>
+
 </div>
 
 <div id="page-historique" class="page" style="display:none!important"></div>
