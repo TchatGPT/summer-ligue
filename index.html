@@ -3177,9 +3177,8 @@ function buildActionBody(type) {
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="execAction()">Appliquer à tous</button>`;
 
     case 'add-bonus-game': return `
-      ${playerSelect('p1', 'Joueur')}
-      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Accorde un slot de game supplémentaire — la game sera saisie via le formulaire principal.</p>
-      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Accorder +1 game</button>`;
+      <p style="color:var(--text-muted);font-size:12px;margin:0 0 12px">Accorde <strong>+1 game supplémentaire à tous les joueurs</strong>. Chacun pourra saisir une game en plus via le formulaire principal.</p>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="execAction()">Accorder +1 game à tous</button>`;
 
     case 'joker-game': return `
       ${playerSelect('p1', 'Joueur', "populateGameSelect('act-game-idx',this.value,false)")}
@@ -3372,12 +3371,10 @@ function execAction() {
       break;
     }
     case 'add-bonus-game': {
-      const p = getP('p1');
-      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
-      p.extraGames = (p.extraGames || 0) + 1;
-      const newMax = 20 + p.extraGames;
-      addLog(`<strong>${p.name}</strong> — game supplémentaire accordée (max ${newMax} games).`, 'gold', 'plus', true);
-      toast(`${p.name} peut saisir 1 game supplémentaire !`, 'gold');
+      state.players.forEach(p => { p.extraGames = (p.extraGames || 0) + 1; });
+      const base = state.maxGames || 20;
+      addLog(`Game supplémentaire accordée à tous les joueurs (max ${base + (state.players[0]?.extraGames || 1)} games).`, 'gold', 'plus', true);
+      toast(`+1 game supplémentaire pour tout le monde !`, 'gold');
       break;
     }
     case 'joker-game': {
