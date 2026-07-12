@@ -3206,9 +3206,8 @@ function buildActionBody(type) {
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-wand-magic-sparkles"></i> Accorder le Joker</button>`;
 
     case 'clone-best-worst': return `
-      ${playerSelect('p1', 'Joueur')}
-      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">La meilleure game sera clonée et remplacera la pire game.</p>
-      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Cloner</button>`;
+      <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px">Un joueur sera tiré au sort. Sa <strong>meilleure game</strong> sera clonée et remplacera sa <strong>pire game</strong>.</p>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="execAction()"><i class="fa-solid fa-shuffle"></i> Tirer au sort & cloner</button>`;
 
     case 'perso-echange': return `
       ${playerSelect('p1', 'Joueur A (donne une game)')}
@@ -3409,16 +3408,17 @@ function execAction() {
       break;
     }
     case 'clone-best-worst': {
-      const p = getP('p1');
-      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
-      const best = getBestGame(p);
-      const worst = getWorstGame(p);
-      if (!best) { toast('Aucune game trouvée.', 'error'); return; }
-      if (best.id === worst?.id) { toast('Même game, impossible.', 'error'); return; }
+      const eligible = state.players.filter(p => {
+        const best = getBestGame(p); const worst = getWorstGame(p);
+        return best && worst && best.id !== worst.id;
+      });
+      if (!eligible.length) { toast('Aucun joueur éligible (2 games distinctes requises).', 'error'); return; }
+      const p = eligible[Math.floor(Math.random() * eligible.length)];
+      const best = getBestGame(p); const worst = getWorstGame(p);
       p.games = p.games.filter(g => g.id !== worst.id);
       p.games.push({ ...best, id: uid(), note: 'clone best→pire' });
-      addLog(`<strong>${p.name}</strong> — meilleure game (${best.score} pts) clonée sur pire (${worst?.score} pts).`, 'gold', 'clone', true);
-      toast('Clone effectué !', 'gold');
+      addLog(`<strong>${p.name}</strong> — tiré au sort — meilleure game (${best.score} pts) clonée sur pire (${worst.score} pts).`, 'gold', 'clone', true);
+      toast(`Clone effectué pour ${p.name} !`, 'gold');
       break;
     }
     case 'perso-echange': {
