@@ -1902,7 +1902,7 @@ main {
 let state = {
   players: [],  // { id, name, games: [{kills, top, mult, score, bonus, note, frozen, skip}], bonusPoints, skipNext, freezeKills }
   log: [],
-  top1BonusDone: false,
+  top1BonusCounts: {}, // { [playerId]: nbTop1AlreadyCounted }
   subsCount: 0,   // subs vers la prochaine Roue Commu (0 → 49)
   maxGames: 20    // limite globale de games par joueur
 };
@@ -1968,12 +1968,12 @@ async function loadState() {
       pub: !!l.pub
     }));
 
-    const top1Flag    = (flags || []).find(f => f.key === 'top1BonusDone');
-    const subsFlag    = (flags || []).find(f => f.key === 'subsCount');
-    const maxGFlag    = (flags || []).find(f => f.key === 'maxGames');
-    state.top1BonusDone = top1Flag?.value === 'true';
-    state.subsCount     = parseInt(subsFlag?.value  || '0')  || 0;
-    state.maxGames      = parseInt(maxGFlag?.value  || '20') || 20;
+    const top1CountsFlag = (flags || []).find(f => f.key === 'top1BonusCounts');
+    const subsFlag       = (flags || []).find(f => f.key === 'subsCount');
+    const maxGFlag       = (flags || []).find(f => f.key === 'maxGames');
+    try { state.top1BonusCounts = JSON.parse(top1CountsFlag?.value || '{}'); } catch { state.top1BonusCounts = {}; }
+    state.subsCount = parseInt(subsFlag?.value  || '0')  || 0;
+    state.maxGames  = parseInt(maxGFlag?.value  || '20') || 20;
   } catch(e) {
     console.error('loadState error:', e);
   }
@@ -2032,9 +2032,9 @@ async function saveState() {
   // Flags
   try {
     await _sb.from('app_flags').upsert([
-      { key: 'top1BonusDone', value: String(!!state.top1BonusDone) },
-      { key: 'subsCount',     value: String(state.subsCount || 0) },
-      { key: 'maxGames',      value: String(state.maxGames  || 20) }
+      { key: 'top1BonusCounts', value: JSON.stringify(state.top1BonusCounts || {}) },
+      { key: 'subsCount',       value: String(state.subsCount || 0) },
+      { key: 'maxGames',        value: String(state.maxGames  || 20) }
     ]);
   } catch(e) { console.error('saveState flags:', e); }
   _savePending = false;
@@ -3355,19 +3355,20 @@ function execAction() {
       break;
     }
     case 'top1-bonus': {
-      if (state.top1BonusDone) {
-        toast('Bonus Top 1 déjà appliqué (non cumulable).', 'error');
-        return;
-      }
-      state.top1BonusDone = true;
+      let totalApplied = 0;
       state.players.forEach(p => {
-        const top1s = p.games.filter(g => g.top === 1).length;
-        if (top1s > 0) {
-          p.bonusPoints = (p.bonusPoints || 0) + top1s * 5;
-          addLog(`<strong>${p.name}</strong> +${top1s * 5} pts (${top1s} Top 1)`, 'gold', 'crown', true);
+        const currentTop1s = p.games.filter(g => g.top === 1).length;
+        const alreadyCounted = state.top1BonusCounts[p.id] || 0;
+        const delta = currentTop1s - alreadyCounted;
+        if (delta > 0) {
+          p.bonusPoints = (p.bonusPoints || 0) + delta * 5;
+          state.top1BonusCounts[p.id] = currentTop1s;
+          addLog(`<strong>${p.name}</strong> +${delta * 5} pts (${delta} nouveau${delta > 1 ? 'x' : ''} Top 1)`, 'gold', 'crown', true);
+          totalApplied += delta * 5;
         }
       });
-      toast('Bonus Top 1 appliqués !', 'gold');
+      if (totalApplied === 0) { toast('Aucun nouveau Top 1 depuis la dernière application.', 'info'); return; }
+      toast(`Bonus Top 1 appliqués : +${totalApplied} pts au total !`, 'gold');
       break;
     }
     case 'add-bonus-game': {
@@ -4092,7 +4093,7 @@ function resetAllData() {
         if (eF) console.error('reset flags:', eF);
         state.players = [];
         state.log = [];
-        state.top1BonusDone = false;
+        state.top1BonusCounts = {};
         renderAll();
         toast('Toutes les données ont été supprimées.', 'error');
       } catch(e) {
