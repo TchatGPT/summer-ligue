@@ -3259,12 +3259,17 @@ function buildActionBody(type) {
 
     case 'perso-clone-kills': return `
       ${playerSelect('p1', 'Joueur qui reçoit les kills')}
-      ${playerSelect('p2', 'Joueur dont on copie les kills', "populateGameSelect('act-game-idx',this.value,true)")}
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Saisissez le nombre de kills à cloner :</p>
       <div class="form-row">
-        <label class="form-label">Game source (du joueur 2)</label>
-        <select class="form-select" id="act-game-idx"><option value="">— d'abord choisir joueur 2 —</option></select>
+        <label class="form-label">Kills</label>
+        <div class="kills-input-group">
+          <button class="kills-btn" onclick="changeActKills(-1)">−</button>
+          <input type="number" class="form-input" id="act-kills" value="0" min="0" max="50" style="text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px">
+          <button class="kills-btn" onclick="changeActKills(1)">+</button>
+        </div>
       </div>
-      <button class="btn btn-purple" style="width:100%;justify-content:center;margin-top:16px;border-width:1px" onclick="execAction()">Cloner les kills</button>`;
+      <p style="color:var(--text-muted);font-size:12px;margin-top:4px">Ces kills seront ajoutés comme une nouvelle game (sans top, ×1).</p>
+      <button class="btn btn-purple" style="width:100%;justify-content:center;margin-top:14px;border-width:1px" onclick="execAction()"><i class="fa-solid fa-copy"></i> Cloner les kills</button>`;
 
     case 'perso-clone-lriaa': return `
       ${playerSelect('p1', 'Joueur qui reçoit les kills de Lriaa')}
@@ -3485,15 +3490,12 @@ function execAction() {
       break;
     }
     case 'perso-clone-kills': {
-      const p1 = getP('p1'); const p2 = getP('p2');
-      const gameId = document.getElementById('act-game-idx')?.value;
-      if (!p1 || !p2 || !gameId) { toast('Sélectionnez joueurs et game.', 'error'); return; }
-      const srcGame = p2.games.find(g => g.id === gameId);
-      if (!srcGame) { toast('Game source introuvable.', 'error'); return; }
-      const newGame = { id: uid(), kills: srcGame.kills, top: 0, mult: 1, score: srcGame.kills, date: now(), note: `kills clonés de ${p2.name}` };
-      p1.games.push(newGame);
-      addLog(`<strong>${p1.name}</strong> — kills de <strong>${p2.name}</strong> (${srcGame.kills} kills) clonés.`, 'purple', 'copy', true);
-      toast(`Kills clonés : ${srcGame.kills} kills !`, 'purple');
+      const p = getP('p1');
+      const kills = parseInt(document.getElementById('act-kills')?.value || 0);
+      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
+      p.games.push({ id: uid(), kills, top: 0, mult: 1, score: kills, date: now(), note: 'kills clonés joueur' });
+      addLog(`<strong>${p.name}</strong> — kills clonés (${kills} kills = ${kills} pts).`, 'purple', 'copy', true);
+      toast(`Kills clonés : ${kills} kills pour ${p.name} !`, 'purple');
       break;
     }
     case 'perso-clone-lriaa': {
