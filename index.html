@@ -2857,6 +2857,16 @@ let _editCtx = { playerId: null, gameId: null, top: 0 };
 let _editBonus = 0;
 let _editNoteSegments = [];
 let _editBonusRemoved = 0;
+let _editCloneKillsRemoved = false;
+
+function _editRoueMultiplier() {
+  for (const part of _editNoteSegments) {
+    const t = part.toLowerCase();
+    if (t.includes('x1.5') || t.includes('×1.5')) return 1.5;
+    if (/×2/.test(part)) return 2;
+  }
+  return 1;
+}
 
 function openEditGame(playerId, gameId) {
   const p = state.players.find(x => x.id === playerId);
@@ -2879,6 +2889,7 @@ function openEditGame(playerId, gameId) {
   // Reset bonus and note state
   _editBonus = 0;
   _editBonusRemoved = 0;
+  _editCloneKillsRemoved = false;
   _editNoteSegments = g.note ? g.note.split(' · ') : [];
   document.getElementById('edit-bonus-display').style.display = 'none';
 
@@ -2934,6 +2945,7 @@ function removeNoteBadge(idx) {
   if (t === 'kills lriaa' || t.startsWith('kills clonés') || t === 'clone kills meilleur killeur') {
     const killsInp = document.getElementById('edit-kills');
     if (killsInp) killsInp.value = 0;
+    _editCloneKillsRemoved = true;
   }
   _editNoteSegments.splice(idx, 1);
   const p = state.players.find(x => x.id === _editCtx.playerId);
@@ -2985,7 +2997,9 @@ function updateEditPreview() {
   } else {
     bonusRow.style.display = 'none';
   }
-  document.getElementById('edit-prev-total').textContent = (killsPts + topPts + bonusPositive) + ' pts';
+  const rMult = _editRoueMultiplier();
+  const gameScore = Math.round((killsPts + topPts) * rMult);
+  document.getElementById('edit-prev-total').textContent = (gameScore + bonusPositive) + ' pts';
 }
 
 function addBonusFromEdit(pts) {
@@ -3015,7 +3029,7 @@ function saveEditGame() {
   g.kills = kills;
   g.top   = top;
   g.mult  = mult;
-  g.score = calcGameScore(kills, top, mult);
+  g.score = Math.round(calcGameScore(kills, top, mult) * _editRoueMultiplier());
 
   // Rebuild note from remaining segments + any new bonus
   const finalSegments = [..._editNoteSegments];
@@ -3030,6 +3044,15 @@ function saveEditGame() {
   } else if (bonusNet < 0) {
     p.bonusPoints = Math.max(0, (p.bonusPoints || 0) + bonusNet);
     addLog(`<strong>${p.name}</strong> — ${Math.abs(bonusNet)} pts bonus retirés.`, 'rust', 'minus', true);
+  }
+
+  // Supprimer l'event log du clone kills si le badge a été retiré
+  if (_editCloneKillsRemoved) {
+    const nameLower = p.name.toLowerCase();
+    state.log = state.log.filter(l => {
+      const m = l.msg.toLowerCase();
+      return !(m.includes(nameLower) && (m.includes('lriaa') || m.includes('clonés') || m.includes('meilleur killeur')));
+    });
   }
 
   saveState();
