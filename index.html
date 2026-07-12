@@ -2929,6 +2929,12 @@ function removeNoteBadge(idx) {
   const part = _editNoteSegments[idx];
   const bonusMatch = part.match(/\+(\d+)\s*pts\s*bonus/i);
   if (bonusMatch) _editBonusRemoved += parseInt(bonusMatch[1]);
+  // Si le badge représente des kills issus d'une action roue, remettre kills à 0
+  const t = part.toLowerCase();
+  if (t === 'kills lriaa' || t.startsWith('kills clonés') || t === 'clone kills meilleur killeur') {
+    const killsInp = document.getElementById('edit-kills');
+    if (killsInp) killsInp.value = 0;
+  }
   _editNoteSegments.splice(idx, 1);
   const p = state.players.find(x => x.id === _editCtx.playerId);
   if (p) renderEditBadges(p);
