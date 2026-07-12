@@ -1903,6 +1903,7 @@ let state = {
   players: [],  // { id, name, games: [{kills, top, mult, score, bonus, note, frozen, skip}], bonusPoints, skipNext, freezeKills }
   log: [],
   top1BonusCounts: {}, // { [playerId]: nbTop1AlreadyCounted }
+  jokerPlayerIds: new Set(), // joueurs ayant un joker actif
   subsCount: 0,   // subs vers la prochaine Roue Commu (0 → 49)
   maxGames: 20    // limite globale de games par joueur
 };
@@ -1969,9 +1970,11 @@ async function loadState() {
     }));
 
     const top1CountsFlag = (flags || []).find(f => f.key === 'top1BonusCounts');
+    const jokerFlag      = (flags || []).find(f => f.key === 'jokerPlayers');
     const subsFlag       = (flags || []).find(f => f.key === 'subsCount');
     const maxGFlag       = (flags || []).find(f => f.key === 'maxGames');
     try { state.top1BonusCounts = JSON.parse(top1CountsFlag?.value || '{}'); } catch { state.top1BonusCounts = {}; }
+    try { state.jokerPlayerIds = new Set(JSON.parse(jokerFlag?.value || '[]')); } catch { state.jokerPlayerIds = new Set(); }
     state.subsCount = parseInt(subsFlag?.value  || '0')  || 0;
     state.maxGames  = parseInt(maxGFlag?.value  || '20') || 20;
   } catch(e) {
@@ -2033,6 +2036,7 @@ async function saveState() {
   try {
     await _sb.from('app_flags').upsert([
       { key: 'top1BonusCounts', value: JSON.stringify(state.top1BonusCounts || {}) },
+      { key: 'jokerPlayers',    value: JSON.stringify([...(state.jokerPlayerIds || [])]) },
       { key: 'subsCount',       value: String(state.subsCount || 0) },
       { key: 'maxGames',        value: String(state.maxGames  || 20) }
     ]);
@@ -2168,6 +2172,7 @@ function renderClassement() {
         ${p.freezeKills ? `<div style="font-size:10px;color:var(--blue)"><i class="fa-solid fa-snowflake"></i> Gelé à ${p.freezeKills} kills</div>` : ''}
         ${p.pendingMult ? `<div style="font-size:10px;color:var(--purple)"><i class="fa-solid fa-xmark"></i> ×${p.pendingMult} kills (roue)</div>` : ''}
         ${p.pendingBonus ? `<div style="font-size:10px;color:var(--green)"><i class="fa-solid fa-bolt-lightning"></i> +${p.pendingBonus}pts top10</div>` : ''}
+        ${state.jokerPlayerIds?.has(p.id) ? '<div style="font-size:10px;color:var(--gold)"><i class="fa-solid fa-wand-magic-sparkles"></i> Joker dispo</div>' : ''}
       </td>
       <td class="score-total">${total}<small style="font-size:12px;color:var(--text-muted);font-weight:400"> pts</small>${p.bonusPoints ? `<div style="font-size:11px;color:var(--green)">+${p.bonusPoints} bonus</div>` : ''}</td>
       <td class="stat-games">${p.games.length}/${(state.maxGames || 20) + (p.extraGames || 0)}</td>
@@ -2675,6 +2680,16 @@ function cancelSaisieMult(pid) {
   updateSaisiePreview();
 }
 
+function cancelJoker(playerId) {
+  if (!state.jokerPlayerIds) return;
+  state.jokerPlayerIds.delete(playerId);
+  const p = state.players.find(x => x.id === playerId);
+  if (p) addLog(`<strong>${p.name}</strong> — Joker annulé.`, 'rust', 'wand-magic-sparkles', true);
+  saveState();
+  renderAll();
+  showPlayerDetail(playerId);
+}
+
 function cancelFreeze(pid) {
   const player = state.players.find(p => p.id === pid);
   if (!player) return;
@@ -2824,6 +2839,7 @@ function showPlayerDetail(id) {
     ${p.freezeKills ? `<div style="background:rgba(74,142,201,0.1);border:1px solid var(--blue);padding:8px 12px;border-radius:2px;margin-bottom:8px;font-size:13px"><i class="fa-solid fa-snowflake"></i> Kills gelés à ${p.freezeKills} pour la prochaine game</div>` : ''}
     ${p.pendingMult ? `<div style="background:rgba(155,89,182,0.1);border:1px solid var(--purple);padding:8px 12px;border-radius:2px;margin-bottom:8px;font-size:13px"><i class="fa-solid fa-xmark"></i> Multiplicateur ×${p.pendingMult} activé (roue) — s'appliquera sur la prochaine game (kills uniquement)</div>` : ''}
     ${p.pendingBonus ? `<div style="background:rgba(76,175,119,0.1);border:1px solid var(--green);padding:8px 12px;border-radius:2px;margin-bottom:8px;font-size:13px"><i class="fa-solid fa-bolt-lightning"></i> +${p.pendingBonus} pts top 10 — s'appliquera sur la prochaine game</div>` : ''}
+    ${state.jokerPlayerIds?.has(p.id) ? `<div style="background:rgba(212,175,55,0.1);border:1px solid var(--gold);padding:8px 12px;border-radius:2px;margin-bottom:8px;font-size:13px;display:flex;align-items:center;gap:8px"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--gold)"></i><span style="flex:1">Joker disponible — peut supprimer une game</span>${isAdmin() ? `<button onclick="cancelJoker('${p.id}')" style="background:none;border:1px solid var(--gold);color:var(--gold);border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer;line-height:1.4">✕ Annuler</button>` : ''}</div>` : ''}
     <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:10px">Games (${p.games.length})</div>
     ${gamesHtml}
   `;
@@ -2840,6 +2856,10 @@ function deleteGame(playerId, gameId) {
     `Supprimer cette game de <strong>${escHtml(p.name)}</strong>${g ? ` (${g.score} pts)` : ''} ?`,
     () => {
       p.games = p.games.filter(x => x.id !== gameId);
+      if (state.jokerPlayerIds?.has(playerId)) {
+        state.jokerPlayerIds.delete(playerId);
+        addLog(`<strong>${p.name}</strong> — Joker utilisé.`, 'gold', 'wand-magic-sparkles', true);
+      }
       saveState();
       renderAll();
       addLog(`Game supprimée pour <strong>${p.name}</strong>.`, 'rust', 'trash');
@@ -3181,14 +3201,9 @@ function buildActionBody(type) {
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="execAction()">Accorder +1 game à tous</button>`;
 
     case 'joker-game': return `
-      ${playerSelect('p1', 'Joueur', "populateGameSelect('act-game-idx',this.value,false)")}
-      <div class="form-row">
-        <label class="form-label">Game à supprimer</label>
-        <select class="form-select" id="act-game-idx">
-          <option value="">— d'abord choisir le joueur —</option>
-        </select>
-      </div>
-      <button class="btn btn-solid-rust" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Supprimer cette game</button>`;
+      ${playerSelect('p1', 'Joueur')}
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Accorde un <strong style="color:var(--gold)">Joker</strong> au joueur — badge indicatif qu'il peut supprimer une game de son choix.</p>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-wand-magic-sparkles"></i> Accorder le Joker</button>`;
 
     case 'clone-best-worst': return `
       ${playerSelect('p1', 'Joueur')}
@@ -3380,13 +3395,12 @@ function execAction() {
     }
     case 'joker-game': {
       const p = getP('p1');
-      const gameId = document.getElementById('act-game-idx')?.value;
-      if (!p || !gameId) { toast('Sélectionnez un joueur et une game.', 'error'); return; }
-      const game = p.games.find(g => g.id === gameId);
-      if (!game) { toast('Game introuvable.', 'error'); return; }
-      p.games = p.games.filter(g => g.id !== gameId);
-      addLog(`<strong>${p.name}</strong> — Joker : game ${game.score} pts supprimée.`, 'gold', 'wand-magic-sparkles', true);
-      toast(`Game supprimée : ${game.score} pts.`, 'gold');
+      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
+      if (state.jokerPlayerIds?.has(p.id)) { toast(`${p.name} a déjà un Joker actif.`, 'error'); return; }
+      if (!state.jokerPlayerIds) state.jokerPlayerIds = new Set();
+      state.jokerPlayerIds.add(p.id);
+      addLog(`<strong>${p.name}</strong> — Joker accordé (peut supprimer une game).`, 'gold', 'wand-magic-sparkles', true);
+      toast(`Joker accordé à ${p.name} !`, 'gold');
       break;
     }
     case 'clone-best-worst': {
@@ -4094,6 +4108,7 @@ function resetAllData() {
         state.players = [];
         state.log = [];
         state.top1BonusCounts = {};
+        state.jokerPlayerIds = new Set();
         renderAll();
         toast('Toutes les données ont été supprimées.', 'error');
       } catch(e) {
