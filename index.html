@@ -1698,23 +1698,9 @@ main {
       <button class="modal-close" onclick="closeModal('modal-echange')">×</button>
     </div>
     <div class="modal-body">
-      <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">La <strong style="color:var(--gold)">meilleure game</strong> du Joueur A sera échangée contre la <strong style="color:var(--rust)">pire game</strong> du Joueur B.</p>
-      <div class="form-row-2">
-        <div class="form-row" style="margin-bottom:0">
-          <label class="form-label">Joueur A (donne sa meilleure)</label>
-          <select class="form-select" id="echange-a">
-            <option value="">— Choisir —</option>
-          </select>
-        </div>
-        <div class="form-row" style="margin-bottom:0">
-          <label class="form-label">Joueur B (donne sa pire)</label>
-          <select class="form-select" id="echange-b">
-            <option value="">— Choisir —</option>
-          </select>
-        </div>
-      </div>
-      <div id="echange-preview" style="margin-top:14px"></div>
-      <button class="btn btn-solid-gold" style="width:100%;margin-top:16px;justify-content:center" onclick="doEchange()">Effectuer l'échange</button>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Deux joueurs seront tirés au sort. La <strong style="color:var(--gold)">meilleure game</strong> du joueur A sera échangée contre la <strong style="color:var(--rust)">pire game</strong> du joueur B.</p>
+      <div id="echange-preview" style="margin-bottom:14px"></div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doEchange()"><i class="fa-solid fa-shuffle"></i> Tirer au sort & échanger</button>
     </div>
   </div>
 </div>
@@ -3086,46 +3072,46 @@ function saveEditGame() {
 // ============================================================
 // ECHANGE
 // ============================================================
-document.addEventListener('change', function(e) {
-  if (e.target.id === 'echange-a' || e.target.id === 'echange-b') updateEchangePreview();
-});
-
-function updateEchangePreview() {
-  const pa = state.players.find(p => p.id === document.getElementById('echange-a').value);
-  const pb = state.players.find(p => p.id === document.getElementById('echange-b').value);
-  const el = document.getElementById('echange-preview');
-  if (!pa || !pb) { el.innerHTML = ''; return; }
-  const bestA = getBestGame(pa);
-  const worstB = getWorstGame(pb);
-  el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:2px;padding:12px;font-size:13px">
-    <div style="margin-bottom:6px"><strong>${pa.name}</strong> donne sa meilleure game : <span style="color:var(--gold)">${bestA ? bestA.score + ' pts' : '—'}</span></div>
-    <div><strong>${pb.name}</strong> donne sa pire game : <span style="color:var(--rust)">${worstB ? worstB.score + ' pts' : '—'}</span></div>
-  </div>`;
-}
-
 function doEchange() {
-  const pa = state.players.find(p => p.id === document.getElementById('echange-a').value);
-  const pb = state.players.find(p => p.id === document.getElementById('echange-b').value);
-  if (!pa || !pb) { toast('Sélectionnez deux joueurs.', 'error'); return; }
-  if (pa.id === pb.id) { toast('Choisissez deux joueurs différents.', 'error'); return; }
+  const eligible = state.players.filter(p => p.games.length > 0);
+  if (eligible.length < 2) { toast('Il faut au moins 2 joueurs avec des games.', 'error'); return; }
+
+  // Tirer joueur A (a une meilleure game)
+  const poolA = eligible.filter(p => getBestGame(p));
+  if (!poolA.length) { toast('Aucun joueur éligible pour joueur A.', 'error'); return; }
+  const pa = poolA[Math.floor(Math.random() * poolA.length)];
+
+  // Tirer joueur B différent de A (a une pire game)
+  const poolB = eligible.filter(p => p.id !== pa.id && getWorstGame(p));
+  if (!poolB.length) { toast('Aucun joueur éligible pour joueur B.', 'error'); return; }
+  const pb = poolB[Math.floor(Math.random() * poolB.length)];
+
   const bestA = getBestGame(pa);
   const worstB = getWorstGame(pb);
-  if (!bestA) { toast(`${pa.name} n'a aucune game.`, 'error'); return; }
-  if (!worstB) { toast(`${pb.name} n'a aucune game.`, 'error'); return; }
 
-  // Remove bestA from pa
-  pa.games = pa.games.filter(g => g.id !== bestA.id);
-  // Remove worstB from pb
-  pb.games = pb.games.filter(g => g.id !== worstB.id);
-  // Add to opposite
-  pa.games.push({ ...worstB, id: uid(), note: (worstB.note ? worstB.note + ' · ' : '') + `échange comm avec ${pb.name}` });
-  pb.games.push({ ...bestA, id: uid(), note: (bestA.note ? bestA.note + ' · ' : '') + `échange comm avec ${pa.name}` });
+  // Afficher le résultat dans le preview avant d'appliquer
+  const el = document.getElementById('echange-preview');
+  if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:2px;padding:12px;font-size:13px;margin-bottom:12px">
+    <div style="margin-bottom:6px"><strong>${escHtml(pa.name)}</strong> donne sa meilleure : <span style="color:var(--gold)">${bestA.score} pts</span></div>
+    <div><strong>${escHtml(pb.name)}</strong> donne sa pire : <span style="color:var(--rust)">${worstB.score} pts</span></div>
+  </div>`;
 
-  saveState();
-  closeModal('modal-echange');
-  renderAll();
-  addLog(`Échange : <strong>${pa.name}</strong> (best ${bestA.score}pts) ↔ <strong>${pb.name}</strong> (pire ${worstB.score}pts)`, 'gold', 'arrow-right-arrow-left', true);
-  toast('Échange effectué !', 'gold');
+  showConfirm('Confirmer l\'échange',
+    `<strong>${escHtml(pa.name)}</strong> (best ${bestA.score} pts) ↔ <strong>${escHtml(pb.name)}</strong> (pire ${worstB.score} pts)`,
+    () => {
+      pa.games = pa.games.filter(g => g.id !== bestA.id);
+      pb.games = pb.games.filter(g => g.id !== worstB.id);
+      pa.games.push({ ...worstB, id: uid(), note: (worstB.note ? worstB.note + ' · ' : '') + `échange comm avec ${pb.name}` });
+      pb.games.push({ ...bestA, id: uid(), note: (bestA.note ? bestA.note + ' · ' : '') + `échange comm avec ${pa.name}` });
+      saveState();
+      closeModal('modal-echange');
+      renderAll();
+      addLog(`Échange comm : <strong>${pa.name}</strong> (best ${bestA.score}pts) ↔ <strong>${pb.name}</strong> (pire ${worstB.score}pts)`, 'gold', 'arrow-right-arrow-left', true);
+      toast('Échange effectué !', 'gold');
+    },
+    false, 'Confirmer',
+    () => { if (el) el.innerHTML = ''; }
+  );
 }
 
 // ============================================================
@@ -3206,8 +3192,9 @@ function buildActionBody(type) {
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-wand-magic-sparkles"></i> Accorder le Joker</button>`;
 
     case 'clone-best-worst': return `
-      <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px">Un joueur sera tiré au sort. Sa <strong>meilleure game</strong> sera clonée et remplacera sa <strong>pire game</strong>.</p>
-      <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="execAction()"><i class="fa-solid fa-shuffle"></i> Tirer au sort & cloner</button>`;
+      ${playerSelect('p1', 'Joueur')}
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">La meilleure game sera clonée et remplacera la pire game.</p>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Cloner</button>`;
 
     case 'perso-echange': return `
       ${playerSelect('p1', 'Joueur A (donne une game)')}
@@ -3408,17 +3395,15 @@ function execAction() {
       break;
     }
     case 'clone-best-worst': {
-      const eligible = state.players.filter(p => {
-        const best = getBestGame(p); const worst = getWorstGame(p);
-        return best && worst && best.id !== worst.id;
-      });
-      if (!eligible.length) { toast('Aucun joueur éligible (2 games distinctes requises).', 'error'); return; }
-      const p = eligible[Math.floor(Math.random() * eligible.length)];
+      const p = getP('p1');
+      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
       const best = getBestGame(p); const worst = getWorstGame(p);
+      if (!best) { toast('Aucune game trouvée.', 'error'); return; }
+      if (best.id === worst?.id) { toast('Même game, impossible.', 'error'); return; }
       p.games = p.games.filter(g => g.id !== worst.id);
       p.games.push({ ...best, id: uid(), note: 'clone best→pire' });
-      addLog(`<strong>${p.name}</strong> — tiré au sort — meilleure game (${best.score} pts) clonée sur pire (${worst.score} pts).`, 'gold', 'clone', true);
-      toast(`Clone effectué pour ${p.name} !`, 'gold');
+      addLog(`<strong>${p.name}</strong> — meilleure game (${best.score} pts) clonée sur pire (${worst?.score} pts).`, 'gold', 'clone', true);
+      toast('Clone effectué !', 'gold');
       break;
     }
     case 'perso-echange': {
