@@ -2834,12 +2834,10 @@ function deleteGame(playerId, gameId) {
   const p = state.players.find(x => x.id === playerId);
   if (!p) return;
   const g = p.games.find(x => x.id === gameId);
-  const before = getPlayerTotal(p);
-  const after = getPlayerTotal({ ...p, games: p.games.filter(x => x.id !== gameId) });
   closeModal('modal-player');
   showConfirm(
     'Supprimer une game',
-    `Supprimer la game de <strong>${escHtml(p.name)}</strong>${g ? ` (${g.score} pts)` : ''} ?<br><span style="font-size:13px;color:var(--text-muted)">Total : ${before} pts → ${after} pts</span>`,
+    `Supprimer cette game de <strong>${escHtml(p.name)}</strong>${g ? ` (${g.score} pts)` : ''} ?`,
     () => {
       p.games = p.games.filter(x => x.id !== gameId);
       saveState();
@@ -3292,147 +3290,13 @@ function selectMult(v) {
   if (el) el.classList.add('selected');
 }
 
-function _getActionPlayer(fieldId) {
-  const el = document.getElementById('act-' + fieldId);
-  return el ? state.players.find(p => p.id === el.value) : null;
-}
-
-function _buildActionPreview() {
-  const type = currentAction;
-  const getP = _getActionPlayer;
-  const tot = p => getPlayerTotal(p);
-  const totWithout = (p, gameId) => getPlayerTotal({ ...p, games: p.games.filter(g => g.id !== gameId) });
-  const esc = escHtml;
-  const sub = (txt) => `<br><span style="font-size:13px;color:var(--text-muted)">${txt}</span>`;
-
-  switch(type) {
-    case 'best-x15':
-      return `La <strong>meilleure game de chaque joueur</strong> sera multipliée par <strong>×1.5</strong>.`;
-    case 'remove-worst':
-      return `La <strong>pire game de chaque joueur</strong> sera supprimée.`;
-    case 'top1-bonus':
-      if (state.top1BonusDone) { toast('Bonus Top 1 déjà appliqué.', 'error'); return null; }
-      return `<strong>+5 pts</strong> par Top 1 attribués à chaque joueur.`;
-    case 'add-bonus-game': {
-      const p = getP('p1'); if (!p) { toast('Sélectionnez un joueur.', 'error'); return null; }
-      const newMax = (state.maxGames || 20) + (p.extraGames || 0) + 1;
-      return `<strong>${esc(p.name)}</strong> pourra saisir <strong>1 game supplémentaire</strong>.${sub(`Nouveau maximum : ${newMax} games`)}`;
-    }
-    case 'joker-game': {
-      const p = getP('p1'); const gameId = document.getElementById('act-game-idx')?.value;
-      if (!p || !gameId) { toast('Sélectionnez un joueur et une game.', 'error'); return null; }
-      const game = p.games.find(g => g.id === gameId);
-      if (!game) { toast('Game introuvable.', 'error'); return null; }
-      return `Game de <strong>${esc(p.name)}</strong> (<strong>${game.score} pts</strong>) supprimée (Joker).${sub(`Total : ${tot(p)} pts → ${totWithout(p, gameId)} pts`)}`;
-    }
-    case 'clone-best-worst': {
-      const p = getP('p1'); if (!p) { toast('Sélectionnez un joueur.', 'error'); return null; }
-      const best = getBestGame(p); const worst = getWorstGame(p);
-      if (!best) { toast('Aucune game trouvée.', 'error'); return null; }
-      if (best.id === worst?.id) { toast('Même game, impossible.', 'error'); return null; }
-      return `Meilleure game de <strong>${esc(p.name)}</strong> (<strong>${best.score} pts</strong>) clonée sur sa pire game (${worst?.score ?? '?'} pts).`;
-    }
-    case 'comm-worst-x2': {
-      const p = getP('p1'); if (!p) { toast('Sélectionnez un joueur.', 'error'); return null; }
-      const worst = getWorstGame(p); if (!worst) { toast('Aucune game trouvée.', 'error'); return null; }
-      return `Pire game de <strong>${esc(p.name)}</strong> : <strong>${worst.score} pts → ${Math.round(worst.score * 2)} pts (×2)</strong>.`;
-    }
-    case 'comm-rand-x2': {
-      const p = getP('p1'); if (!p) { toast('Sélectionnez un joueur.', 'error'); return null; }
-      if (!p.games.length) { toast('Aucune game trouvée.', 'error'); return null; }
-      return `Une <strong>game aléatoire</strong> de <strong>${esc(p.name)}</strong> sera multipliée par <strong>×2</strong>.${sub('La game sera tirée au sort à la confirmation.')}`;
-    }
-    case 'perso-echange': {
-      const pa = getP('p1'); const pb = getP('p2');
-      if (!pa || !pb) { toast('Sélectionnez deux joueurs.', 'error'); return null; }
-      if (pa.id === pb.id) { toast('Deux joueurs différents.', 'error'); return null; }
-      const bestA = getBestGame(pa); const worstB = getWorstGame(pb);
-      if (!bestA || !worstB) { toast('Games manquantes.', 'error'); return null; }
-      return `Meilleure game de <strong>${esc(pa.name)}</strong> (<strong>${bestA.score} pts</strong>) échangée contre pire game de <strong>${esc(pb.name)}</strong> (<strong>${worstB.score} pts</strong>).`;
-    }
-    case 'perso-minus5': {
-      const p = getP('p1'); if (!p) { toast('Sélectionnez un joueur.', 'error'); return null; }
-      return `<strong>${esc(p.name)}</strong> perd <strong>5 pts bonus</strong>.${sub(`Total : ${tot(p)} pts → ${tot(p) - 5} pts`)}`;
-    }
-    case 'perso-freeze': {
-      const p = getP('p1'); if (!p) { toast('Sélectionnez un joueur.', 'error'); return null; }
-      if (p.pendingMult) { toast(`${p.name} a déjà un multiplicateur actif.`, 'error'); return null; }
-      return `<strong>${esc(p.name)}</strong> sera gelé à <strong>5 kills</strong> pour sa prochaine game.`;
-    }
-    case 'perso-plus10': {
-      const p = getP('p1'); if (!p) { toast('Sélectionnez un joueur.', 'error'); return null; }
-      return `<strong>${esc(p.name)}</strong> gagne <strong>+10 pts bonus</strong>.${sub(`Total : ${tot(p)} pts → ${tot(p) + 10} pts`)}`;
-    }
-    case 'perso-plus5': {
-      const p = getP('p1'); if (!p) { toast('Sélectionnez un joueur.', 'error'); return null; }
-      return `<strong>${esc(p.name)}</strong> gagne <strong>+5 pts bonus</strong>.${sub(`Total : ${tot(p)} pts → ${tot(p) + 5} pts`)}`;
-    }
-    case 'perso-mult': {
-      const p = getP('p1'); if (!p) { toast('Sélectionnez un joueur.', 'error'); return null; }
-      if (!selectedMult) { toast('Choisissez un multiplicateur.', 'error'); return null; }
-      if (p.freezeKills) { toast(`${p.name} a déjà un gèle de kills actif.`, 'error'); return null; }
-      return `Multiplicateur <strong>×${selectedMult}</strong> activé pour la prochaine game de <strong>${esc(p.name)}</strong>.`;
-    }
-    case 'perso-clone-game': {
-      const p = getP('p1'); const kills = parseInt(document.getElementById('act-kills')?.value || 0);
-      if (!p) { toast('Sélectionnez un joueur.', 'error'); return null; }
-      return `<strong>${esc(p.name)}</strong> reçoit une game avec <strong>${kills} kills = ${kills} pts</strong> (clone kills meilleur killeur).${sub(`Total actuel : ${tot(p)} pts`)}`;
-    }
-    case 'perso-clone-kills': {
-      const p1 = getP('p1'); const p2 = getP('p2'); const gameId = document.getElementById('act-game-idx')?.value;
-      if (!p1 || !p2 || !gameId) { toast('Sélectionnez joueurs et game.', 'error'); return null; }
-      const srcGame = p2.games.find(g => g.id === gameId);
-      if (!srcGame) { toast('Game source introuvable.', 'error'); return null; }
-      return `<strong>${esc(p1.name)}</strong> reçoit une game avec <strong>${srcGame.kills} kills</strong> (clonés de <strong>${esc(p2.name)}</strong> = ${srcGame.kills} pts).${sub(`Total actuel de ${esc(p1.name)} : ${tot(p1)} pts`)}`;
-    }
-    case 'perso-clone-lriaa': {
-      const p = getP('p1'); const kills = parseInt(document.getElementById('act-kills')?.value || 0);
-      if (!p) { toast('Sélectionnez un joueur.', 'error'); return null; }
-      return `<strong>${esc(p.name)}</strong> reçoit une game avec <strong>${kills} kills de Lriaa = ${kills} pts</strong>.${sub(`Total actuel : ${tot(p)} pts`)}`;
-    }
-    case 'perso-del-worst': {
-      const p = getP('p1'); const gameId = document.getElementById('act-game-idx')?.value;
-      if (!p) { toast('Sélectionnez un joueur.', 'error'); return null; }
-      if (!gameId) { toast('Sélectionnez une game à supprimer.', 'error'); return null; }
-      const game = p.games.find(g => g.id === gameId);
-      if (!game) { toast('Game introuvable.', 'error'); return null; }
-      return `Game de <strong>${esc(p.name)}</strong> (<strong>${game.score} pts</strong>) supprimée.${sub(`Total : ${tot(p)} pts → ${totWithout(p, gameId)} pts`)}`;
-    }
-    case 'perso-skip': {
-      const p = getP('p1'); if (!p) { toast('Sélectionnez un joueur.', 'error'); return null; }
-      return `<strong>${esc(p.name)}</strong> skippera sa <strong>prochaine game</strong>.`;
-    }
-    case 'perso-del-rand': {
-      const p = getP('p1'); if (!p) { toast('Sélectionnez un joueur.', 'error'); return null; }
-      const best = getBestGame(p); const worst = getWorstGame(p);
-      const pool = p.games.filter(g => g.id !== best?.id && g.id !== worst?.id);
-      if (!pool.length) { toast('Pas assez de games (meilleure et pire protégées).', 'error'); return null; }
-      return `Une game aléatoire de <strong>${esc(p.name)}</strong> sera supprimée.${sub(`Parmi ${pool.length} games — meilleure et pire protégées. Tirée au sort à la confirmation.`)}`;
-    }
-    case 'perso-extra-game': {
-      const p = getP('p1'); if (!p) { toast('Sélectionnez un joueur.', 'error'); return null; }
-      const newMax = (state.maxGames || 20) + (p.extraGames || 0) + 1;
-      return `<strong>${esc(p.name)}</strong> pourra saisir <strong>1 game supplémentaire</strong>.${sub(`Nouveau maximum : ${newMax} games`)}`;
-    }
-    case 'perso-top10pts': {
-      const p = getP('p1'); if (!p) { toast('Sélectionnez un joueur.', 'error'); return null; }
-      return `<strong>+10 pts</strong> activés pour <strong>${esc(p.name)}</strong> si Top 10 sur sa prochaine game.`;
-    }
-    default:
-      return 'Confirmer cette action ?';
-  }
-}
-
 function execAction() {
   if (!isAdmin()) { toast('Action non autorisée.', 'error'); return; }
-  const preview = _buildActionPreview();
-  if (preview === null) return;
-  showConfirm('Confirmer l\'action', preview, _doExecAction, false, 'Appliquer');
-}
-
-function _doExecAction() {
   const type = currentAction;
-  const getP = _getActionPlayer;
+  const getP = (id) => {
+    const el = document.getElementById('act-' + id);
+    return el ? state.players.find(p => p.id === el.value) : null;
+  };
 
   switch(type) {
     case 'best-x15': {
