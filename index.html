@@ -2746,6 +2746,8 @@ function submitGame() {
     addLog(`<strong>${player.name}</strong> — game skippée.`, 'rust', 'forward-step');
     toast(`Game de ${player.name} skippée.`, 'info');
     resetSaisie();
+    closeModal('modal-saisie');
+    renderAll();
     return;
   }
 
