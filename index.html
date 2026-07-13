@@ -1184,7 +1184,7 @@ main {
         </div>
 
         <div id="saisie-preview" class="score-preview" style="display:none">
-          <div class="sp-row"><span>Kills (×multiplicateur)</span><span id="prev-kills-pts">0 pts</span></div>
+          <div class="sp-row"><span id="prev-kills-label">Kills (×multiplicateur)</span><span id="prev-kills-pts">0 pts</span></div>
           <div class="sp-row"><span>Top placement</span><span id="prev-top-pts">0 pts</span></div>
           <div class="sp-row" id="prev-bonus-row" style="display:none;color:var(--blue)"><span><i class="fa-solid fa-star-of-life" style="font-size:9px"></i> Bonus</span><span id="prev-bonus-pts">+0 pts</span></div>
           <div class="sp-row sp-total"><span>SCORE GAME</span><span id="prev-total">0 pts</span></div>
@@ -2611,7 +2611,7 @@ function updateSaisiePreview() {
   const badge = document.getElementById('mult-roue-badge');
   const cancelBtn = document.getElementById('mult-roue-cancel');
   if (player && player.pendingMult) {
-    multSel.value = 1;
+    multSel.value = player.pendingMult;
     multSel.disabled = true;
     multSel.classList.add('mult-roue-active');
     badge.style.display = 'flex';
@@ -2635,6 +2635,8 @@ function updateSaisiePreview() {
 
   const preview = document.getElementById('saisie-preview');
   preview.style.display = 'block';
+  const killsLabel = document.getElementById('prev-kills-label');
+  if (killsLabel) killsLabel.textContent = gameMult !== 1 ? 'Kills' : 'Kills (×multiplicateur)';
   document.getElementById('prev-kills-pts').textContent = `${kills} pts${selectMult !== 1 && gameMult === 1 ? ` × ${selectMult} = ${killsPts}` : ''}`;
   document.getElementById('prev-top-pts').textContent = topPts + ' pts';
 
