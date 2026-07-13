@@ -2664,11 +2664,16 @@ function updateSaisiePreview() {
 
 function resetSaisie() {
   document.getElementById('saisie-kills').value = 0;
-  document.getElementById('saisie-mult').value = 1;
+  const multSel = document.getElementById('saisie-mult');
+  multSel.value = 1;
+  multSel.disabled = false;
+  multSel.classList.remove('mult-roue-active');
   selectTop(0);
   document.getElementById('saisie-preview').style.display = 'none';
   document.getElementById('saisie-skip-banner').style.display = 'none';
   document.getElementById('saisie-form-fields').style.display = 'block';
+  const mb = document.getElementById('mult-roue-badge');
+  if (mb) mb.style.display = 'none';
   saisieBonus = 0;
   const bd = document.getElementById('bonus-display');
   if (bd) bd.style.display = 'none';
