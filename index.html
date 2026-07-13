@@ -1115,10 +1115,13 @@ main {
       <div id="saisie-skip-banner" style="display:none;margin-top:14px">
         <div style="background:rgba(192,71,42,0.12);border:2px solid var(--rust);border-radius:4px;padding:20px;text-align:center">
           <div style="font-size:32px;margin-bottom:8px"><i class="fa-solid fa-forward-step" style="color:var(--rust)"></i></div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;text-transform:uppercase;letter-spacing:1px;color:var(--rust-light);margin-bottom:6px">Skip activé</div>
-          <div style="font-size:13px;color:var(--text-muted);line-height:1.5">La prochaine game de ce joueur<br>ne sera <strong style="color:var(--text)">pas comptabilisée</strong> et son nombre de games n'augmentera pas.</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;text-transform:uppercase;letter-spacing:1px;color:var(--rust-light);margin-bottom:6px">Skip disponible</div>
+          <div style="font-size:13px;color:var(--text-muted);line-height:1.5">Ce joueur a la possibilité de skipper.<br>Confirmer = game <strong style="color:var(--text)">non comptabilisée</strong>. Annuler = game normale.</div>
         </div>
-        <button class="btn btn-solid-rust btn-lg" onclick="submitGame()" style="width:100%;justify-content:center;margin-top:14px"><i class="fa-solid fa-forward-step" style="margin-right:6px"></i>Confirmer le skip</button>
+        <div style="display:flex;gap:10px;margin-top:14px">
+          <button class="btn btn-solid-rust btn-lg" onclick="submitGame()" style="flex:1;justify-content:center"><i class="fa-solid fa-forward-step" style="margin-right:6px"></i>Confirmer le skip</button>
+          <button class="btn btn-lg" id="saisie-skip-cancel-btn" onclick="" style="flex:1;justify-content:center;border-color:var(--border);color:var(--text-muted)"><i class="fa-solid fa-xmark" style="margin-right:6px"></i>Annuler le skip</button>
+        </div>
       </div>
 
       <!-- CHAMPS SAISIE (masqués si skip actif) -->
@@ -2154,7 +2157,7 @@ function renderClassement() {
       </td>
       <td>
         <div class="player-name">${escHtml(p.name)}</div>
-        ${p.skipNext ? '<div style="font-size:10px;color:var(--rust)"><i class="fa-solid fa-forward-step"></i> Skip activé</div>' : ''}
+        ${p.skipNext ? `<div style="display:inline-flex;align-items:center;gap:5px;margin-top:3px;background:rgba(192,71,42,0.15);border:1px solid var(--rust);border-radius:3px;padding:2px 6px;font-size:10px;font-weight:700;color:var(--rust);letter-spacing:0.5px"><i class="fa-solid fa-forward-step" style="font-size:9px"></i> SKIP DISPO${isAdmin() ? `<button onclick="cancelSkip('${p.id}');event.stopPropagation()" style="background:none;border:none;color:var(--rust);cursor:pointer;font-size:12px;padding:0;line-height:1;margin-left:2px;opacity:0.7" title="Annuler le skip">×</button>` : ''}</div>` : ''}
         ${p.freezeKills ? `<div style="font-size:10px;color:var(--blue)"><i class="fa-solid fa-snowflake"></i> Gelé à ${p.freezeKills} kills</div>` : ''}
         ${p.pendingMult ? `<div style="font-size:10px;color:var(--purple)"><i class="fa-solid fa-xmark"></i> ×${p.pendingMult} kills (roue)</div>` : ''}
         ${p.pendingBonus ? `<div style="font-size:10px;color:var(--green)"><i class="fa-solid fa-bolt-lightning"></i> +${p.pendingBonus}pts top10</div>` : ''}
@@ -2581,6 +2584,8 @@ function updateSaisiePreview() {
   const isSkip = player && player.skipNext;
   document.getElementById('saisie-skip-banner').style.display = isSkip ? 'block' : 'none';
   document.getElementById('saisie-form-fields').style.display = isSkip ? 'none' : 'block';
+  const skipCancelBtn = document.getElementById('saisie-skip-cancel-btn');
+  if (skipCancelBtn) skipCancelBtn.onclick = () => cancelSkipSaisie(pid);
   if (isSkip) return;
 
   const killsInp = document.getElementById('saisie-kills');
@@ -2680,6 +2685,30 @@ function cancelJoker(playerId) {
       renderAll();
     }
   );
+}
+
+function cancelSkip(playerId) {
+  const p = state.players.find(x => x.id === playerId);
+  showConfirm(
+    'Annuler le Skip',
+    `Retirer le skip de <strong>${escHtml(p?.name || '')}</strong> ? Le joueur devra jouer normalement.`,
+    () => {
+      p.skipNext = false;
+      if (p) addLog(`<strong>${p.name}</strong> — Skip annulé.`, 'rust', 'forward-step', true);
+      saveState();
+      renderAll();
+    }
+  );
+}
+
+function cancelSkipSaisie(pid) {
+  const player = state.players.find(p => p.id === pid);
+  if (!player) return;
+  player.skipNext = false;
+  addLog(`<strong>${player.name}</strong> — Skip annulé, game saisie normalement.`, 'rust', 'forward-step', true);
+  saveState();
+  renderClassement();
+  updateSaisiePreview();
 }
 
 function cancelFreeze(pid) {
