@@ -1677,7 +1677,7 @@ main {
     <div class="modal-body">
       <p id="confirm-message" style="margin-bottom:20px;line-height:1.6;font-size:14px"></p>
       <div style="display:flex;gap:10px;justify-content:flex-end">
-        <button class="btn btn-sm" style="color:var(--text-muted);border-color:var(--border)" onclick="confirmCancel()">Annuler</button>
+        <button id="confirm-cancel-btn" class="btn btn-sm" style="color:var(--text-muted);border-color:var(--border)" onclick="confirmCancel()">Annuler</button>
         <button id="confirm-ok-btn" class="btn btn-sm" onclick="confirmOk()">Confirmer</button>
       </div>
     </div>
@@ -3635,10 +3635,11 @@ let _confirmCancelCb = null;
 let _logPage = 0;
 let _playersPage = 0;
 
-function showConfirm(title, message, onOk, danger = true, okLabel = null, onCancel = null) {
+function showConfirm(title, message, onOk, danger = true, okLabel = null, onCancel = null, hideCancel = false) {
   document.getElementById('confirm-title').textContent = title;
   document.getElementById('confirm-message').innerHTML = message;
   const btn = document.getElementById('confirm-ok-btn');
+  const cancelBtn = document.getElementById('confirm-cancel-btn');
   const header = document.getElementById('confirm-header');
   if (danger) {
     btn.style.cssText = 'background:var(--rust);color:white;border-color:var(--rust)';
@@ -3649,6 +3650,7 @@ function showConfirm(title, message, onOk, danger = true, okLabel = null, onCanc
     btn.textContent = okLabel || 'Valider';
     header.style.borderBottom = '';
   }
+  if (cancelBtn) cancelBtn.style.display = hideCancel ? 'none' : '';
   _confirmCb = onOk;
   _confirmCancelCb = onCancel;
   openModal('modal-confirm');
@@ -3828,7 +3830,7 @@ function _applySubsAdd(n) {
     showConfirm(
       unlocks > 1 ? `${unlocks}× Roues Communautaires débloquées !` : 'Roue Communautaire débloquée !',
       `<div style="text-align:center;padding:8px 0"><i class="fa-solid fa-rotate" style="font-size:40px;color:var(--gold);margin-bottom:8px;display:block"></i><strong style="font-size:16px;color:var(--gold)">${unlocks > 1 ? `${unlocks}× Roues Communautaires` : 'La Roue Communautaire'} ${unlocks > 1 ? 'sont prêtes' : 'est prête'} !</strong><br><span style="color:var(--text-muted);font-size:13px;margin-top:4px;display:block">Total : <strong style="color:var(--gold)">${newTotal} subs</strong> — Prochain palier : ${nextMilestone}</span></div>`,
-      () => {}
+      () => {}, false, 'Fermer', null, true
     );
   } else {
     const nextMilestone = (Math.floor(newTotal / 50) + 1) * 50;
