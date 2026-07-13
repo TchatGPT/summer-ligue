@@ -1015,10 +1015,13 @@ main {
       <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;color:var(--gold);letter-spacing:1px;text-transform:uppercase">Roue Communautaire</div>
       <div style="font-size:12px;color:var(--text-muted)" id="subs-banner-text">— subs</div>
     </div>
-    <div style="display:flex;align-items:center;gap:8px">
-      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:22px;color:var(--gold)" id="subs-banner-count">0/50</div>
-      <div style="width:80px;height:6px;background:var(--bg2);border-radius:3px;overflow:hidden">
-        <div id="subs-banner-bar" style="height:100%;background:var(--gold);border-radius:3px;width:0%;transition:width 0.4s"></div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:22px;color:var(--gold);line-height:1" id="subs-banner-count">0 subs</div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <div id="subs-banner-milestones" style="display:flex;gap:4px"></div>
+        <div style="width:60px;height:5px;background:var(--bg2);border-radius:3px;overflow:hidden">
+          <div id="subs-banner-bar" style="height:100%;background:var(--gold);border-radius:3px;width:0%;transition:width 0.4s"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -1537,16 +1540,17 @@ main {
     <div style="padding:8px 0">
       <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap">
         <div style="text-align:center">
-          <div id="mod-subs-display" style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:52px;color:var(--gold);line-height:1">0/50</div>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:2px">subs vers la prochaine roue</div>
+          <div id="mod-subs-display" style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:52px;color:var(--gold);line-height:1">0</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px">subs au total</div>
         </div>
         <div style="flex:1;min-width:180px">
           <div style="width:100%;height:12px;background:var(--bg2);border-radius:6px;overflow:hidden;margin-bottom:8px">
             <div id="mod-subs-bar" style="height:100%;background:var(--gold);border-radius:6px;width:0%;transition:width 0.4s"></div>
           </div>
-          <div style="font-size:12px;color:var(--text-muted)" id="mod-subs-info">Prochain unlock dans 50 subs</div>
+          <div style="font-size:12px;color:var(--text-muted)" id="mod-subs-info">Prochain palier dans 50 subs</div>
         </div>
       </div>
+      <div id="mod-subs-milestones" style="margin-bottom:16px"></div>
 
       <div style="margin-bottom:12px">
         <label class="form-label">Ajouter des subs manuellement</label>
@@ -1867,11 +1871,10 @@ main {
       <button class="modal-close" onclick="closeModal('modal-subs-manual')">×</button>
     </div>
     <div class="modal-body">
-      <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Valeur entre 0 et 49 — la roue se déclenche à 50.</div>
-      <label class="form-label">Compteur actuel</label>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Total cumulatif depuis le début de la Summer Ligue. La roue se déclenche à chaque palier de 50.</div>
+      <label class="form-label">Total subs</label>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-        <input type="number" class="form-input" id="subs-manual-input" min="0" max="49" style="text-align:center;font-size:22px;font-family:'Barlow Condensed',sans-serif;font-weight:700" placeholder="0–49">
-        <span style="font-size:18px;color:var(--text-muted);font-family:'Barlow Condensed',sans-serif">/50</span>
+        <input type="number" class="form-input" id="subs-manual-input" min="0" style="text-align:center;font-size:22px;font-family:'Barlow Condensed',sans-serif;font-weight:700" placeholder="ex: 160">
       </div>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="confirmSubsManual()">
         <i class="fa-solid fa-check"></i> Appliquer
@@ -3729,22 +3732,61 @@ function addLog(msg, color, icon, pub = false) {
 // ============================================================
 function renderSubsBanner() {
   const count = state.subsCount || 0;
-  const pct = Math.min(100, Math.round(count / 50 * 100));
-  const remaining = 50 - count;
+  const rouesTotal = Math.floor(count / 50);
+  const nextMilestone = (rouesTotal + 1) * 50;
+  const remaining = nextMilestone - count;
+  const pct = Math.round((count % 50) / 50 * 100);
 
+  // Banner above classement
   const banner = document.getElementById('subs-banner');
   if (banner) {
     banner.style.display = 'flex';
-    document.getElementById('subs-banner-count').textContent = `${count}/50`;
-    document.getElementById('subs-banner-text').textContent = remaining > 0 ? `Encore ${remaining} sub${remaining > 1 ? 's' : ''} avant la prochaine Roue Communautaire !` : 'Roue Communautaire débloquée !';
+    document.getElementById('subs-banner-count').textContent = `${count} subs`;
+    document.getElementById('subs-banner-text').textContent = remaining > 0
+      ? `Prochain palier : ${nextMilestone} — encore ${remaining} sub${remaining > 1 ? 's' : ''}`
+      : 'Roue Communautaire débloquée !';
     document.getElementById('subs-banner-bar').style.width = pct + '%';
+    // Mini milestone pills in banner
+    const bm = document.getElementById('subs-banner-milestones');
+    if (bm) {
+      const pills = [];
+      for (let i = 1; i <= rouesTotal + 1; i++) {
+        const m = i * 50;
+        const reached = count >= m;
+        pills.push(`<span style="font-size:10px;font-weight:700;padding:1px 5px;border-radius:2px;${reached ? 'background:rgba(212,175,55,0.2);color:var(--gold);border:1px solid var(--gold)' : 'background:var(--bg2);color:var(--text-muted);border:1px dashed var(--border)'}">${reached ? '✓' : '→'}${m}</span>`);
+      }
+      bm.innerHTML = pills.join('');
+    }
   }
 
+  // Modération display
   const disp = document.getElementById('mod-subs-display');
   if (disp) {
-    disp.textContent = `${count}/50`;
+    disp.textContent = count;
     document.getElementById('mod-subs-bar').style.width = pct + '%';
-    document.getElementById('mod-subs-info').textContent = remaining > 0 ? `Prochain unlock dans ${remaining} sub${remaining > 1 ? 's' : ''}` : 'Roue débloquée ! Réinitialisez après avoir appliqué.';
+    document.getElementById('mod-subs-info').textContent = remaining > 0
+      ? `Prochain palier dans ${remaining} sub${remaining > 1 ? 's' : ''} (palier ${nextMilestone})`
+      : `Palier ${nextMilestone} atteint — Roue débloquée !`;
+  }
+
+  // Milestones recap in modération
+  const milestonesEl = document.getElementById('mod-subs-milestones');
+  if (milestonesEl) {
+    if (rouesTotal === 0 && count === 0) { milestonesEl.innerHTML = ''; return; }
+    const items = [];
+    for (let i = 1; i <= rouesTotal + 2; i++) {
+      const m = i * 50;
+      const reached = count >= m;
+      const isNext = !reached && m === nextMilestone;
+      if (reached) {
+        items.push(`<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(212,175,55,0.15);border:1px solid var(--gold);border-radius:3px;padding:3px 8px;font-size:11px;font-weight:700;color:var(--gold)"><i class="fa-solid fa-check" style="font-size:9px"></i> ${m}</span>`);
+      } else if (isNext) {
+        items.push(`<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(212,175,55,0.07);border:1px dashed var(--gold);border-radius:3px;padding:3px 8px;font-size:11px;font-weight:700;color:var(--gold);opacity:0.75"><i class="fa-solid fa-arrow-right" style="font-size:9px"></i> ${m}</span>`);
+      } else {
+        items.push(`<span style="display:inline-flex;align-items:center;gap:3px;background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:3px 8px;font-size:11px;color:var(--text-muted)">${m}</span>`);
+      }
+    }
+    milestonesEl.innerHTML = `<div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;font-weight:700"><i class="fa-solid fa-flag-checkered" style="margin-right:4px"></i>Paliers — ${rouesTotal} roue${rouesTotal !== 1 ? 's' : ''} déclenchée${rouesTotal !== 1 ? 's' : ''}</div><div style="display:flex;flex-wrap:wrap;gap:6px">${items.join('')}</div>`;
   }
 }
 
@@ -3770,23 +3812,27 @@ function addSubsCustom() {
 }
 
 function _applySubsAdd(n) {
-  let total = (state.subsCount || 0) + n;
-  let unlocks = 0;
-  while (total >= 50) { total -= 50; unlocks++; }
-  state.subsCount = total;
+  const oldTotal = state.subsCount || 0;
+  const newTotal = oldTotal + n;
+  const oldRoues = Math.floor(oldTotal / 50);
+  const newRoues = Math.floor(newTotal / 50);
+  const unlocks = newRoues - oldRoues;
+  state.subsCount = newTotal;
   saveState();
   renderModerationPage();
   if (unlocks > 0) {
-    for (let i = 0; i < unlocks; i++) {
-      addLog(`Roue Communautaire débloquée ! (${50 * (i + 1)} subs atteints)`, 'gold', 'rotate', true);
+    for (let i = oldRoues + 1; i <= newRoues; i++) {
+      addLog(`Roue Communautaire débloquée ! (palier ${i * 50} subs atteint)`, 'gold', 'rotate', true);
     }
+    const nextMilestone = (newRoues + 1) * 50;
     showConfirm(
-      unlocks > 1 ? `${unlocks}× Roue Communautaire débloquée !` : 'Roue Communautaire débloquée !',
-      `<div style="text-align:center;padding:8px 0"><i class="fa-solid fa-rotate" style="font-size:40px;color:var(--gold);margin-bottom:8px;display:block"></i><strong style="font-size:16px;color:var(--gold)">${unlocks > 1 ? `${unlocks}× Roue Communautaire` : 'La Roue Communautaire'} est prête à être lancée !</strong><br><span style="color:var(--text-muted);font-size:12px">Compteur remis à ${state.subsCount}/50</span></div>`,
+      unlocks > 1 ? `${unlocks}× Roues Communautaires débloquées !` : 'Roue Communautaire débloquée !',
+      `<div style="text-align:center;padding:8px 0"><i class="fa-solid fa-rotate" style="font-size:40px;color:var(--gold);margin-bottom:8px;display:block"></i><strong style="font-size:16px;color:var(--gold)">${unlocks > 1 ? `${unlocks}× Roues Communautaires` : 'La Roue Communautaire'} ${unlocks > 1 ? 'sont prêtes' : 'est prête'} !</strong><br><span style="color:var(--text-muted);font-size:13px;margin-top:4px;display:block">Total : <strong style="color:var(--gold)">${newTotal} subs</strong> — Prochain palier : ${nextMilestone}</span></div>`,
       () => {}
     );
   } else {
-    toast(`+${n} sub${n > 1 ? 's' : ''} — ${state.subsCount}/50`, 'gold');
+    const nextMilestone = (Math.floor(newTotal / 50) + 1) * 50;
+    toast(`+${n} sub${n > 1 ? 's' : ''} — Total : ${newTotal} (prochain palier : ${nextMilestone})`, 'gold');
   }
 }
 
@@ -3807,12 +3853,13 @@ function setSubsManual() {
 
 function confirmSubsManual() {
   const val = parseInt(document.getElementById('subs-manual-input').value || '0');
-  const n = Math.max(0, Math.min(49, isNaN(val) ? 0 : val));
+  const n = Math.max(0, isNaN(val) ? 0 : val);
   state.subsCount = n;
   saveState();
   renderModerationPage();
   closeModal('modal-subs-manual');
-  toast(`Compteur mis à ${n}/50.`, 'info');
+  const next = (Math.floor(n / 50) + 1) * 50;
+  toast(`Total subs mis à ${n} — prochain palier : ${next}.`, 'info');
 }
 
 function setMaxGames(n) {
