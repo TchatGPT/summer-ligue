@@ -1270,7 +1270,7 @@ main {
         <div class="ac-bg"><i class="fa-solid fa-clone"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-clone"></i></div>
         <div class="ac-title">Clone meilleure → pire</div>
-        <div class="ac-desc">Clone la meilleure game d'un joueur et remplace sa pire game</div>
+        <div class="ac-desc">Clone la meilleure game de toute la ligue et remplace la pire game du joueur choisi</div>
       </div>
 
       <div class="action-card action-card-gold" onclick="openAction('top1-bonus')">
@@ -1528,7 +1528,7 @@ main {
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-trash-can"></i> Suppression de la pire game</div><div style="font-size:11px;color:var(--text-muted)">Supprime la game avec le score le plus bas de chaque joueur</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-wand-magic-sparkles"></i> Joker sur la game de son choix</div><div style="font-size:11px;color:var(--text-muted)">Supprime une game spécifique au choix pour un joueur</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-arrow-right-arrow-left"></i> Échange de game (meilleure ↔ pire)</div><div style="font-size:11px;color:var(--text-muted)">Échange la meilleure game de joueur A contre la pire game de joueur B</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-clone"></i> Clone meilleure game → pire</div><div style="font-size:11px;color:var(--text-muted)">Clone la meilleure game d'un joueur et remplace sa pire game (tiré au hasard)</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-clone"></i> Clone meilleure game → pire</div><div style="font-size:11px;color:var(--text-muted)">Clone la meilleure game de toute la ligue et remplace la pire game du joueur choisi</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-crown"></i> +5 pts par Top 1</div><div style="font-size:11px;color:var(--text-muted)">Chaque top 1 dans le classement actuel ajoute +5 pts de bonus permanent</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-angles-up"></i> Pire game × 2</div><div style="font-size:11px;color:var(--text-muted)">Double le score de la pire game de chaque joueur</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shuffle"></i> Game au hasard × 2</div><div style="font-size:11px;color:var(--text-muted)">Double le score d'une game tirée au sort pour un joueur ciblé</div></div></div>
@@ -3339,8 +3339,8 @@ function buildActionBody(type) {
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-wand-magic-sparkles"></i> Accorder le Joker</button>`;
 
     case 'clone-best-worst': return `
-      ${playerSelect('p1', 'Joueur')}
-      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">La meilleure game sera clonée et remplacera la pire game.</p>
+      ${playerSelect('p1', 'Joueur qui reçoit le clone')}
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">La <strong style="color:var(--text)">meilleure game de toute la ligue</strong> sera clonée et remplacera la pire game du joueur choisi.</p>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Cloner</button>`;
 
     case 'perso-echange': return `
@@ -3557,13 +3557,19 @@ function execAction() {
     case 'clone-best-worst': {
       const p = getP('p1');
       if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
-      const best = getBestGame(p); const worst = getWorstGame(p);
-      if (!best) { toast('Aucune game trouvée.', 'error'); return; }
-      if (best.id === worst?.id) { toast('Même game, impossible.', 'error'); return; }
-      p.games = p.games.filter(g => g.id !== worst.id);
-      p.games.push({ ...best, id: uid(), note: 'clone best→pire' });
-      addLog(`<strong>${p.name}</strong> — meilleure game (${best.score} pts) clonée sur pire (${worst?.score} pts).`, 'gold', 'clone', true);
-      toast('Clone effectué !', 'gold');
+      // Meilleure game de toute la ligue
+      let leagueBest = null;
+      let leagueBestOwner = null;
+      state.players.forEach(pl => {
+        const b = getBestGame(pl);
+        if (b && (!leagueBest || b.score > leagueBest.score)) { leagueBest = b; leagueBestOwner = pl; }
+      });
+      if (!leagueBest) { toast('Aucune game trouvée dans la ligue.', 'error'); return; }
+      const worst = getWorstGame(p);
+      if (worst) p.games = p.games.filter(g => g.id !== worst.id);
+      p.games.push({ ...leagueBest, id: uid(), note: (leagueBest.note ? leagueBest.note + ' · ' : '') + `clone best ligue (${leagueBestOwner.name})` });
+      addLog(`<strong>${p.name}</strong> — pire game remplacée par clone de la meilleure de la ligue (${leagueBest.score} pts — ${leagueBestOwner.name}).`, 'gold', 'clone', true);
+      toast(`Clone effectué : ${leagueBest.score} pts (meilleure ligue de ${leagueBestOwner.name}) !`, 'gold');
       break;
     }
     case 'perso-echange': {
