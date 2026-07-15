@@ -1245,11 +1245,25 @@ main {
         <div class="ac-desc">Supprime une game spécifique au choix pour un joueur</div>
       </div>
 
-      <div class="action-card action-card-gold" onclick="openModal('modal-echange')">
+      <div class="action-card action-card-gold" onclick="openAction('comm-echange-best-worst')">
         <div class="ac-bg"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
         <div class="ac-title">Échange meilleure ↔ pire</div>
-        <div class="ac-desc">Échange la meilleure game de joueur A contre la pire de joueur B</div>
+        <div class="ac-desc">Tire 2 joueurs au hasard, échange la meilleure game de l'un contre la pire de l'autre</div>
+      </div>
+
+      <div class="action-card action-card-gold" onclick="openAction('comm-echange-rand')">
+        <div class="ac-bg"><i class="fa-solid fa-shuffle"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-shuffle"></i></div>
+        <div class="ac-title">Échange 2 games aléatoires</div>
+        <div class="ac-desc">Tire 2 joueurs au hasard et échange une game aléatoire de chacun</div>
+      </div>
+
+      <div class="action-card action-card-gold" onclick="openAction('comm-low-kills-bonus')">
+        <div class="ac-bg"><i class="fa-solid fa-bolt-lightning"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
+        <div class="ac-title">+5 pts petites games</div>
+        <div class="ac-desc">+5 pts à toutes les games de moins de 5 kills pour tous les joueurs</div>
       </div>
 
       <div class="action-card action-card-gold" onclick="openAction('clone-best-worst')">
@@ -3167,6 +3181,63 @@ function doEchange() {
   );
 }
 
+function doCommEchangeBestWorst() {
+  const eligible = state.players.filter(p => p.games.length > 0);
+  if (eligible.length < 2) { toast('Il faut au moins 2 joueurs avec des games.', 'error'); return; }
+  const poolA = eligible.filter(p => getBestGame(p));
+  if (!poolA.length) { toast('Aucun joueur éligible.', 'error'); return; }
+  const pa = poolA[Math.floor(Math.random() * poolA.length)];
+  const poolB = eligible.filter(p => p.id !== pa.id && getWorstGame(p));
+  if (!poolB.length) { toast('Aucun joueur éligible pour B.', 'error'); return; }
+  const pb = poolB[Math.floor(Math.random() * poolB.length)];
+  const bestA = getBestGame(pa);
+  const worstB = getWorstGame(pb);
+  const el = document.getElementById('action-echange-bp-preview');
+  if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px">
+    <div style="margin-bottom:6px"><strong>${escHtml(pa.name)}</strong> donne sa meilleure : <span style="color:var(--gold)">${bestA.score} pts</span></div>
+    <div><strong>${escHtml(pb.name)}</strong> donne sa pire : <span style="color:var(--rust)">${worstB.score} pts</span></div>
+  </div>`;
+  showConfirm('Confirmer l\'échange',
+    `<strong>${escHtml(pa.name)}</strong> (best ${bestA.score} pts) ↔ <strong>${escHtml(pb.name)}</strong> (pire ${worstB.score} pts)`,
+    () => {
+      pa.games = pa.games.filter(g => g.id !== bestA.id);
+      pb.games = pb.games.filter(g => g.id !== worstB.id);
+      pa.games.push({ ...worstB, id: uid(), note: (worstB.note ? worstB.note + ' · ' : '') + `échange comm avec ${pb.name}` });
+      pb.games.push({ ...bestA, id: uid(), note: (bestA.note ? bestA.note + ' · ' : '') + `échange comm avec ${pa.name}` });
+      addLog(`Échange : <strong>${pa.name}</strong> (best ${bestA.score} pts) ↔ <strong>${pb.name}</strong> (pire ${worstB.score} pts)`, 'gold', 'arrow-right-arrow-left', true);
+      toast('Échange effectué !', 'gold');
+      saveState(); closeModal('modal-action'); renderAll();
+    }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
+  );
+}
+
+function doCommEchangeRand() {
+  const eligible = state.players.filter(p => p.games.length > 0);
+  if (eligible.length < 2) { toast('Il faut au moins 2 joueurs avec des games.', 'error'); return; }
+  const pa = eligible[Math.floor(Math.random() * eligible.length)];
+  const poolB = eligible.filter(p => p.id !== pa.id);
+  const pb = poolB[Math.floor(Math.random() * poolB.length)];
+  const gameA = pa.games[Math.floor(Math.random() * pa.games.length)];
+  const gameB = pb.games[Math.floor(Math.random() * pb.games.length)];
+  const el = document.getElementById('action-echange-rand-preview');
+  if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px">
+    <div style="margin-bottom:6px"><strong>${escHtml(pa.name)}</strong> : game tirée <span style="color:var(--gold)">${gameA.score} pts</span></div>
+    <div><strong>${escHtml(pb.name)}</strong> : game tirée <span style="color:var(--gold)">${gameB.score} pts</span></div>
+  </div>`;
+  showConfirm('Confirmer l\'échange',
+    `<strong>${escHtml(pa.name)}</strong> (${gameA.score} pts) ↔ <strong>${escHtml(pb.name)}</strong> (${gameB.score} pts)`,
+    () => {
+      pa.games = pa.games.filter(g => g.id !== gameA.id);
+      pb.games = pb.games.filter(g => g.id !== gameB.id);
+      pa.games.push({ ...gameB, id: uid(), note: (gameB.note ? gameB.note + ' · ' : '') + `échange aléatoire avec ${pb.name}` });
+      pb.games.push({ ...gameA, id: uid(), note: (gameA.note ? gameA.note + ' · ' : '') + `échange aléatoire avec ${pa.name}` });
+      addLog(`Échange aléatoire : <strong>${pa.name}</strong> (${gameA.score} pts) ↔ <strong>${pb.name}</strong> (${gameB.score} pts)`, 'gold', 'shuffle', true);
+      toast('Échange aléatoire effectué !', 'gold');
+      saveState(); closeModal('modal-action'); renderAll();
+    }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
+  );
+}
+
 // ============================================================
 // ACTIONS ROUES
 // ============================================================
@@ -3194,7 +3265,10 @@ function openAction(type) {
     'perso-extra-game': 'Game supplémentaire',
     'perso-top10pts': '+10 pts Top 10',
     'comm-worst-x2': 'Pire game × 2',
-    'comm-rand-x2': 'Game aléatoire × 2'
+    'comm-rand-x2': 'Game aléatoire × 2',
+    'comm-echange-best-worst': 'Échange meilleure ↔ pire (aléatoire)',
+    'comm-echange-rand': 'Échange 2 games aléatoires',
+    'comm-low-kills-bonus': '+5 pts games < 5 kills'
   };
   document.getElementById('modal-action-title').textContent = titles[type] || type;
   document.getElementById('modal-action-body').innerHTML = buildActionBody(type);
@@ -3358,6 +3432,20 @@ function buildActionBody(type) {
       ${playerSelect('p1', 'Joueur')}
       <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Une game tirée au sort aura son score multiplié par 2.</p>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Tirer au sort et × 2</button>`;
+
+    case 'comm-echange-best-worst': return `
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">Deux joueurs sont tirés au sort. La <strong style="color:var(--text)">meilleure game</strong> de l'un est échangée contre la <strong style="color:var(--text)">pire game</strong> de l'autre.</p>
+      <div id="action-echange-bp-preview" style="margin-bottom:12px"></div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCommEchangeBestWorst()"><i class="fa-solid fa-shuffle" style="margin-right:6px"></i>Tirer au sort & échanger</button>`;
+
+    case 'comm-echange-rand': return `
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">Deux joueurs sont tirés au sort, puis une game aléatoire de chacun est échangée entre eux.</p>
+      <div id="action-echange-rand-preview" style="margin-bottom:12px"></div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCommEchangeRand()"><i class="fa-solid fa-shuffle" style="margin-right:6px"></i>Tirer au sort & échanger</button>`;
+
+    case 'comm-low-kills-bonus': return `
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Ajoute <strong style="color:var(--text)">+5 pts</strong> à toutes les games avec <strong style="color:var(--text)">moins de 5 kills</strong> pour chaque joueur.</p>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Appliquer +5 pts</button>`;
 
     default: return '<p>Action inconnue.</p>';
   }
@@ -3620,6 +3708,22 @@ function execAction() {
       randGame.note = (randGame.note ? randGame.note + ' · ' : '') + `×2 aléatoire (roue commu)`;
       addLog(`<strong>${p.name}</strong> — game aléatoire ×2 : ${oldScore} → ${randGame.score} pts.`, 'gold', 'shuffle', true);
       toast(`Game ×2 : ${oldScore} → ${randGame.score} pts !`, 'gold');
+      break;
+    }
+    case 'comm-low-kills-bonus': {
+      let totalGames = 0;
+      state.players.forEach(p => {
+        const eligible = p.games.filter(g => g.kills < 5);
+        if (!eligible.length) return;
+        eligible.forEach(g => {
+          g.score += 5;
+          g.note = (g.note ? g.note + ' · ' : '') + '+5pts (< 5 kills)';
+          totalGames++;
+        });
+        addLog(`<strong>${p.name}</strong> — +5 pts sur ${eligible.length} game${eligible.length > 1 ? 's' : ''} (< 5 kills).`, 'gold', 'bolt-lightning', true);
+      });
+      if (totalGames === 0) { toast('Aucune game avec moins de 5 kills trouvée.', 'info'); return; }
+      toast(`+5 pts appliqués à ${totalGames} game${totalGames > 1 ? 's' : ''} !`, 'gold');
       break;
     }
   }
