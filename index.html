@@ -1270,7 +1270,7 @@ main {
         <div class="ac-bg"><i class="fa-solid fa-angles-up"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-angles-up"></i></div>
         <div class="ac-title">Pire game × 2</div>
-        <div class="ac-desc">Double le score de la pire game d'un joueur au choix</div>
+        <div class="ac-desc">Double le score de la pire game de chaque joueur</div>
       </div>
 
       <div class="action-card action-card-gold" onclick="openAction('comm-rand-x2')">
@@ -1496,7 +1496,7 @@ main {
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-arrow-right-arrow-left"></i> Échange de game (meilleure ↔ pire)</div><div style="font-size:11px;color:var(--text-muted)">Échange la meilleure game de joueur A contre la pire game de joueur B</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-clone"></i> Clone meilleure game → pire</div><div style="font-size:11px;color:var(--text-muted)">Clone la meilleure game d'un joueur et remplace sa pire game (tiré au hasard)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-crown"></i> +5 pts par Top 1</div><div style="font-size:11px;color:var(--text-muted)">Chaque top 1 dans le classement actuel ajoute +5 pts de bonus permanent</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-angles-up"></i> Pire game d'une personne × 2</div><div style="font-size:11px;color:var(--text-muted)">Double le score de la pire game d'un joueur ciblé</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-angles-up"></i> Pire game × 2</div><div style="font-size:11px;color:var(--text-muted)">Double le score de la pire game de chaque joueur</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shuffle"></i> Game au hasard × 2</div><div style="font-size:11px;color:var(--text-muted)">Double le score d'une game tirée au sort pour un joueur ciblé</div></div></div>
     </div>
   </div>
@@ -3351,9 +3351,8 @@ function buildActionBody(type) {
       <button class="btn btn-purple" style="width:100%;justify-content:center;margin-top:16px;border-width:1px" onclick="execAction()">Appliquer</button>`;
 
     case 'comm-worst-x2': return `
-      ${playerSelect('p1', 'Joueur')}
-      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Le score de la pire game du joueur sera multiplié par 2.</p>
-      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Appliquer × 2</button>`;
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">La pire game de <strong style="color:var(--text)">chaque joueur</strong> sera multipliée par 2.</p>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Appliquer × 2 à tous</button>`;
 
     case 'comm-rand-x2': return `
       ${playerSelect('p1', 'Joueur')}
@@ -3597,15 +3596,18 @@ function execAction() {
       break;
     }
     case 'comm-worst-x2': {
-      const p = getP('p1');
-      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
-      const worst = getWorstGame(p);
-      if (!worst) { toast('Aucune game trouvée.', 'error'); return; }
-      const oldScore = worst.score;
-      worst.score = Math.round(worst.score * 2);
-      worst.note = (worst.note ? worst.note + ' · ' : '') + `×2 pire game (roue commu)`;
-      addLog(`<strong>${p.name}</strong> — pire game ×2 : ${oldScore} → ${worst.score} pts.`, 'gold', 'angles-up', true);
-      toast(`Pire game ×2 : ${oldScore} → ${worst.score} pts !`, 'gold');
+      let totalApplied = 0;
+      state.players.forEach(p => {
+        const worst = getWorstGame(p);
+        if (!worst) return;
+        const oldScore = worst.score;
+        worst.score = Math.round(worst.score * 2);
+        worst.note = (worst.note ? worst.note + ' · ' : '') + `×2 pire game (roue commu)`;
+        addLog(`<strong>${p.name}</strong> — pire game ×2 : ${oldScore} → ${worst.score} pts.`, 'gold', 'angles-up', true);
+        totalApplied++;
+      });
+      if (totalApplied === 0) { toast('Aucun joueur avec des games.', 'error'); return; }
+      toast(`Pire game ×2 appliquée à ${totalApplied} joueur${totalApplied > 1 ? 's' : ''} !`, 'gold');
       break;
     }
     case 'comm-rand-x2': {
