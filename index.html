@@ -3338,19 +3338,28 @@ function iaRefreshScores() {
 function iaRenderLriaaSection() {
   const el = document.getElementById('ia-lriaa-section');
   if (!el) return;
-  if (!iaLriaaElim) { el.innerHTML = ''; return; }
-  const opts = state.players.map(p => `<option value="${p.id}">${escHtml(p.name)}</option>`).join('');
+  const clonePlayer = iaLriaaElim ? state.players.find(p => p.pendingCloneLriaa) : null;
+  if (!clonePlayer) { el.innerHTML = ''; return; }
   el.innerHTML = `<div style="margin-top:14px;padding:12px;background:rgba(155,89,182,0.08);border:1px solid var(--purple);border-radius:6px">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-      <i class="fa-solid fa-gamepad" style="color:var(--purple)"></i>
-      <span style="font-size:13px;font-weight:700;color:var(--purple)">Lriaa — ${iaLriaaElim} kills détectés</span>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <i class="fa-solid fa-gamepad" style="color:var(--purple)"></i>
+        <span style="font-size:13px;font-weight:700;color:var(--purple)">Clone kills de Lriaa</span>
+      </div>
+      <button onclick="iaCancelCloneLriaa()" style="background:none;border:none;color:var(--text-muted);font-size:15px;cursor:pointer;padding:0 4px;line-height:1" title="Annuler">×</button>
     </div>
-    <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">Attribuer via "Clone kills de Lriaa" à :</div>
-    <select id="ia-lriaa-target" style="background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;padding:6px 8px;width:100%">
-      <option value="">— Ignorer (pas d'attribution) —</option>${opts}
-    </select>
-    <div style="font-size:11px;color:var(--text-muted);margin-top:5px">Score = ${iaLriaaElim} pts (kills directs, sans top)</div>
+    <div style="font-size:12px;color:var(--text)">
+      <strong>${escHtml(clonePlayer.name)}</strong> reçoit <strong>${iaLriaaElim} kills</strong> de Lriaa = <strong>${iaLriaaElim} pts</strong>
+    </div>
   </div>`;
+}
+
+function iaCancelCloneLriaa() {
+  showConfirm(`Annuler le clone de kills de Lriaa ?`, () => {
+    const p = state.players.find(pl => pl.pendingCloneLriaa);
+    if (p) { p.pendingCloneLriaa = false; saveState(); }
+    iaRenderLriaaSection();
+  });
 }
 
 function iaSubmitAll() {
@@ -3410,13 +3419,13 @@ function iaSubmitAll() {
     saved++;
   });
 
-  // Lriaa kills attribution
-  const lriaaTargetId = document.getElementById('ia-lriaa-target')?.value;
-  if (lriaaTargetId && iaLriaaElim > 0) {
-    const lriaaPlayer = state.players.find(p => p.id === lriaaTargetId);
-    if (lriaaPlayer) {
-      lriaaPlayer.games.push({ id: uid(), kills: iaLriaaElim, top: 0, mult: 1, score: iaLriaaElim, date: now(), note: 'kills Lriaa' });
-      addLog(`<strong>${lriaaPlayer.name}</strong> — kills de Lriaa (${iaLriaaElim}) clonés.`, 'purple', 'gamepad', true);
+  // Lriaa kills attribution (si flag pendingCloneLriaa actif)
+  if (iaLriaaElim > 0) {
+    const clonePlayer = state.players.find(p => p.pendingCloneLriaa);
+    if (clonePlayer) {
+      clonePlayer.games.push({ id: uid(), kills: iaLriaaElim, top: 0, mult: 1, score: iaLriaaElim, date: now(), note: 'kills Lriaa' });
+      clonePlayer.pendingCloneLriaa = false;
+      addLog(`<strong>${clonePlayer.name}</strong> — kills de Lriaa (${iaLriaaElim}) clonés.`, 'purple', 'gamepad', true);
       saved++;
     }
   }
@@ -3993,12 +4002,8 @@ function buildActionBody(type) {
 
     case 'perso-clone-lriaa': return `
       ${playerSelect('p1', 'Joueur qui reçoit les kills de Lriaa')}
-      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Saisissez les kills de Lriaa sur cette game :</p>
-      <div class="form-row">
-        <label class="form-label">Kills de Lriaa</label>
-        <input type="number" class="form-input" id="act-kills" value="0" min="0">
-      </div>
-      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Cloner</button>`;
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Les kills de Lriaa seront attribués automatiquement à la prochaine saisie IA.</p>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-gamepad"></i> Activer le clone</button>`;
 
     case 'perso-del-worst': return `
       ${playerSelect('p1', 'Joueur', "populateGameSelect('act-game-idx',this.value,false)")}
@@ -4252,12 +4257,11 @@ function execAction() {
     }
     case 'perso-clone-lriaa': {
       const p = getP('p1');
-      const kills = parseInt(document.getElementById('act-kills').value || 0);
       if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
-      const score = kills;
-      p.games.push({ id: uid(), kills, top: 0, mult: 1, score, date: now(), note: 'kills Lriaa' });
-      addLog(`<strong>${p.name}</strong> — kills de Lriaa (${kills}) clonés.`, 'purple', 'gamepad', true);
-      toast(`Kills de Lriaa clonés : ${kills} kills !`, 'purple');
+      state.players.forEach(pl => { pl.pendingCloneLriaa = false; });
+      p.pendingCloneLriaa = true;
+      addLog(`<strong>${p.name}</strong> — Clone kills de Lriaa activé. Kills attribués à la prochaine saisie IA.`, 'purple', 'gamepad', true);
+      toast(`Clone kills de Lriaa activé pour ${p.name} !`, 'purple');
       break;
     }
     case 'perso-del-worst': {
