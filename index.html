@@ -3231,8 +3231,11 @@ function iaBuildMatches(ocr) {
         conf = m.conf;
       }
       const cloneLriaa = !!(player?.pendingCloneLriaa && iaLriaaElim > 0);
+      const rawOcr = r.ocr || r.name || '';
+      const stripped = rawOcr.replace(/^\[.*?\]\s*_?\s*/, '').trim();
+      const ocrName = stripped || player?.ingameName || rawOcr;
       return {
-        ocrName: r.ocr || r.name,
+        ocrName,
         elim: cloneLriaa ? iaLriaaElim : (r.elim || 0),
         cloneLriaa,
         player,
