@@ -2229,6 +2229,7 @@ function renderStats() {
   if (!state.players.length) { el.innerHTML = ''; return; }
   const totalKills = state.players.reduce((s, p) => s + p.games.reduce((a, g) => a + g.kills, 0), 0);
   const totalGames = state.players.reduce((s, p) => s + p.games.length, 0);
+  const avgKills = totalGames > 0 ? (totalKills / totalGames).toFixed(1) : '0.0';
   const top1s = state.players.reduce((s, p) => s + p.games.filter(g => g.top === 1).length, 0);
   const best = [...state.players].sort((a, b) => getPlayerTotal(b) - getPlayerTotal(a))[0];
   el.innerHTML = `
@@ -2238,9 +2239,9 @@ function renderStats() {
       <i class="fa-solid fa-users sc-icon" style="color:#e8b96a;filter:brightness(1.35) saturate(1.3)"></i>
     </div>
     <div class="stat-card" style="border-top-color:var(--blue)">
-      <div class="sc-label" style="color:var(--blue)">Games jouées</div>
-      <div class="sc-val sc-blue">${totalGames}</div>
-      <i class="fa-solid fa-gamepad sc-icon" style="color:#4a8ec9;filter:brightness(1.35) saturate(1.3)"></i>
+      <div class="sc-label" style="color:var(--blue)">Kills moy. / game</div>
+      <div class="sc-val sc-blue">${avgKills}</div>
+      <i class="fa-solid fa-crosshairs sc-icon" style="color:#4a8ec9;filter:brightness(1.35) saturate(1.3)"></i>
     </div>
     <div class="stat-card" style="border-top-color:var(--rust-light)">
       <div class="sc-label" style="color:var(--rust-light)">Total kills</div>
