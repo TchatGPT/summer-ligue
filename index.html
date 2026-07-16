@@ -1264,6 +1264,7 @@ main {
           </thead>
           <tbody id="ia-results-tbody"></tbody>
         </table>
+        <div id="ia-lriaa-section"></div>
         <div style="margin-top:14px">
           <button class="btn btn-solid-gold btn-lg" onclick="iaSubmitAll()" style="width:100%;justify-content:center">
             <i class="fa-solid fa-check"></i> Valider toute l'équipe
@@ -3004,6 +3005,7 @@ let iaTop = 0;
 let iaImgBase64 = null;
 let iaImgMime = 'image/png';
 let iaMatches = [];
+let iaLriaaElim = 0; // kills de Lriaa détectés par l'OCR
 
 function openSaisieIA() {
   iaReset();
@@ -3070,6 +3072,7 @@ function iaReset() {
   }
   const btn = document.getElementById('ia-analyze-btn');
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Analyser'; }
+  iaLriaaElim = 0;
   const results = document.getElementById('ia-results');
   if (results) results.style.display = 'none';
   const fi = document.getElementById('ia-file-input');
@@ -3169,6 +3172,10 @@ function iaIsExcluded(ocrName) {
 }
 
 function iaBuildMatches(ocr) {
+  // Capture les kills de Lriaa avant de la filtrer
+  const lriaaEntry = ocr.find(r => iaIsExcluded(r.ocr || r.name || ''));
+  iaLriaaElim = lriaaEntry?.elim || 0;
+
   iaMatches = ocr
     .filter(r => {
       // Filtre sur le nom OCR brut (catch Lriaa même si Claude la mappe à qqun)
@@ -3262,6 +3269,7 @@ function iaSetSkipAction(idx, action) {
 
 function iaRenderResults() {
   document.getElementById('ia-results').style.display = '';
+  iaRenderLriaaSection();
   const playerOptions = state.players.map(p => `<option value="${p.id}">${escHtml(p.name)}</option>`).join('');
 
   document.getElementById('ia-results-tbody').innerHTML = iaMatches.map((m, i) => {
@@ -3327,6 +3335,24 @@ function iaRefreshScores() {
   iaRenderResults();
 }
 
+function iaRenderLriaaSection() {
+  const el = document.getElementById('ia-lriaa-section');
+  if (!el) return;
+  if (!iaLriaaElim) { el.innerHTML = ''; return; }
+  const opts = state.players.map(p => `<option value="${p.id}">${escHtml(p.name)}</option>`).join('');
+  el.innerHTML = `<div style="margin-top:14px;padding:12px;background:rgba(155,89,182,0.08);border:1px solid var(--purple);border-radius:6px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <i class="fa-solid fa-gamepad" style="color:var(--purple)"></i>
+      <span style="font-size:13px;font-weight:700;color:var(--purple)">Lriaa — ${iaLriaaElim} kills détectés</span>
+    </div>
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">Attribuer via "Clone kills de Lriaa" à :</div>
+    <select id="ia-lriaa-target" style="background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;padding:6px 8px;width:100%">
+      <option value="">— Ignorer (pas d'attribution) —</option>${opts}
+    </select>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:5px">Score = ${iaLriaaElim} pts (kills directs, sans top)</div>
+  </div>`;
+}
+
 function iaSubmitAll() {
   const active = iaMatches.filter(m => m.player);
   if (!active.length) { toast('Aucun joueur valide à valider.', 'error'); return; }
@@ -3383,6 +3409,17 @@ function iaSubmitAll() {
     addLog(`<strong>${player.name}</strong> — ${kills} kills${topStr} = ${score} pts${manualBonus ? ` +${manualBonus}pts bonus` : ''} <span style="opacity:0.5">(IA)</span>`, 'green', 'wand-magic-sparkles');
     saved++;
   });
+
+  // Lriaa kills attribution
+  const lriaaTargetId = document.getElementById('ia-lriaa-target')?.value;
+  if (lriaaTargetId && iaLriaaElim > 0) {
+    const lriaaPlayer = state.players.find(p => p.id === lriaaTargetId);
+    if (lriaaPlayer) {
+      lriaaPlayer.games.push({ id: uid(), kills: iaLriaaElim, top: 0, mult: 1, score: iaLriaaElim, date: now(), note: 'kills Lriaa' });
+      addLog(`<strong>${lriaaPlayer.name}</strong> — kills de Lriaa (${iaLriaaElim}) clonés.`, 'purple', 'gamepad', true);
+      saved++;
+    }
+  }
 
   saveState();
   renderAll();
