@@ -3069,7 +3069,7 @@ async function iaAnalyze() {
           role: 'user',
           content: [
             { type: 'image', source: { type: 'base64', media_type: iaImgMime, data: iaImgBase64 } },
-            { type: 'text', text: 'Voici une capture d\'écran de fin de game Warzone/Résurgence. Extrais le tableau de scores de l\'équipe. Ignore la ligne "TOTAUX ESCOUADE". Retourne UNIQUEMENT un tableau JSON valide sans markdown : [{"name":"pseudo","elim":nombre}] où "elim" est la valeur de la colonne ÉLIM. (pas ÉLIM/ASSIST. — éliminations seules, sans les assists).' }
+            { type: 'text', text: `Voici une capture d'écran de fin de game Warzone/Résurgence.\n\nListe officielle des joueurs de la ligue : ${state.players.map(p=>p.name).join(', ')}\n\nExtrais le tableau de scores de l'équipe. Ignore la ligne "TOTAUX ESCOUADE". Pour chaque joueur visible, fais correspondre son pseudo en jeu au joueur de la ligue le plus proche (les pseudos en jeu peuvent différer : chiffres en fin, caractères spéciaux, fautes de frappe OCR). Retourne UNIQUEMENT un tableau JSON valide sans markdown : [{"name":"nom_exact_ligue","elim":nombre}] où "name" est le nom EXACT issu de la liste de la ligue, et "elim" est la valeur de la colonne ÉLIM. (pas ÉLIM/ASSIST. — éliminations seules, sans assists).` }
           ]
         }]
       })
