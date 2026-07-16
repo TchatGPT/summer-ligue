@@ -2107,6 +2107,8 @@ async function loadState() {
     state.maxGames  = parseInt(maxGFlag?.value  || '20') || 20;
     const cloneLriaaId = cloneLriaaFlag?.value || '';
     if (cloneLriaaId) { const cp = state.players.find(p => p.id === cloneLriaaId); if (cp) cp.pendingCloneLriaa = true; }
+    const ingameNamesFlag = (flags || []).find(f => f.key === 'ingameNames');
+    try { const m = JSON.parse(ingameNamesFlag?.value || '{}'); state.players.forEach(p => { if (m[p.id]) p.ingameName = m[p.id]; }); } catch {}
   } catch(e) {
     console.error('loadState error:', e);
   }
@@ -2169,7 +2171,8 @@ async function saveState() {
       { key: 'jokerPlayers',      value: JSON.stringify([...(state.jokerPlayerIds || [])]) },
       { key: 'subsCount',         value: String(state.subsCount || 0) },
       { key: 'maxGames',          value: String(state.maxGames  || 20) },
-      { key: 'cloneLriaaPlayerId', value: state.players.find(p => p.pendingCloneLriaa)?.id || '' }
+      { key: 'cloneLriaaPlayerId', value: state.players.find(p => p.pendingCloneLriaa)?.id || '' },
+      { key: 'ingameNames', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.ingameName).map(p => [p.id, p.ingameName]))) }
     ]);
   } catch(e) { console.error('saveState flags:', e); }
   _savePending = false;
@@ -2370,7 +2373,7 @@ function renderPlayersList() {
         <span class="rank-num ${rank < 3 ? `rank-${rank+1}` : ''}" style="font-size:16px">#${rank+1}</span>
         <div>
           <div class="player-name" id="pname-${p.id}">${escHtml(p.name)}</div>
-          <div style="font-size:11px;color:var(--text-muted)">${p.games.length} game${p.games.length > 1 ? 's' : ''} • ${total} pts</div>
+          <div style="font-size:11px;color:var(--text-muted)">${p.games.length} game${p.games.length > 1 ? 's' : ''} • ${total} pts${p.ingameName ? ` · <i class="fa-solid fa-gamepad" style="font-size:9px"></i> ${escHtml(p.ingameName)}` : ''}</div>
         </div>
       </div>
       <div style="display:flex;gap:6px">
@@ -2663,33 +2666,52 @@ function quickAddPlayer() {
 function renamePlayer(id) {
   const p = state.players.find(x => x.id === id);
   if (!p) return;
-  const el = document.getElementById(`pname-${id}`);
-  if (!el) return;
-  el.innerHTML = `
-    <input type="text" id="rename-inp-${id}" value="${escHtml(p.name)}"
-      style="background:var(--bg);border:1px solid var(--blue);border-radius:3px;color:var(--text);font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;padding:2px 8px;width:160px"
-      onkeydown="if(event.key==='Enter')confirmRenamePlayer('${id}');if(event.key==='Escape')renderPlayersList()">
-    <button onclick="confirmRenamePlayer('${id}')" style="background:none;border:none;color:var(--green);cursor:pointer;font-size:14px;margin-left:4px" title="Confirmer"><i class="fa-solid fa-check"></i></button>
-    <button onclick="renderPlayersList()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px" title="Annuler"><i class="fa-solid fa-xmark"></i></button>`;
-  setTimeout(() => { const inp = document.getElementById(`rename-inp-${id}`); if (inp) { inp.focus(); inp.select(); } }, 30);
+  document.getElementById('rename-overlay')?.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'rename-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  overlay.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:24px;width:100%;max-width:380px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:18px;text-transform:uppercase;letter-spacing:1px;margin-bottom:18px">Modifier le joueur</div>
+      <div class="form-row">
+        <label class="form-label">Pseudo Twitch / Ligue <span style="font-weight:400;color:var(--text-muted)">(affiché dans le classement)</span></label>
+        <input type="text" id="rename-twitch" value="${escHtml(p.name)}" class="form-input"
+          onkeydown="if(event.key==='Enter')confirmRenamePlayer('${id}');if(event.key==='Escape')document.getElementById('rename-overlay').remove()">
+      </div>
+      <div class="form-row" style="margin-top:12px">
+        <label class="form-label">Pseudo in-game <span style="font-weight:400;color:var(--text-muted)">(pour l'OCR uniquement)</span></label>
+        <input type="text" id="rename-ingame" value="${escHtml(p.ingameName || '')}" class="form-input" placeholder="Ex: Ezzmost06, [7]_MiKaa…"
+          onkeydown="if(event.key==='Enter')confirmRenamePlayer('${id}');if(event.key==='Escape')document.getElementById('rename-overlay').remove()">
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Non affiché dans le classement — aide Claude à reconnaître le joueur sur les captures</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:20px">
+        <button class="btn btn-solid-gold" style="flex:1;justify-content:center" onclick="confirmRenamePlayer('${id}')"><i class="fa-solid fa-check"></i> Confirmer</button>
+        <button class="btn" style="color:var(--text-muted)" onclick="document.getElementById('rename-overlay').remove()"><i class="fa-solid fa-xmark"></i> Annuler</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  setTimeout(() => { const inp = document.getElementById('rename-twitch'); if (inp) { inp.focus(); inp.select(); } }, 30);
 }
 
 function confirmRenamePlayer(id) {
-  const inp = document.getElementById(`rename-inp-${id}`);
-  if (!inp) return;
-  const newName = inp.value.trim();
+  const twitchInp = document.getElementById('rename-twitch');
+  const ingameInp = document.getElementById('rename-ingame');
+  if (!twitchInp) return;
+  const newName = twitchInp.value.trim();
+  const newIngame = ingameInp?.value.trim() || '';
   const p = state.players.find(x => x.id === id);
-  if (!p || !newName) { renderPlayersList(); return; }
-  if (newName === p.name) { renderPlayersList(); return; }
-  if (state.players.find(x => x.id !== id && x.name.toLowerCase() === newName.toLowerCase())) {
+  if (!p || !newName) { document.getElementById('rename-overlay')?.remove(); return; }
+  if (newName !== p.name && state.players.find(x => x.id !== id && x.name.toLowerCase() === newName.toLowerCase())) {
     toast(`"${newName}" existe déjà.`, 'error'); return;
   }
   const oldName = p.name;
   p.name = newName;
+  p.ingameName = newIngame;
+  document.getElementById('rename-overlay')?.remove();
   saveState();
   renderAll();
-  addLog(`<strong>${escHtml(oldName)}</strong> → <strong>${escHtml(newName)}</strong>.`, 'blue', 'pen');
-  toast(`Renommé : ${newName}`);
+  if (oldName !== newName) addLog(`<strong>${escHtml(oldName)}</strong> → <strong>${escHtml(newName)}</strong>.`, 'blue', 'pen');
+  toast('Joueur mis à jour !');
 }
 
 function deletePlayer(id) {
@@ -3113,7 +3135,7 @@ async function iaAnalyze() {
           role: 'user',
           content: [
             { type: 'image', source: { type: 'base64', media_type: iaImgMime, data: iaImgBase64 } },
-            { type: 'text', text: `Capture d'écran de fin de game Warzone/Résurgence.\n\nJoueurs de la ligue : ${state.players.map(p=>p.name).join(', ')}\n\nCOLONNES du tableau (de gauche à droite) : NOM | SCORE | ÉLIM./ASSIST. | ÉLIM. | ASSIST.\n- "ÉLIM./ASSIST." = kills + assists (nombre plus grand)\n- "ÉLIM." = kills purs seulement (nombre plus petit ou égal)\nTu dois TOUJOURS retourner la valeur de la colonne "ÉLIM." (pas ÉLIM./ASSIST.).\nExemple : si une ligne montre 20 | 16 | 4, alors elim=16 (pas 20).\n\nRègles :\n- Retourne TOUS les joueurs visibles (y compris Lriaa si présente), même ceux hors ligue.\n- Ignore uniquement la ligne "TOTAUX ESCOUADE".\n- Pour chaque joueur, fais correspondre son pseudo au joueur de la ligue le plus proche (Ezzmost06→Ezzmost, [7]_MiKaa→Mikaa, Fauremaax→Fauremax). Si aucune correspondance, name=null.\n- Lriaa n'est PAS dans la ligue : retourne toujours name:null pour elle.\n\nFormat JSON uniquement, sans markdown :\n[{"ocr":"pseudo_exact_lu","name":"nom_exact_ligue_ou_null","elim":valeur_ÉLIM}]` }
+            { type: 'text', text: `Capture d'écran de fin de game Warzone/Résurgence.\n\nJoueurs de la ligue : ${state.players.map(p=>p.ingameName ? `${p.name} (pseudo in-game: ${p.ingameName})` : p.name).join(', ')}\n\nCOLONNES du tableau (de gauche à droite) : NOM | SCORE | ÉLIM./ASSIST. | ÉLIM. | ASSIST.\n- "ÉLIM./ASSIST." = kills + assists (nombre plus grand)\n- "ÉLIM." = kills purs seulement (nombre plus petit ou égal)\nTu dois TOUJOURS retourner la valeur de la colonne "ÉLIM." (pas ÉLIM./ASSIST.).\nExemple : si une ligne montre 20 | 16 | 4, alors elim=16 (pas 20).\n\nRègles :\n- Retourne TOUS les joueurs visibles (y compris Lriaa si présente), même ceux hors ligue.\n- Ignore uniquement la ligne "TOTAUX ESCOUADE".\n- Pour chaque joueur, fais correspondre son pseudo au joueur de la ligue le plus proche (Ezzmost06→Ezzmost, [7]_MiKaa→Mikaa, Fauremaax→Fauremax). Si aucune correspondance, name=null.\n- Lriaa n'est PAS dans la ligue : retourne toujours name:null pour elle.\n\nFormat JSON uniquement, sans markdown :\n[{"ocr":"pseudo_exact_lu","name":"nom_exact_ligue_ou_null","elim":valeur_ÉLIM}]` }
           ]
         }]
       })
