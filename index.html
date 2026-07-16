@@ -3338,19 +3338,28 @@ function iaRefreshScores() {
 function iaRenderLriaaSection() {
   const el = document.getElementById('ia-lriaa-section');
   if (!el) return;
-  const clonePlayer = iaLriaaElim ? state.players.find(p => p.pendingCloneLriaa) : null;
+  const clonePlayer = state.players.find(p => p.pendingCloneLriaa);
   if (!clonePlayer) { el.innerHTML = ''; return; }
+
+  const autoDetected = iaLriaaElim > 0;
+  const killsContent = autoDetected
+    ? `<div style="font-size:12px;color:var(--text)"><i class="fa-solid fa-check" style="color:var(--green);margin-right:4px"></i>Lriaa détectée : <strong>${iaLriaaElim} kills</strong> = <strong>${iaLriaaElim} pts</strong></div>`
+    : `<div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">Lriaa non détectée — saisir ses kills :</div>
+       <div style="display:flex;align-items:center;gap:8px">
+         <input type="number" id="ia-lriaa-kills" value="0" min="0" oninput="document.getElementById('ia-lriaa-pts').textContent=this.value||0"
+           style="width:80px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:16px;padding:5px 8px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:700">
+         <span style="font-size:12px;color:var(--text-muted)">kills = <strong id="ia-lriaa-pts">0</strong> pts</span>
+       </div>`;
+
   el.innerHTML = `<div style="margin-top:14px;padding:12px;background:rgba(155,89,182,0.08);border:1px solid var(--purple);border-radius:6px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       <div style="display:flex;align-items:center;gap:8px">
         <i class="fa-solid fa-gamepad" style="color:var(--purple)"></i>
-        <span style="font-size:13px;font-weight:700;color:var(--purple)">Clone kills de Lriaa</span>
+        <span style="font-size:13px;font-weight:700;color:var(--purple)">Clone kills de Lriaa → ${escHtml(clonePlayer.name)}</span>
       </div>
       <button onclick="iaCancelCloneLriaa()" style="background:none;border:none;color:var(--text-muted);font-size:15px;cursor:pointer;padding:0 4px;line-height:1" title="Annuler">×</button>
     </div>
-    <div style="font-size:12px;color:var(--text)">
-      <strong>${escHtml(clonePlayer.name)}</strong> reçoit <strong>${iaLriaaElim} kills</strong> de Lriaa = <strong>${iaLriaaElim} pts</strong>
-    </div>
+    ${killsContent}
   </div>`;
 }
 
@@ -3420,12 +3429,13 @@ function iaSubmitAll() {
   });
 
   // Lriaa kills attribution (si flag pendingCloneLriaa actif)
-  if (iaLriaaElim > 0) {
-    const clonePlayer = state.players.find(p => p.pendingCloneLriaa);
-    if (clonePlayer) {
-      clonePlayer.games.push({ id: uid(), kills: iaLriaaElim, top: 0, mult: 1, score: iaLriaaElim, date: now(), note: 'kills Lriaa' });
+  const clonePlayer = state.players.find(p => p.pendingCloneLriaa);
+  if (clonePlayer) {
+    const kills = iaLriaaElim || parseInt(document.getElementById('ia-lriaa-kills')?.value || 0);
+    if (kills > 0) {
+      clonePlayer.games.push({ id: uid(), kills, top: 0, mult: 1, score: kills, date: now(), note: 'kills Lriaa' });
       clonePlayer.pendingCloneLriaa = false;
-      addLog(`<strong>${clonePlayer.name}</strong> — kills de Lriaa (${iaLriaaElim}) clonés.`, 'purple', 'gamepad', true);
+      addLog(`<strong>${clonePlayer.name}</strong> — kills de Lriaa (${kills}) clonés.`, 'purple', 'gamepad', true);
       saved++;
     }
   }
