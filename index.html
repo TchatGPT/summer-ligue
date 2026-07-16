@@ -3365,7 +3365,7 @@ function iaSubmitAll() {
     if (player.pendingBonus) { pendingBonusApplied = player.pendingBonus; player.pendingBonus = 0; }
 
     const score = baseScore + pendingBonusApplied;
-    const noteparts = ['IA'];
+    const noteparts = [];
     if (frozenAt) noteparts.push(`❄ gelé ${frozenAt} kills`);
     if (pendingGameMult) noteparts.push(`×${pendingGameMult} roue`);
     if (pendingBonusApplied) noteparts.push(`+${pendingBonusApplied}pts top10`);
