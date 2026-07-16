@@ -2362,12 +2362,13 @@ function renderPlayersList() {
       <div style="display:flex;align-items:center;gap:12px;flex:1">
         <span class="rank-num ${rank < 3 ? `rank-${rank+1}` : ''}" style="font-size:16px">#${rank+1}</span>
         <div>
-          <div class="player-name">${escHtml(p.name)}</div>
+          <div class="player-name" id="pname-${p.id}">${escHtml(p.name)}</div>
           <div style="font-size:11px;color:var(--text-muted)">${p.games.length} game${p.games.length > 1 ? 's' : ''} • ${total} pts</div>
         </div>
       </div>
       <div style="display:flex;gap:6px">
         <button class="btn btn-sm btn-blue" onclick="showPlayerDetail('${p.id}')" title="Détail"><i class="fa-solid fa-chart-bar"></i></button>
+        <button class="btn btn-sm" style="color:var(--text-muted);border-color:var(--border)" onclick="renamePlayer('${p.id}')" title="Renommer"><i class="fa-solid fa-pen"></i></button>
         <button class="btn btn-sm" style="color:var(--rust);border-color:var(--rust)" onclick="deletePlayer('${p.id}')" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
       </div>
     </div>`;
@@ -2650,6 +2651,38 @@ function quickAddPlayer() {
   renderSaisieSelects();
   addLog(`<strong>${name}</strong> ajouté.`, 'green', 'user-plus');
   toast(` ${name} ajouté !`);
+}
+
+function renamePlayer(id) {
+  const p = state.players.find(x => x.id === id);
+  if (!p) return;
+  const el = document.getElementById(`pname-${id}`);
+  if (!el) return;
+  el.innerHTML = `
+    <input type="text" id="rename-inp-${id}" value="${escHtml(p.name)}"
+      style="background:var(--bg);border:1px solid var(--blue);border-radius:3px;color:var(--text);font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;padding:2px 8px;width:160px"
+      onkeydown="if(event.key==='Enter')confirmRenamePlayer('${id}');if(event.key==='Escape')renderPlayersList()">
+    <button onclick="confirmRenamePlayer('${id}')" style="background:none;border:none;color:var(--green);cursor:pointer;font-size:14px;margin-left:4px" title="Confirmer"><i class="fa-solid fa-check"></i></button>
+    <button onclick="renderPlayersList()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px" title="Annuler"><i class="fa-solid fa-xmark"></i></button>`;
+  setTimeout(() => { const inp = document.getElementById(`rename-inp-${id}`); if (inp) { inp.focus(); inp.select(); } }, 30);
+}
+
+function confirmRenamePlayer(id) {
+  const inp = document.getElementById(`rename-inp-${id}`);
+  if (!inp) return;
+  const newName = inp.value.trim();
+  const p = state.players.find(x => x.id === id);
+  if (!p || !newName) { renderPlayersList(); return; }
+  if (newName === p.name) { renderPlayersList(); return; }
+  if (state.players.find(x => x.id !== id && x.name.toLowerCase() === newName.toLowerCase())) {
+    toast(`"${newName}" existe déjà.`, 'error'); return;
+  }
+  const oldName = p.name;
+  p.name = newName;
+  saveState();
+  renderAll();
+  addLog(`<strong>${escHtml(oldName)}</strong> → <strong>${escHtml(newName)}</strong>.`, 'blue', 'pen');
+  toast(`Renommé : ${newName}`);
 }
 
 function deletePlayer(id) {
