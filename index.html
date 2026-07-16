@@ -3123,17 +3123,37 @@ function iaFuzzy(ocrName) {
   return conf >= 0.4 ? { player: best, conf } : { player: null, conf: 0 };
 }
 
+// Noms toujours exclus de l'OCR (la streameuse ne participe pas à la ligue)
+const IA_EXCL = ['lriaa'];
+
 function iaBuildMatches(ocr) {
   iaMatches = ocr
-    .map(r => { const m = iaFuzzy(r.name); return { ocrName: r.name, elim: r.elim||0, player: m.player, conf: m.conf }; })
-    .filter(m => m.conf >= 0.4); // exclut automatiquement les noms non reconnus (Lriaa, etc.)
+    .filter(r => !IA_EXCL.includes(r.name.toLowerCase()))
+    .map(r => {
+      const m = iaFuzzy(r.name);
+      return {
+        ocrName: r.name,
+        elim: r.elim || 0,
+        player: m.player,
+        conf: m.conf,
+        skipAction: m.player?.skipNext ? 'skip' : 'record'
+      };
+    })
+    .filter(m => m.conf >= 0.4);
 }
 
 function iaGetScore(m) {
-  if (!m.player) return 0;
-  const pm = m.player.pendingMult || 0;
-  const base = calcGameScore(m.elim, iaTop, 1);
-  return pm ? Math.round(base * pm) : base;
+  if (!m.player || m.skipAction === 'skip') return null;
+  const p = m.player;
+  const kills = p.freezeKills ? p.freezeKills : m.elim;
+  const base = calcGameScore(kills, iaTop, 1);
+  const withMult = p.pendingMult ? Math.round(base * p.pendingMult) : base;
+  return withMult + (p.pendingBonus || 0);
+}
+
+function iaSetSkipAction(idx, action) {
+  iaMatches[idx].skipAction = action;
+  iaRenderResults();
 }
 
 function iaRenderResults() {
@@ -3141,72 +3161,121 @@ function iaRenderResults() {
   const playerOptions = state.players.map(p => `<option value="${p.id}">${escHtml(p.name)}</option>`).join('');
 
   document.getElementById('ia-results-tbody').innerHTML = iaMatches.map((m, i) => {
+    const p = m.player;
+    const isSkip = p?.skipNext && m.skipAction === 'skip';
+    const freeze = p?.freezeKills || 0;
+    const effectiveKills = freeze || m.elim;
     const score = iaGetScore(m);
-    const pm = m.player?.pendingMult || 0;
     const confColor = m.conf >= 0.9 ? 'var(--green)' : 'var(--gold)';
-    const opts = playerOptions.replace(`value="${m.player?.id}"`, `value="${m.player?.id}" selected`);
-    return `<tr>
-      <td style="font-size:12px;color:var(--text-muted);padding:8px 8px">${escHtml(m.ocrName)}</td>
+    const opts = playerOptions.replace(`value="${p?.id}"`, `value="${p?.id}" selected`);
+
+    // Badges roue
+    const badges = [];
+    if (p?.skipNext) {
+      badges.push(m.skipAction === 'skip'
+        ? `<span style="background:rgba(192,71,26,0.15);border:1px solid var(--rust);color:var(--rust-light);border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700">SKIP</span>
+           <button onclick="iaSetSkipAction(${i},'record')" style="background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:3px;padding:2px 7px;font-size:10px;cursor:pointer">Saisir quand même</button>`
+        : `<span style="background:rgba(192,71,26,0.08);border:1px solid var(--rust);color:var(--rust-light);border-radius:3px;padding:2px 7px;font-size:10px">Skip ignoré</span>
+           <button onclick="iaSetSkipAction(${i},'skip')" style="background:none;border:1px solid var(--rust);color:var(--rust-light);border-radius:3px;padding:2px 7px;font-size:10px;cursor:pointer">Confirmer skip</button>`
+      );
+    }
+    if (freeze) badges.push(`<span style="background:rgba(74,144,217,0.15);border:1px solid var(--blue);color:var(--blue);border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700">❄ Gelé ${freeze} kills</span>`);
+    if (p?.pendingMult) badges.push(`<span style="background:rgba(155,89,182,0.15);border:1px solid var(--purple);color:var(--purple);border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700">×${p.pendingMult} game</span>`);
+    if (p?.pendingBonus) badges.push(`<span style="background:rgba(76,175,130,0.15);border:1px solid var(--green);color:var(--green);border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700">+${p.pendingBonus}pts top10</span>`);
+    if (state.jokerPlayerIds?.has(p?.id)) badges.push(`<span style="background:rgba(232,184,75,0.1);border:1px solid var(--gold);color:var(--gold);border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700">🃏 Joker</span>`);
+
+    return `<tr style="${isSkip ? 'opacity:0.45' : ''}">
+      <td style="font-size:12px;color:var(--text-muted);padding:8px">${escHtml(m.ocrName)}</td>
       <td style="padding:8px">
         <select style="background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;padding:4px 6px;max-width:145px" onchange="iaChangeMatch(${i},this.value)">
           <option value="">— non assigné —</option>${opts}
         </select>
         <div style="font-size:10px;margin-top:2px;color:${confColor}">${Math.round(m.conf*100)}%</div>
+        ${badges.length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px">${badges.join('')}</div>` : ''}
       </td>
-      <td style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:20px;color:var(--rust-light);text-align:center;padding:8px">${m.elim}</td>
+      <td style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:20px;color:${freeze ? 'var(--blue)' : 'var(--rust-light)'};text-align:center;padding:8px">
+        ${isSkip ? '<i class="fa-solid fa-forward-step" style="font-size:16px;opacity:0.5"></i>' : (freeze ? `${freeze} ❄` : effectiveKills)}
+      </td>
       <td style="text-align:right;padding:8px">
-        <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;color:var(--gold)" id="ia-score-${i}">${score} pts</span>
-        ${pm ? `<div style="font-size:10px;color:var(--purple)">×${pm} roue</div>` : ''}
+        <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;color:var(--gold)" id="ia-score-${i}">
+          ${isSkip ? '—' : (score !== null ? score + ' pts' : '—')}
+        </span>
       </td>
     </tr>`;
   }).join('');
 }
 
 function iaChangeMatch(idx, pid) {
-  iaMatches[idx].player = pid ? state.players.find(p => p.id === pid) : null;
-  const el = document.getElementById(`ia-score-${idx}`);
-  if (el) el.textContent = iaMatches[idx].player ? iaGetScore(iaMatches[idx]) + ' pts' : '—';
+  const player = pid ? state.players.find(p => p.id === pid) : null;
+  iaMatches[idx].player = player;
+  iaMatches[idx].conf = player ? 1.0 : 0;
+  iaMatches[idx].skipAction = player?.skipNext ? 'skip' : 'record';
+  iaRenderResults();
 }
 
 function iaRefreshScores() {
-  iaMatches.forEach((m, i) => {
-    const el = document.getElementById(`ia-score-${i}`);
-    if (el) el.textContent = m.player ? iaGetScore(m) + ' pts' : '—';
-  });
+  iaRenderResults();
 }
 
 function iaSubmitAll() {
   const active = iaMatches.filter(m => m.player);
   if (!active.length) { toast('Aucun joueur valide à valider.', 'error'); return; }
 
+  let saved = 0;
   active.forEach(m => {
     const player = m.player;
-    const kills = m.elim;
-    const top = iaTop;
+
+    // Gestion skip
+    if (m.skipAction === 'skip' && player.skipNext) {
+      player.skipNext = false;
+      addLog(`<strong>${player.name}</strong> — game skippée. <span style="opacity:0.5">(IA)</span>`, 'rust', 'forward-step');
+      saved++;
+      return;
+    }
+    if (player.skipNext) player.skipNext = false;
+
+    // Gel de kills
+    let kills = m.elim;
+    let frozenAt = 0;
+    if (player.freezeKills) {
+      frozenAt = player.freezeKills;
+      kills = player.freezeKills;
+      player.freezeKills = 0;
+    }
+
+    // Multiplicateur game (roue)
     let pendingGameMult = 0;
     if (player.pendingMult) { pendingGameMult = player.pendingMult; player.pendingMult = 0; }
-    let baseScore = calcGameScore(kills, top, 1);
+
+    let baseScore = calcGameScore(kills, iaTop, 1);
     if (pendingGameMult) baseScore = Math.round(baseScore * pendingGameMult);
+
+    // Bonus top 10
     let pendingBonusApplied = 0;
     if (player.pendingBonus) { pendingBonusApplied = player.pendingBonus; player.pendingBonus = 0; }
+
     const score = baseScore + pendingBonusApplied;
     const noteparts = ['IA'];
+    if (frozenAt) noteparts.push(`❄ gelé ${frozenAt} kills`);
     if (pendingGameMult) noteparts.push(`×${pendingGameMult} roue`);
-    if (pendingBonusApplied) noteparts.push(`+${pendingBonusApplied}pts`);
-    const topStr = top===1 ? ' Top 1' : top===2 ? ' Top 2' : top===3 ? ' Top 3' : '';
-    player.games.push({ id: uid(), kills, top, mult: 1, score,
-      date: new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}),
+    if (pendingBonusApplied) noteparts.push(`+${pendingBonusApplied}pts top10`);
+
+    const topStr = iaTop===1?' Top 1':iaTop===2?' Top 2':iaTop===3?' Top 3':'';
+    player.games.push({
+      id: uid(), kills, top: iaTop, mult: 1, score,
+      date: new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}),
       note: noteparts.join(' · ')
     });
-    if (pendingBonusApplied) player.bonusPoints = (player.bonusPoints||0) + pendingBonusApplied;
+    if (pendingBonusApplied) player.bonusPoints = (player.bonusPoints || 0) + pendingBonusApplied;
     addLog(`<strong>${player.name}</strong> — ${kills} kills${topStr} = ${score} pts <span style="opacity:0.5">(IA)</span>`, 'green', 'wand-magic-sparkles');
+    saved++;
   });
 
   saveState();
   renderAll();
   closeModal('modal-saisie-ia');
   iaReset();
-  toast(`${active.length} game${active.length>1?'s':''} enregistrée${active.length>1?'s':''} !`);
+  toast(`${saved} joueur${saved>1?'s':''} traité${saved>1?'s':''} !`);
 }
 
 function saveAiKey() {
