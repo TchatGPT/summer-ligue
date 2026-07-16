@@ -1478,8 +1478,8 @@ main {
       <div class="action-card action-card-purple" onclick="openAction('perso-top10pts')">
         <div class="ac-bg"><i class="fa-solid fa-trophy"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-trophy"></i></div>
-        <div class="ac-title">+10 pts si top 10</div>
-        <div class="ac-desc">Ajoute 10 pts bonus si le joueur est dans le top 10</div>
+        <div class="ac-title">+10 pts à partir du top 10</div>
+        <div class="ac-desc">Si le joueur finit dans le top 10 Warzone, +10 pts s'appliquent sur sa prochaine game</div>
       </div>
 
     </div>
@@ -4057,7 +4057,7 @@ function buildActionBody(type) {
 
     case 'perso-top10pts': return `
       ${playerSelect('p1', 'Joueur')}
-      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Ajoute <strong>+10 pts bonus</strong> pour un top 10 en jeu Warzone.</p>
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Si le joueur finit dans le <strong>top 10 Warzone</strong>, +10 pts s'appliquent sur sa prochaine game.</p>
       <button class="btn btn-purple" style="width:100%;justify-content:center;margin-top:16px;border-width:1px" onclick="execAction()">Appliquer</button>`;
 
     case 'comm-worst-x2': return `
