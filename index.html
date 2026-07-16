@@ -1354,7 +1354,7 @@ main {
         <div class="ac-bg"><i class="fa-solid fa-crown"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-crown"></i></div>
         <div class="ac-title">+5 pts par Top 1</div>
-        <div class="ac-desc">Chaque top 1 dans le classement actuel ajoute +5 pts</div>
+        <div class="ac-desc">+5 pts de bonus par nouveau Top 1 depuis la dernière application (tous joueurs)</div>
       </div>
 
       <div class="action-card action-card-gold" onclick="openAction('comm-worst-x2')">
@@ -3941,7 +3941,7 @@ function buildActionBody(type) {
       <button class="btn btn-solid-rust" style="width:100%;justify-content:center" onclick="execAction()">Supprimer pour tous</button>`;
 
     case 'top1-bonus': return `
-      <p style="color:var(--text-muted);margin-bottom:16px;font-size:13px">Chaque Top 1 dans le classement actuel de <strong>chaque joueur</strong> ajoute +5 pts bonus.</p>
+      <p style="color:var(--text-muted);margin-bottom:16px;font-size:13px">+5 pts de bonus par <strong>nouveau Top 1</strong> depuis la dernière application, pour chaque joueur.</p>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="execAction()">Appliquer à tous</button>`;
 
     case 'add-bonus-game': return `
