@@ -2096,14 +2096,17 @@ async function loadState() {
       pub: !!l.pub
     }));
 
-    const top1CountsFlag = (flags || []).find(f => f.key === 'top1BonusCounts');
-    const jokerFlag      = (flags || []).find(f => f.key === 'jokerPlayers');
-    const subsFlag       = (flags || []).find(f => f.key === 'subsCount');
-    const maxGFlag       = (flags || []).find(f => f.key === 'maxGames');
+    const top1CountsFlag  = (flags || []).find(f => f.key === 'top1BonusCounts');
+    const jokerFlag       = (flags || []).find(f => f.key === 'jokerPlayers');
+    const subsFlag        = (flags || []).find(f => f.key === 'subsCount');
+    const maxGFlag        = (flags || []).find(f => f.key === 'maxGames');
+    const cloneLriaaFlag  = (flags || []).find(f => f.key === 'cloneLriaaPlayerId');
     try { state.top1BonusCounts = JSON.parse(top1CountsFlag?.value || '{}'); } catch { state.top1BonusCounts = {}; }
     try { state.jokerPlayerIds = new Set(JSON.parse(jokerFlag?.value || '[]')); } catch { state.jokerPlayerIds = new Set(); }
     state.subsCount = parseInt(subsFlag?.value  || '0')  || 0;
     state.maxGames  = parseInt(maxGFlag?.value  || '20') || 20;
+    const cloneLriaaId = cloneLriaaFlag?.value || '';
+    if (cloneLriaaId) { const cp = state.players.find(p => p.id === cloneLriaaId); if (cp) cp.pendingCloneLriaa = true; }
   } catch(e) {
     console.error('loadState error:', e);
   }
@@ -2162,10 +2165,11 @@ async function saveState() {
   // Flags
   try {
     await _sb.from('app_flags').upsert([
-      { key: 'top1BonusCounts', value: JSON.stringify(state.top1BonusCounts || {}) },
-      { key: 'jokerPlayers',    value: JSON.stringify([...(state.jokerPlayerIds || [])]) },
-      { key: 'subsCount',       value: String(state.subsCount || 0) },
-      { key: 'maxGames',        value: String(state.maxGames  || 20) }
+      { key: 'top1BonusCounts',   value: JSON.stringify(state.top1BonusCounts || {}) },
+      { key: 'jokerPlayers',      value: JSON.stringify([...(state.jokerPlayerIds || [])]) },
+      { key: 'subsCount',         value: String(state.subsCount || 0) },
+      { key: 'maxGames',          value: String(state.maxGames  || 20) },
+      { key: 'cloneLriaaPlayerId', value: state.players.find(p => p.pendingCloneLriaa)?.id || '' }
     ]);
   } catch(e) { console.error('saveState flags:', e); }
   _savePending = false;
@@ -2299,6 +2303,7 @@ function renderClassement() {
         ${p.freezeKills ? `<div style="font-size:10px;color:var(--blue)"><i class="fa-solid fa-snowflake"></i> Gelé à ${p.freezeKills} kills</div>` : ''}
         ${p.pendingMult ? `<div style="font-size:10px;color:var(--purple)"><i class="fa-solid fa-xmark"></i> ×${p.pendingMult} game (roue)</div>` : ''}
         ${p.pendingBonus ? `<div style="font-size:10px;color:var(--green)"><i class="fa-solid fa-bolt-lightning"></i> +${p.pendingBonus}pts top10</div>` : ''}
+        ${p.pendingCloneLriaa ? `<div style="font-size:10px;color:var(--purple)"><i class="fa-solid fa-gamepad"></i> Clone kills Lriaa actif</div>` : ''}
         ${state.jokerPlayerIds?.has(p.id) ? `<div style="display:inline-flex;align-items:center;gap:5px;margin-top:3px;background:rgba(212,175,55,0.15);border:1px solid var(--gold);border-radius:3px;padding:2px 6px;font-size:10px;font-weight:700;color:var(--gold);letter-spacing:0.5px"><i class="fa-solid fa-wand-magic-sparkles" style="font-size:9px"></i> JOKER EN COURS${isAdmin() ? `<button onclick="cancelJoker('${p.id}');event.stopPropagation()" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:12px;padding:0;line-height:1;margin-left:2px;opacity:0.7" title="Annuler le joker">×</button>` : ''}</div>` : ''}
       </td>
       <td class="score-total">${total}<small style="font-size:12px;color:var(--text-muted);font-weight:400"> pts</small>${p.bonusPoints ? `<div style="font-size:11px;color:var(--green)">+${p.bonusPoints} bonus</div>` : ''}</td>
@@ -3193,9 +3198,11 @@ function iaBuildMatches(ocr) {
         player = m.player;
         conf = m.conf;
       }
+      const cloneLriaa = !!(player?.pendingCloneLriaa && iaLriaaElim > 0);
       return {
         ocrName: r.ocr || r.name,
-        elim: r.elim || 0,
+        elim: cloneLriaa ? iaLriaaElim : (r.elim || 0),
+        cloneLriaa,
         player,
         conf,
         skipAction: player?.skipNext ? 'skip' : 'record',
@@ -3295,6 +3302,7 @@ function iaRenderResults() {
     if (p?.pendingMult) badges.push(`<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(155,89,182,0.15);border:1px solid var(--purple);color:var(--purple);border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700">×${p.pendingMult} game<button onclick="iaCancelMult(${i})" style="background:none;border:none;color:var(--purple);cursor:pointer;font-size:12px;padding:0;line-height:1;opacity:0.7" title="Annuler le multiplicateur">×</button></span>`);
     if (p?.pendingBonus) badges.push(`<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(76,175,130,0.15);border:1px solid var(--green);color:var(--green);border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700">+${p.pendingBonus}pts top10<button onclick="iaCancelPendingBonus(${i})" style="background:none;border:none;color:var(--green);cursor:pointer;font-size:12px;padding:0;line-height:1;opacity:0.7" title="Annuler le bonus">×</button></span>`);
     if (state.jokerPlayerIds?.has(p?.id)) badges.push(`<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(232,184,75,0.1);border:1px solid var(--gold);color:var(--gold);border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700">🃏 Joker<button onclick="iaCancelJoker(${i})" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:12px;padding:0;line-height:1;opacity:0.7" title="Annuler le joker">×</button></span>`);
+    if (m.cloneLriaa) badges.push(`<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(155,89,182,0.15);border:1px solid var(--purple);color:var(--purple);border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700"><i class="fa-solid fa-gamepad" style="font-size:9px"></i> Clone Lriaa (${iaLriaaElim} kills)<button onclick="iaCancelCloneLriaaMatch(${i})" style="background:none;border:none;color:var(--purple);cursor:pointer;font-size:12px;padding:0;line-height:1;opacity:0.7" title="Annuler">×</button></span>`);
 
     return `<tr style="${isSkip ? 'opacity:0.45' : ''}">
       <td style="font-size:12px;color:var(--text-muted);padding:8px">${escHtml(m.ocrName)}</td>
@@ -3337,10 +3345,13 @@ function iaRefreshScores() {
 
 function iaRenderLriaaSection() {
   const el = document.getElementById('ia-lriaa-section');
-  if (!el) return;
+  if (!el) { return; }
   const clonePlayer = state.players.find(p => p.pendingCloneLriaa);
-  if (!clonePlayer) { el.innerHTML = ''; return; }
-
+  // Si le joueur flagué est déjà dans les matches (kills remplacés dans sa ligne), pas besoin de section séparée
+  if (!clonePlayer || iaMatches.some(m => m.cloneLriaa && m.player?.id === clonePlayer.id)) {
+    el.innerHTML = ''; return;
+  }
+  // Joueur flagué absent de la capture — fallback saisie manuelle
   const autoDetected = iaLriaaElim > 0;
   const killsContent = autoDetected
     ? `<div style="font-size:12px;color:var(--text)"><i class="fa-solid fa-check" style="color:var(--green);margin-right:4px"></i>Lriaa détectée : <strong>${iaLriaaElim} kills</strong> = <strong>${iaLriaaElim} pts</strong></div>`
@@ -3350,7 +3361,6 @@ function iaRenderLriaaSection() {
            style="width:80px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:16px;padding:5px 8px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:700">
          <span style="font-size:12px;color:var(--text-muted)">kills = <strong id="ia-lriaa-pts">0</strong> pts</span>
        </div>`;
-
   el.innerHTML = `<div style="margin-top:14px;padding:12px;background:rgba(155,89,182,0.08);border:1px solid var(--purple);border-radius:6px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       <div style="display:flex;align-items:center;gap:8px">
@@ -3368,6 +3378,16 @@ function iaCancelCloneLriaa() {
     const p = state.players.find(pl => pl.pendingCloneLriaa);
     if (p) { p.pendingCloneLriaa = false; saveState(); }
     iaRenderLriaaSection();
+  });
+}
+
+function iaCancelCloneLriaaMatch(idx) {
+  showConfirm(`Annuler le clone de kills de Lriaa ?`, () => {
+    const p = iaMatches[idx]?.player;
+    if (p) { p.pendingCloneLriaa = false; saveState(); }
+    iaMatches[idx].cloneLriaa = false;
+    iaMatches[idx].elim = 0; // remet les kills OCR réels à 0 (pas retrouvables, safer)
+    iaRenderResults();
   });
 }
 
@@ -3416,6 +3436,7 @@ function iaSubmitAll() {
 
     const manualBonus = m.bonus || 0;
     if (manualBonus) noteparts.push(`+${manualBonus}pts bonus`);
+    if (m.cloneLriaa) { noteparts.push('kills Lriaa'); player.pendingCloneLriaa = false; }
     const topStr = iaTop===1?' Top 1':iaTop===2?' Top 2':iaTop===3?' Top 3':'';
     player.games.push({
       id: uid(), kills, top: iaTop, mult: 1, score,
