@@ -1031,7 +1031,7 @@ main {
 
   <div class="actions-bar admin-only" style="display:none">
     <button class="btn btn-green" style="font-size:15px;padding:10px 22px" onclick="openSaisieModal()"><i class="fa-solid fa-gamepad"></i> Saisir une game</button>
-    <button class="btn" style="font-size:15px;padding:10px 22px;border-color:var(--blue);color:var(--blue)" onclick="openSaisieIA()"><i class="fa-solid fa-wand-magic-sparkles"></i> Saisir avec l'IA</button>
+    <button class="btn" style="font-size:15px;padding:10px 22px;border-color:var(--purple);color:var(--purple);transition:background 0.15s,color 0.15s" onmouseover="this.style.background='var(--purple)';this.style.color='white'" onmouseout="this.style.background='';this.style.color='var(--purple)'" onclick="openSaisieIA()"><i class="fa-solid fa-wand-magic-sparkles"></i> Saisir avec l'IA</button>
     <button class="btn btn-blue btn-sm" onclick="openImportSheetModal()"><i class="fa-solid fa-cloud-arrow-down"></i> Importer Google Sheets</button>
   </div>
 
@@ -3019,7 +3019,7 @@ function iaLoadImage(file, mime) {
     zone.onclick = null;
     zone.style.padding = '0';
     zone.style.border = '2px solid var(--green)';
-    zone.innerHTML = `<img src="${ev.target.result}" style="max-width:100%;max-height:220px;display:block;border-radius:4px">`;
+    zone.innerHTML = `<img src="${ev.target.result}" style="max-width:100%;max-height:220px;display:block;border-radius:4px;cursor:zoom-in" title="Cliquer pour agrandir" onclick="iaZoomImage(this.src)">`;
     document.getElementById('ia-analyze-btn').disabled = false;
   };
   reader.readAsDataURL(file);
@@ -3145,7 +3145,8 @@ function iaBuildMatches(ocr) {
         elim: r.elim || 0,
         player: m.player,
         conf: m.conf,
-        skipAction: m.player?.skipNext ? 'skip' : 'record'
+        skipAction: m.player?.skipNext ? 'skip' : 'record',
+        bonus: 0
       };
     })
     .filter(m => m.conf >= 0.4);
@@ -3158,6 +3159,16 @@ function iaGetScore(m) {
   const base = calcGameScore(kills, iaTop, 1);
   const withMult = p.pendingMult ? Math.round(base * p.pendingMult) : base;
   return withMult + (p.pendingBonus || 0);
+}
+
+function iaAddBonus(idx, pts) {
+  iaMatches[idx].bonus = (iaMatches[idx].bonus || 0) + pts;
+  iaRenderResults();
+}
+
+function iaClearBonus(idx) {
+  iaMatches[idx].bonus = 0;
+  iaRenderResults();
 }
 
 function iaSetSkipAction(idx, action) {
@@ -3206,9 +3217,15 @@ function iaRenderResults() {
         ${isSkip ? '<i class="fa-solid fa-forward-step" style="font-size:16px;opacity:0.5"></i>' : (freeze ? `${freeze} ❄` : effectiveKills)}
       </td>
       <td style="text-align:right;padding:8px">
-        <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;color:var(--gold)" id="ia-score-${i}">
+        <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;color:var(--gold)">
           ${isSkip ? '—' : (score !== null ? score + ' pts' : '—')}
         </span>
+        ${!isSkip && score !== null ? `
+        <div style="margin-top:5px;display:flex;justify-content:flex-end;align-items:center;gap:4px;flex-wrap:wrap">
+          <button onclick="iaAddBonus(${i},5)" style="background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:3px;padding:2px 7px;font-size:11px;cursor:pointer">+5</button>
+          <button onclick="iaAddBonus(${i},10)" style="background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:3px;padding:2px 7px;font-size:11px;cursor:pointer">+10</button>
+          ${m.bonus ? `<span style="color:var(--blue);font-size:11px;font-weight:600">+${m.bonus}pts</span><button onclick="iaClearBonus(${i})" style="background:none;border:none;color:var(--text-muted);font-size:13px;cursor:pointer;padding:0 2px">×</button>` : ''}
+        </div>` : ''}
       </td>
     </tr>`;
   }).join('');
@@ -3269,6 +3286,8 @@ function iaSubmitAll() {
     if (pendingGameMult) noteparts.push(`×${pendingGameMult} roue`);
     if (pendingBonusApplied) noteparts.push(`+${pendingBonusApplied}pts top10`);
 
+    const manualBonus = m.bonus || 0;
+    if (manualBonus) noteparts.push(`+${manualBonus}pts bonus`);
     const topStr = iaTop===1?' Top 1':iaTop===2?' Top 2':iaTop===3?' Top 3':'';
     player.games.push({
       id: uid(), kills, top: iaTop, mult: 1, score,
@@ -3276,7 +3295,8 @@ function iaSubmitAll() {
       note: noteparts.join(' · ')
     });
     if (pendingBonusApplied) player.bonusPoints = (player.bonusPoints || 0) + pendingBonusApplied;
-    addLog(`<strong>${player.name}</strong> — ${kills} kills${topStr} = ${score} pts <span style="opacity:0.5">(IA)</span>`, 'green', 'wand-magic-sparkles');
+    if (manualBonus) player.bonusPoints = (player.bonusPoints || 0) + manualBonus;
+    addLog(`<strong>${player.name}</strong> — ${kills} kills${topStr} = ${score} pts${manualBonus ? ` +${manualBonus}pts bonus` : ''} <span style="opacity:0.5">(IA)</span>`, 'green', 'wand-magic-sparkles');
     saved++;
   });
 
@@ -3294,6 +3314,14 @@ function saveAiKey() {
   document.getElementById('mod-ai-key-status').textContent = 'Clé sauvegardée.';
   document.getElementById('mod-ai-key-status').style.color = 'var(--green)';
   toast('Clé API sauvegardée.');
+}
+
+function iaZoomImage(src) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;cursor:zoom-out';
+  overlay.innerHTML = `<img src="${src}" style="max-width:95vw;max-height:95vh;border-radius:6px;box-shadow:0 0 60px rgba(0,0,0,0.8)">`;
+  overlay.onclick = () => overlay.remove();
+  document.body.appendChild(overlay);
 }
 
 // ============================================================
