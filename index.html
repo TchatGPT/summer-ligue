@@ -3124,11 +3124,20 @@ function iaFuzzy(ocrName) {
 }
 
 // Noms toujours exclus de l'OCR (la streameuse ne participe pas à la ligue)
+// Utilise une comparaison fuzzy pour catcher les erreurs OCR (Lraa, Lriaa, Lriaa_, etc.)
 const IA_EXCL = ['lriaa'];
+
+function iaIsExcluded(ocrName) {
+  const norm = iaNorm(ocrName);
+  return IA_EXCL.some(excl => {
+    const d = iaLev(norm, iaNorm(excl));
+    return (1 - d / Math.max(norm.length, excl.length, 1)) >= 0.6;
+  });
+}
 
 function iaBuildMatches(ocr) {
   iaMatches = ocr
-    .filter(r => !IA_EXCL.includes(r.name.toLowerCase()))
+    .filter(r => !iaIsExcluded(r.name))
     .map(r => {
       const m = iaFuzzy(r.name);
       return {
