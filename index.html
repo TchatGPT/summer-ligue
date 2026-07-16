@@ -3069,7 +3069,7 @@ function iaReset() {
     zone.innerHTML = `<div style="font-size:30px;color:var(--text-muted);margin-bottom:8px"><i class="fa-solid fa-image"></i></div><div style="font-size:13px;color:var(--text-muted)">Ctrl+V pour coller · ou cliquez pour choisir un fichier</div>`;
   }
   const btn = document.getElementById('ia-analyze-btn');
-  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Analyser avec Claude'; }
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Analyser'; }
   const results = document.getElementById('ia-results');
   if (results) results.style.display = 'none';
   const fi = document.getElementById('ia-file-input');
@@ -3126,7 +3126,7 @@ async function iaAnalyze() {
     toast('Erreur analyse : ' + err.message, 'error');
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Analyser avec Claude';
+    btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Analyser';
   }
 }
 
