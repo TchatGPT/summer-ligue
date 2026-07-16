@@ -3069,7 +3069,7 @@ async function iaAnalyze() {
           role: 'user',
           content: [
             { type: 'image', source: { type: 'base64', media_type: iaImgMime, data: iaImgBase64 } },
-            { type: 'text', text: `Voici une capture d'écran de fin de game Warzone/Résurgence.\n\nListe officielle des joueurs de la ligue : ${state.players.map(p=>p.name).join(', ')}\n\nRègles importantes :\n- Ignore TOUJOURS le joueur "Lriaa" (c'est la streameuse, elle ne participe pas à la ligue). Ne la retourne jamais, même si tu la vois dans la capture.\n- Ignore la ligne "TOTAUX ESCOUADE".\n- Pour chaque joueur visible (sauf Lriaa), fais correspondre son pseudo en jeu au joueur de la ligue le plus proche. Les pseudos en jeu peuvent différer : chiffres en fin, caractères spéciaux, erreurs OCR (ex: Ezzmost06 → Ezzmost, [7]_MiKaa → Mikaa, Fauremaax → Fauremax).\n- Si un joueur visible ne correspond clairement à AUCUN joueur de la ligue, ne le retourne pas.\n\nRetourne UNIQUEMENT un tableau JSON valide sans markdown : [{"name":"nom_exact_ligue","elim":nombre}] où "name" est le nom EXACT issu de la liste de la ligue, et "elim" est la valeur de la colonne ÉLIM. ATTENTION : dans le tableau Warzone, l'ordre des colonnes est SCORE | ÉLIM./ASSIST. | ÉLIM. | ASSIST. — tu dois prendre la 3ème colonne numérique (ÉLIM.), PAS la 2ème (ÉLIM./ASSIST. qui inclut kills + assists). La valeur ÉLIM. est toujours inférieure ou égale à ÉLIM./ASSIST.` }
+            { type: 'text', text: `Voici une capture d'écran de fin de game Warzone/Résurgence.\n\nListe officielle des joueurs de la ligue : ${state.players.map(p=>p.name).join(', ')}\n\nRègles importantes :\n- Ignore TOUJOURS le joueur "Lriaa" (c'est la streameuse, elle ne participe pas à la ligue). Ne la retourne jamais, même si tu la vois dans la capture.\n- Ignore la ligne "TOTAUX ESCOUADE".\n- Pour chaque joueur visible (sauf Lriaa), fais correspondre son pseudo en jeu au joueur de la ligue le plus proche. Les pseudos en jeu peuvent différer : chiffres en fin, caractères spéciaux, erreurs OCR (ex: Ezzmost06 → Ezzmost, [7]_MiKaa → Mikaa, Fauremaax → Fauremax).\n- Si un joueur visible ne correspond clairement à AUCUN joueur de la ligue, ne le retourne pas.\n\nRetourne UNIQUEMENT un tableau JSON valide sans markdown : [{"name":"nom_exact_ligue","elim":nombre}] où "name" est le nom EXACT issu de la liste de la ligue, et "elim" est la valeur de la colonne ÉLIM. ATTENTION : dans le tableau Warzone, l'ordre des colonnes est SCORE | ÉLIM./ASSIST. | ÉLIM. | ASSIST. — tu dois prendre la 3ème colonne numérique (ÉLIM.), PAS la 2ème (ÉLIM./ASSIST. qui inclut kills + assists). La valeur ÉLIM. est toujours inférieure ou égale à ÉLIM./ASSIST.\n\nFormat JSON requis : [{"ocr":"pseudo_exact_lu_dans_la_capture","name":"nom_exact_ligue_ou_null","elim":nombre}]\n- "ocr" = le pseudo TEL QUE TU LE LIS dans la capture (sans aucune modification)\n- "name" = le nom EXACT de la liste de la ligue qui correspond, ou null si le joueur n'est pas dans la ligue\n- Pour Lriaa : retourne {"ocr":"Lriaa","name":null,"elim":X} — NE LA MAPPE JAMAIS à un joueur de la ligue` }
           ]
         }]
       })
@@ -3137,19 +3137,32 @@ function iaIsExcluded(ocrName) {
 
 function iaBuildMatches(ocr) {
   iaMatches = ocr
-    .filter(r => !iaIsExcluded(r.name))
+    .filter(r => {
+      // Filtre sur le nom OCR brut (catch Lriaa même si Claude la mappe à qqun)
+      if (iaIsExcluded(r.ocr || r.name || '')) return false;
+      // Filtre les entrées que Claude n'a pas su matcher (name = null)
+      if (!r.name || r.name === 'null') return false;
+      return true;
+    })
     .map(r => {
-      const m = iaFuzzy(r.name);
+      // Claude a déjà fait le matching — cherche d'abord exact, puis fuzzy en fallback
+      let player = state.players.find(p => p.name === r.name);
+      let conf = 1.0;
+      if (!player) {
+        const m = iaFuzzy(r.name);
+        player = m.player;
+        conf = m.conf;
+      }
       return {
-        ocrName: r.name,
+        ocrName: r.ocr || r.name,
         elim: r.elim || 0,
-        player: m.player,
-        conf: m.conf,
-        skipAction: m.player?.skipNext ? 'skip' : 'record',
+        player,
+        conf,
+        skipAction: player?.skipNext ? 'skip' : 'record',
         bonus: 0
       };
     })
-    .filter(m => m.conf >= 0.4);
+    .filter(m => m.player && m.conf >= 0.4);
 }
 
 function iaGetScore(m) {
