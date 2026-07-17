@@ -3397,8 +3397,9 @@ function iaRenderLriaaSection() {
   const el = document.getElementById('ia-lriaa-section');
   if (!el) { return; }
   const clonePlayer = state.players.find(p => p.pendingCloneLriaa);
-  if (!clonePlayer) { el.innerHTML = ''; return; }
-  // Toujours afficher la section quand le clone est actif (que le joueur soit reconnu ou non par l'OCR)
+  const inMatch = clonePlayer && iaMatches.some(m => m.cloneLriaa && m.player?.id === clonePlayer.id);
+  if (!inMatch) { el.innerHTML = ''; return; }
+  // Joueur reconnu par l'OCR avec clone actif → afficher la section de confirmation
   const autoDetected = iaLriaaElim > 0;
   const killsContent = autoDetected
     ? `<div style="font-size:12px;color:var(--text)"><i class="fa-solid fa-check" style="color:var(--green);margin-right:4px"></i>Lriaa détectée : <strong>${iaLriaaElim} kills</strong> = <strong>${iaLriaaElim} pts</strong></div>`
