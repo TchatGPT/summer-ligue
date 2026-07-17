@@ -3431,17 +3431,14 @@ function iaCancelCloneLriaaMatch(idx) {
 }
 
 function iaSubmitAll() {
-  console.log('[IA] iaSubmitAll START — iaTop:', iaTop, '| matches:', iaMatches.length, '| players:', iaMatches.map(m=>m.player?.name));
   const active = iaMatches.filter(m => m.player);
   if (!active.length) { toast('Aucun joueur valide à valider.', 'error'); return; }
 
   const topRank = iaTop;  // snapshot before any reset/async
-  console.log('[IA] topRank snapshot:', topRank);
 
   let saved = 0;
   active.forEach(m => {
     const player = m.player;
-    console.log('[IA] Processing:', player?.name, '| skipAction:', m.skipAction, '| skipNext:', player?.skipNext);
 
     // Gestion skip
     if (m.skipAction === 'skip' && player.skipNext) {
@@ -3487,7 +3484,6 @@ function iaSubmitAll() {
       date: new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}),
       note: noteparts.join(' · ')
     });
-    console.log('[IA] Pushed game for', player.name, '— kills:', kills, 'top:', topRank, 'score:', score, '| total games now:', player.games.length);
     if (pendingBonusApplied) player.bonusPoints = (player.bonusPoints || 0) + pendingBonusApplied;
     if (manualBonus) player.bonusPoints = (player.bonusPoints || 0) + manualBonus;
     addLog(`<strong>${player.name}</strong> — ${kills} kills${topStr} = ${score} pts${manualBonus ? ` +${manualBonus}pts bonus` : ''} <span style="opacity:0.5">(IA)</span>`, 'green', 'wand-magic-sparkles');
@@ -3504,7 +3500,6 @@ function iaSubmitAll() {
   }
   // Si iaLriaaElim = 0 (Lriaa pas dans la capture), le flag reste actif pour la prochaine game
 
-  console.log('[IA] All done — saved:', saved, '| calling renderAll...');
   renderAll();
   closeModal('modal-saisie-ia');
   iaReset();
@@ -5106,6 +5101,7 @@ async function submitAdminLogin() {
   } else {
     closeModal('modal-admin');
     toast('Mode admin activé.', 'gold');
+    saveState();  // persiste tout ce qui était en mémoire si la session avait expiré
   }
 }
 
