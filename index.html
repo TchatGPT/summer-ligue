@@ -2115,9 +2115,15 @@ async function loadState() {
 }
 
 async function saveState() {
-  // Double vérification : closure locale + JWT réel via SDK (non falsifiable)
-  if (!isAdmin() || !await _refreshAuth()) return;
+  // Bloquer autoRefresh immédiatement pour protéger l'état en mémoire
   _savePending = true;
+  // Double vérification : closure locale + JWT réel via SDK (non falsifiable)
+  if (!isAdmin() || !await _refreshAuth()) {
+    toast('Session expirée — reconnectez-vous pour sauvegarder.', 'rust');
+    toggleAdminLogin();
+    return;
+    // _savePending reste true → autoRefresh ne peut pas écraser l'état non sauvegardé
+  }
 
   // Players
   try {
@@ -5070,7 +5076,12 @@ const _sb = createClient(
   _sb.auth.onAuthStateChange((event, session) => {
     _set(session);
     updateAdminUI();
-    if (event === 'SIGNED_OUT') { _s = null; showPage('classement'); toast('Déconnecté.'); }
+    if (event === 'SIGNED_OUT') {
+      _s = null;
+      const adminPages = ['actions', 'joueurs', 'moderation'];
+      if (adminPages.includes(window.location.hash.slice(1))) showPage('classement');
+      if (!_savePending) toast('Déconnecté.', 'rust');
+    }
   });
 }());
 
@@ -5101,7 +5112,10 @@ async function submitAdminLogin() {
   } else {
     closeModal('modal-admin');
     toast('Mode admin activé.', 'gold');
-    saveState();  // persiste tout ce qui était en mémoire si la session avait expiré
+    if (_savePending) {
+      await _refreshAuth();  // force mise à jour de _s avant saveState
+      saveState();
+    }
   }
 }
 
