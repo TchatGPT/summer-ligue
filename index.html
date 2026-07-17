@@ -3107,7 +3107,10 @@ function iaReset() {
   if (results) results.style.display = 'none';
   const fi = document.getElementById('ia-file-input');
   if (fi) fi.value = '';
-  iaSelectTop(0);
+  iaTop = 0;
+  ['ia-top-1','ia-top-2','ia-top-3'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('selected'); });
+  const iaTn = document.getElementById('ia-top-n');
+  if (iaTn) iaTn.classList.add('selected');
 }
 
 async function iaAnalyze() {
@@ -3427,7 +3430,7 @@ function iaCancelCloneLriaaMatch(idx) {
   });
 }
 
-function iaSubmitAll() {
+async function iaSubmitAll() {
   const active = iaMatches.filter(m => m.player);
   if (!active.length) { toast('Aucun joueur valide à valider.', 'error'); return; }
 
@@ -3495,7 +3498,7 @@ function iaSubmitAll() {
   }
   // Si iaLriaaElim = 0 (Lriaa pas dans la capture), le flag reste actif pour la prochaine game
 
-  saveState();
+  await saveState();
   renderAll();
   closeModal('modal-saisie-ia');
   iaReset();
