@@ -3444,7 +3444,8 @@ function iaSubmitAll() {
 
   let saved = 0;
   active.forEach(m => {
-    const player = m.player;
+    const player = state.players.find(p => p.id === m.player?.id);
+    if (!player) return;
 
     // Gestion skip
     if (m.skipAction === 'skip' && player.skipNext) {
@@ -5288,7 +5289,7 @@ function _stateFingerprint() {
 
 async function autoRefresh() {
   if (_refreshPending || _savePending) return;
-  if (document.querySelector('.modal-overlay[style*="flex"]')) return;
+  if (document.querySelector('.modal-overlay.open')) return;
   _refreshPending = true;
   try {
     const before = _stateFingerprint();
