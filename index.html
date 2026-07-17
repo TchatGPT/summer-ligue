@@ -3430,9 +3430,11 @@ function iaCancelCloneLriaaMatch(idx) {
   });
 }
 
-async function iaSubmitAll() {
+function iaSubmitAll() {
   const active = iaMatches.filter(m => m.player);
   if (!active.length) { toast('Aucun joueur valide à valider.', 'error'); return; }
+
+  const topRank = iaTop;  // snapshot before any reset/async
 
   let saved = 0;
   active.forEach(m => {
@@ -3460,7 +3462,7 @@ async function iaSubmitAll() {
     let pendingGameMult = 0;
     if (player.pendingMult) { pendingGameMult = player.pendingMult; player.pendingMult = 0; }
 
-    let baseScore = calcGameScore(kills, iaTop, 1);
+    let baseScore = calcGameScore(kills, topRank, 1);
     if (pendingGameMult) baseScore = Math.round(baseScore * pendingGameMult);
 
     // Bonus top 10
@@ -3476,9 +3478,9 @@ async function iaSubmitAll() {
     const manualBonus = m.bonus || 0;
     if (manualBonus) noteparts.push(`+${manualBonus}pts bonus`);
     if (m.cloneLriaa) { noteparts.push('kills Lriaa'); player.pendingCloneLriaa = false; }
-    const topStr = iaTop===1?' Top 1':iaTop===2?' Top 2':iaTop===3?' Top 3':'';
+    const topStr = topRank===1?' Top 1':topRank===2?' Top 2':topRank===3?' Top 3':'';
     player.games.push({
-      id: uid(), kills, top: iaTop, mult: 1, score,
+      id: uid(), kills, top: topRank, mult: 1, score,
       date: new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}),
       note: noteparts.join(' · ')
     });
@@ -3498,11 +3500,11 @@ async function iaSubmitAll() {
   }
   // Si iaLriaaElim = 0 (Lriaa pas dans la capture), le flag reste actif pour la prochaine game
 
-  await saveState();
   renderAll();
   closeModal('modal-saisie-ia');
   iaReset();
   toast(`${saved} joueur${saved>1?'s':''} traité${saved>1?'s':''} !`);
+  saveState();  // fire-and-forget after UI is already updated
 }
 
 function saveAiKey() {
