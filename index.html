@@ -3981,9 +3981,7 @@ function doCommEchangeRand() {
   const gameNumOf = (player, game) => [...player.games].sort((a,b) => b.score - a.score).findIndex(g => g.id === game.id) + 1;
   const nA1 = gameNumOf(pa, gameA1), nA2 = gameNumOf(pa, gameA2);
   const nB1 = gameNumOf(pb, gameB1), nB2 = gameNumOf(pb, gameB2);
-  const desc = `
-    <div style="margin-bottom:8px"><strong>${escHtml(pa.name)}</strong> donne ses games <span style="color:var(--gold)">#${nA1} (${gameA1.score} pts)</span> et <span style="color:var(--gold)">#${nA2} (${gameA2.score} pts)</span> à <strong>${escHtml(pb.name)}</strong></div>
-    <div><strong>${escHtml(pb.name)}</strong> donne ses games <span style="color:var(--gold)">#${nB1} (${gameB1.score} pts)</span> et <span style="color:var(--gold)">#${nB2} (${gameB2.score} pts)</span> à <strong>${escHtml(pa.name)}</strong></div>`;
+  const desc = `<strong>${escHtml(pa.name)}</strong> échange ses games <span style="color:var(--gold)">#${nA1} (${gameA1.score} pts)</span> &amp; <span style="color:var(--gold)">#${nA2} (${gameA2.score} pts)</span> avec les games <span style="color:var(--gold)">#${nB1} (${gameB1.score} pts)</span> &amp; <span style="color:var(--gold)">#${nB2} (${gameB2.score} pts)</span> de <strong>${escHtml(pb.name)}</strong>`;
   if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.8">${desc}</div>`;
   showConfirm('Confirmer l\'échange', desc,
     () => {
