@@ -3974,14 +3974,11 @@ function doCommEchangeRand() {
   const gameA = pa.games[Math.floor(Math.random() * pa.games.length)];
   const gameB = pb.games[Math.floor(Math.random() * pb.games.length)];
   const el = document.getElementById('action-echange-rand-preview');
-  const fmtTop = g => g.top === 1 ? 'Top 1' : g.top === 2 ? 'Top 2' : g.top === 3 ? 'Top 3' : '—';
-  const fmtGame = g => `${fmtTop(g)} · ${g.kills} kills · ${g.score} pts`;
-  if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.7">
-    <strong>${escHtml(pa.name)}</strong> échange sa game <span style="color:var(--gold)">(${fmtGame(gameA)})</span><br>
-    contre la game de <strong>${escHtml(pb.name)}</strong> <span style="color:var(--gold)">(${fmtGame(gameB)})</span>
-  </div>`;
-  showConfirm('Confirmer l\'échange',
-    `<strong>${escHtml(pa.name)}</strong> échange sa game <span style="color:var(--gold)">(${fmtGame(gameA)})</span> contre la game de <strong>${escHtml(pb.name)}</strong> <span style="color:var(--gold)">(${fmtGame(gameB)})</span>`,
+  const gameNumOf = (player, game) => [...player.games].sort((a,b) => b.score - a.score).findIndex(g => g.id === game.id) + 1;
+  const numA = gameNumOf(pa, gameA), numB = gameNumOf(pb, gameB);
+  const desc = `<strong>${escHtml(pa.name)}</strong> échange sa game #${numA} <span style="color:var(--gold)">(${gameA.score} pts)</span> contre la game #${numB} de <strong>${escHtml(pb.name)}</strong> <span style="color:var(--gold)">(${gameB.score} pts)</span>`;
+  if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.7">${desc}</div>`;
+  showConfirm('Confirmer l\'échange', desc,
     () => {
       pa.games = pa.games.filter(g => g.id !== gameA.id);
       pb.games = pb.games.filter(g => g.id !== gameB.id);
