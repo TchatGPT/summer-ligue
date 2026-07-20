@@ -3924,7 +3924,7 @@ function doCloneBestWorstRand() {
     <div><strong>${escHtml(dst.name)}</strong> — pire game remplacée : <span style="color:var(--rust)">${dstWorst ? dstWorst.score + ' pts' : 'aucune'}</span></div>
   </div>`;
   showConfirm('Confirmer le clone',
-    `Remplacer la pire game de <strong>${escHtml(dst.name)}</strong> par la meilleure de <strong>${escHtml(src.name)}</strong> (<strong>${srcBest.score} pts</strong>) ?`,
+    `Remplacer la pire game de <strong>${escHtml(dst.name)}</strong> (<strong>${dstWorst ? dstWorst.score + ' pts' : 'aucune'}</strong>) par la meilleure de <strong>${escHtml(src.name)}</strong> (<strong>${srcBest.score} pts</strong>) ?`,
     () => {
       if (dstWorst) dst.games = dst.games.filter(g => g.id !== dstWorst.id);
       dst.games.push({ ...srcBest, id: uid(), note: (srcBest.note ? srcBest.note + ' · ' : '') + `clone best aléatoire (${src.name})` });
@@ -3975,11 +3975,11 @@ function doCommEchangeRand() {
   const gameB = pb.games[Math.floor(Math.random() * pb.games.length)];
   const el = document.getElementById('action-echange-rand-preview');
   if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px">
-    <div style="margin-bottom:6px"><strong>${escHtml(pa.name)}</strong> : game tirée <span style="color:var(--gold)">${gameA.score} pts</span></div>
-    <div><strong>${escHtml(pb.name)}</strong> : game tirée <span style="color:var(--gold)">${gameB.score} pts</span></div>
+    <div style="margin-bottom:6px"><strong>${escHtml(pa.name)}</strong> donne <span style="color:var(--rust)">${gameA.score} pts</span> → reçoit <span style="color:var(--gold)">${gameB.score} pts</span></div>
+    <div><strong>${escHtml(pb.name)}</strong> donne <span style="color:var(--rust)">${gameB.score} pts</span> → reçoit <span style="color:var(--gold)">${gameA.score} pts</span></div>
   </div>`;
   showConfirm('Confirmer l\'échange',
-    `<strong>${escHtml(pa.name)}</strong> (${gameA.score} pts) ↔ <strong>${escHtml(pb.name)}</strong> (${gameB.score} pts)`,
+    `<strong>${escHtml(pa.name)}</strong> donne ${gameA.score} pts → reçoit ${gameB.score} pts<br><strong>${escHtml(pb.name)}</strong> donne ${gameB.score} pts → reçoit ${gameA.score} pts`,
     () => {
       pa.games = pa.games.filter(g => g.id !== gameA.id);
       pb.games = pb.games.filter(g => g.id !== gameB.id);
