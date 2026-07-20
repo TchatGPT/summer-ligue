@@ -3966,25 +3966,34 @@ function doCommEchangeBestWorst() {
 }
 
 function doCommEchangeRand() {
-  const eligible = state.players.filter(p => p.games.length > 0);
-  if (eligible.length < 2) { toast('Il faut au moins 2 joueurs avec des games.', 'error'); return; }
+  const eligible = state.players.filter(p => p.games.length >= 2);
+  if (eligible.length < 2) { toast('Il faut au moins 2 joueurs avec 2 games chacun.', 'error'); return; }
   const pa = eligible[Math.floor(Math.random() * eligible.length)];
   const poolB = eligible.filter(p => p.id !== pa.id);
   const pb = poolB[Math.floor(Math.random() * poolB.length)];
-  const gameA = pa.games[Math.floor(Math.random() * pa.games.length)];
-  const gameB = pb.games[Math.floor(Math.random() * pb.games.length)];
+  const pickTwo = games => {
+    const shuffled = [...games].sort(() => Math.random() - 0.5);
+    return [shuffled[0], shuffled[1]];
+  };
+  const [gameA1, gameA2] = pickTwo(pa.games);
+  const [gameB1, gameB2] = pickTwo(pb.games);
   const el = document.getElementById('action-echange-rand-preview');
   const gameNumOf = (player, game) => [...player.games].sort((a,b) => b.score - a.score).findIndex(g => g.id === game.id) + 1;
-  const numA = gameNumOf(pa, gameA), numB = gameNumOf(pb, gameB);
-  const desc = `<strong>${escHtml(pa.name)}</strong> échange sa game #${numA} <span style="color:var(--gold)">(${gameA.score} pts)</span> contre la game #${numB} de <strong>${escHtml(pb.name)}</strong> <span style="color:var(--gold)">(${gameB.score} pts)</span>`;
-  if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.7">${desc}</div>`;
+  const nA1 = gameNumOf(pa, gameA1), nA2 = gameNumOf(pa, gameA2);
+  const nB1 = gameNumOf(pb, gameB1), nB2 = gameNumOf(pb, gameB2);
+  const desc = `
+    <div style="margin-bottom:8px"><strong>${escHtml(pa.name)}</strong> donne ses games <span style="color:var(--gold)">#${nA1} (${gameA1.score} pts)</span> et <span style="color:var(--gold)">#${nA2} (${gameA2.score} pts)</span> à <strong>${escHtml(pb.name)}</strong></div>
+    <div><strong>${escHtml(pb.name)}</strong> donne ses games <span style="color:var(--gold)">#${nB1} (${gameB1.score} pts)</span> et <span style="color:var(--gold)">#${nB2} (${gameB2.score} pts)</span> à <strong>${escHtml(pa.name)}</strong></div>`;
+  if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.8">${desc}</div>`;
   showConfirm('Confirmer l\'échange', desc,
     () => {
-      pa.games = pa.games.filter(g => g.id !== gameA.id);
-      pb.games = pb.games.filter(g => g.id !== gameB.id);
-      pa.games.push({ ...gameB, id: uid(), note: (gameB.note ? gameB.note + ' · ' : '') + `échange aléatoire avec ${pb.name}` });
-      pb.games.push({ ...gameA, id: uid(), note: (gameA.note ? gameA.note + ' · ' : '') + `échange aléatoire avec ${pa.name}` });
-      addLog(`Échange aléatoire : <strong>${pa.name}</strong> (${gameA.score} pts) ↔ <strong>${pb.name}</strong> (${gameB.score} pts)`, 'gold', 'shuffle', true);
+      const idsA = new Set([gameA1.id, gameA2.id]);
+      const idsB = new Set([gameB1.id, gameB2.id]);
+      pa.games = pa.games.filter(g => !idsA.has(g.id));
+      pb.games = pb.games.filter(g => !idsB.has(g.id));
+      [gameB1, gameB2].forEach(g => pa.games.push({ ...g, id: uid(), note: (g.note ? g.note + ' · ' : '') + `échange aléatoire avec ${pb.name}` }));
+      [gameA1, gameA2].forEach(g => pb.games.push({ ...g, id: uid(), note: (g.note ? g.note + ' · ' : '') + `échange aléatoire avec ${pa.name}` }));
+      addLog(`Échange aléatoire : <strong>${pa.name}</strong> (#${nA1} ${gameA1.score}pts, #${nA2} ${gameA2.score}pts) ↔ <strong>${pb.name}</strong> (#${nB1} ${gameB1.score}pts, #${nB2} ${gameB2.score}pts)`, 'gold', 'shuffle', true);
       toast('Échange aléatoire effectué !', 'gold');
       saveState(); closeModal('modal-action'); renderAll();
     }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
