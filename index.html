@@ -3974,12 +3974,19 @@ function doCommEchangeRand() {
   const gameA = pa.games[Math.floor(Math.random() * pa.games.length)];
   const gameB = pb.games[Math.floor(Math.random() * pb.games.length)];
   const el = document.getElementById('action-echange-rand-preview');
+  const fmtGame = g => `${g.top === 1 ? 'Top 1' : g.top === 2 ? 'Top 2' : g.top === 3 ? 'Top 3' : '—'} · ${g.kills} kills · ${g.score} pts`;
   if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px">
-    <div style="margin-bottom:6px"><strong>${escHtml(pa.name)}</strong> donne <span style="color:var(--rust)">${gameA.score} pts</span> à <strong>${escHtml(pb.name)}</strong> → reçoit <span style="color:var(--gold)">${gameB.score} pts</span></div>
-    <div><strong>${escHtml(pb.name)}</strong> donne <span style="color:var(--rust)">${gameB.score} pts</span> à <strong>${escHtml(pa.name)}</strong> → reçoit <span style="color:var(--gold)">${gameA.score} pts</span></div>
+    <div style="margin-bottom:8px">
+      <div style="margin-bottom:2px"><strong>${escHtml(pa.name)}</strong> donne → <strong>${escHtml(pb.name)}</strong></div>
+      <div style="color:var(--rust);padding-left:12px">${fmtGame(gameA)}</div>
+    </div>
+    <div>
+      <div style="margin-bottom:2px"><strong>${escHtml(pb.name)}</strong> donne → <strong>${escHtml(pa.name)}</strong></div>
+      <div style="color:var(--gold);padding-left:12px">${fmtGame(gameB)}</div>
+    </div>
   </div>`;
   showConfirm('Confirmer l\'échange',
-    `<strong>${escHtml(pa.name)}</strong> donne ${gameA.score} pts à <strong>${escHtml(pb.name)}</strong> → reçoit ${gameB.score} pts<br><strong>${escHtml(pb.name)}</strong> donne ${gameB.score} pts à <strong>${escHtml(pa.name)}</strong> → reçoit ${gameA.score} pts`,
+    `<strong>${escHtml(pa.name)}</strong> donne à <strong>${escHtml(pb.name)}</strong> : ${fmtGame(gameA)}<br><strong>${escHtml(pb.name)}</strong> donne à <strong>${escHtml(pa.name)}</strong> : ${fmtGame(gameB)}`,
     () => {
       pa.games = pa.games.filter(g => g.id !== gameA.id);
       pb.games = pb.games.filter(g => g.id !== gameB.id);
