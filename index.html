@@ -1347,7 +1347,7 @@ main {
         <div class="ac-bg"><i class="fa-solid fa-shuffle"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-shuffle"></i></div>
         <div class="ac-title">Clone meilleure → pire aléatoire</div>
-        <div class="ac-desc">Remplace la pire game du joueur choisi par la meilleure game d'un joueur tiré au hasard</div>
+        <div class="ac-desc">Tire 2 joueurs au hasard, remplace la pire game de l'un par la meilleure game de l'autre</div>
       </div>
 
       <div class="action-card action-card-gold" onclick="openAction('top1-bonus')">
@@ -1606,8 +1606,8 @@ main {
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-wand-magic-sparkles"></i> Joker</div><div style="font-size:11px;color:var(--text-muted)">Badge accordé à un joueur — lui permet de supprimer une game de son choix (annulable)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-arrow-right-arrow-left"></i> Échange meilleure ↔ pire (aléatoire)</div><div style="font-size:11px;color:var(--text-muted)">Tire 2 joueurs au hasard — échange la meilleure game de l'un contre la pire de l'autre</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shuffle"></i> Échange 2 games aléatoires</div><div style="font-size:11px;color:var(--text-muted)">Tire 2 joueurs au hasard et échange une game aléatoire de chacun</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-clone"></i> Clone meilleure → pire</div><div style="font-size:11px;color:var(--text-muted)">Clone la meilleure game de toute la ligue et remplace la pire game du joueur choisi</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shuffle"></i> Clone meilleure → pire aléatoire</div><div style="font-size:11px;color:var(--text-muted)">La meilleure game d'un joueur tiré au hasard remplace la pire game du joueur choisi</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-clone"></i> Clone meilleure → joueur aléatoire</div><div style="font-size:11px;color:var(--text-muted)">Tire un joueur au hasard et lui ajoute la meilleure game de toute la ligue (sans supprimer de game)</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shuffle"></i> Clone meilleure → pire aléatoire</div><div style="font-size:11px;color:var(--text-muted)">Tire 2 joueurs au hasard — remplace la pire game de l'un par la meilleure game de l'autre</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-crown"></i> +5 pts par Top 1</div><div style="font-size:11px;color:var(--text-muted)">+5 pts de bonus par nouveau Top 1 depuis la dernière application (tous joueurs)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-angles-up"></i> Pire game × 2</div><div style="font-size:11px;color:var(--text-muted)">Double le score de la pire game de chaque joueur</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shuffle"></i> Game au hasard × 2</div><div style="font-size:11px;color:var(--text-muted)">Double le score d'une game tirée au sort pour un joueur ciblé</div></div></div>
@@ -3909,6 +3909,32 @@ function doCloneBestWorst() {
   );
 }
 
+function doCloneBestWorstRand() {
+  const poolA = state.players.filter(p => p.games.length > 0 && getBestGame(p));
+  if (poolA.length < 2) { toast('Il faut au moins 2 joueurs avec des games.', 'error'); return; }
+  const src = poolA[Math.floor(Math.random() * poolA.length)];
+  const poolB = state.players.filter(p => p.id !== src.id);
+  if (!poolB.length) { toast('Aucun joueur éligible.', 'error'); return; }
+  const dst = poolB[Math.floor(Math.random() * poolB.length)];
+  const srcBest = getBestGame(src);
+  const dstWorst = getWorstGame(dst);
+  const el = document.getElementById('action-clone-rand-preview');
+  if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px">
+    <div style="margin-bottom:4px"><strong>${escHtml(src.name)}</strong> — meilleure game : <span style="color:var(--gold)">${srcBest.score} pts (${srcBest.kills} kills)</span></div>
+    <div><strong>${escHtml(dst.name)}</strong> — pire game remplacée : <span style="color:var(--rust)">${dstWorst ? dstWorst.score + ' pts' : 'aucune'}</span></div>
+  </div>`;
+  showConfirm('Confirmer le clone',
+    `Remplacer la pire game de <strong>${escHtml(dst.name)}</strong> par la meilleure de <strong>${escHtml(src.name)}</strong> (<strong>${srcBest.score} pts</strong>) ?`,
+    () => {
+      if (dstWorst) dst.games = dst.games.filter(g => g.id !== dstWorst.id);
+      dst.games.push({ ...srcBest, id: uid(), note: (srcBest.note ? srcBest.note + ' · ' : '') + `clone best aléatoire (${src.name})` });
+      addLog(`<strong>${dst.name}</strong> — pire game remplacée par clone de la meilleure de <strong>${src.name}</strong> (${srcBest.score} pts).`, 'gold', 'shuffle', true);
+      toast(`Clone : meilleure de ${src.name} (${srcBest.score} pts) → ${dst.name} !`, 'gold');
+      saveState(); closeModal('modal-action'); renderAll();
+    }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
+  );
+}
+
 function doCommEchangeBestWorst() {
   const eligible = state.players.filter(p => p.games.length > 0);
   if (eligible.length < 2) { toast('Il faut au moins 2 joueurs avec des games.', 'error'); return; }
@@ -4053,9 +4079,9 @@ function buildActionBody(type) {
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCloneBestWorst()"><i class="fa-solid fa-shuffle" style="margin-right:6px"></i>Tirer au sort & cloner</button>`;
 
     case 'clone-best-worst-rand': return `
-      ${playerSelect('p1', 'Joueur qui reçoit le clone')}
-      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">La meilleure game d'un <strong style="color:var(--text)">joueur tiré au hasard</strong> remplacera la pire game du joueur choisi.</p>
-      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-shuffle" style="margin-right:6px"></i>Tirer au sort & cloner</button>`;
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">Deux joueurs sont tirés au hasard. La <strong style="color:var(--text)">meilleure game</strong> de l'un remplace la <strong style="color:var(--text)">pire game</strong> de l'autre.</p>
+      <div id="action-clone-rand-preview" style="margin-bottom:12px"></div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCloneBestWorstRand()"><i class="fa-solid fa-shuffle" style="margin-right:6px"></i>Tirer au sort & cloner</button>`;
 
     case 'perso-echange': return `
       ${playerSelect('p1', 'Joueur A (donne une game)')}
@@ -4265,20 +4291,7 @@ function execAction() {
       break;
     }
     case 'clone-best-worst': doCloneBestWorst(); return;
-    case 'clone-best-worst-rand': {
-      const p = getP('p1');
-      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
-      const pool = state.players.filter(pl => pl.id !== p.id && pl.games.length > 0);
-      if (!pool.length) { toast('Aucun autre joueur avec des games.', 'error'); return; }
-      const randPlayer = pool[Math.floor(Math.random() * pool.length)];
-      const randBest = getBestGame(randPlayer);
-      const worst = getWorstGame(p);
-      if (worst) p.games = p.games.filter(g => g.id !== worst.id);
-      p.games.push({ ...randBest, id: uid(), note: (randBest.note ? randBest.note + ' · ' : '') + `clone best aléatoire (${randPlayer.name})` });
-      addLog(`<strong>${p.name}</strong> — pire game remplacée par clone de la meilleure de <strong>${randPlayer.name}</strong> (${randBest.score} pts).`, 'gold', 'shuffle', true);
-      toast(`Clone aléatoire : meilleure de ${randPlayer.name} (${randBest.score} pts) !`, 'gold');
-      break;
-    }
+    case 'clone-best-worst-rand': doCloneBestWorstRand(); return;
     case 'perso-echange': {
       const pa = getP('p1'), pb = getP('p2');
       if (!pa || !pb) { toast('Sélectionnez deux joueurs.', 'error'); return; }
