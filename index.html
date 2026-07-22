@@ -4781,7 +4781,7 @@ function renderSubsBanner() {
     let mode20El = document.getElementById('mod-subs-20mode');
     if (!mode20El) { mode20El = document.createElement('div'); mode20El.id = 'mod-subs-20mode'; mode20El.style = 'margin-top:8px'; disp.parentElement.appendChild(mode20El); }
     mode20El.innerHTML = mode20
-      ? `<div style="display:inline-flex;align-items:center;gap:8px;background:rgba(180,50,50,0.15);border:1px solid var(--rust);border-radius:4px;padding:6px 12px;font-size:13px;font-weight:700;color:var(--rust-light)"><i class="fa-solid fa-bolt"></i> Mode 20 subs actif — expire dans ${fmtCountdown()}</div>`
+      ? `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(180,50,50,0.15);border:1px solid var(--rust);border-radius:4px;padding:6px 12px;font-size:13px;font-weight:700;color:var(--rust-light)"><i class="fa-solid fa-bolt"></i> Mode 20 subs actif — expire dans ${fmtCountdown()}</div><button onclick="cancelMode20Subs()" style="padding:5px 12px;border:1px solid var(--border);background:var(--bg2);color:var(--text-muted);border-radius:4px;font-size:12px;cursor:pointer">Annuler le mode</button></div>`
       : '';
   }
 
@@ -4833,29 +4833,57 @@ function addSubsCustom() {
   _applySubsAdd(val);
 }
 
+function _subsNextMilestone(count) {
+  const mode20 = state.roueCommu20Until > Date.now();
+  const start20 = mode20 && state.roueCommu20Start > 0 ? state.roueCommu20Start : 0;
+  if (mode20 && start20 > 0 && count >= start20) {
+    const extra20 = Math.max(0, Math.floor((count - start20) / 20));
+    return start20 + (extra20 + 1) * 20;
+  }
+  return (Math.floor(count / 50) + 1) * 50;
+}
+
+function _subsMilestonesCrossed(oldCount, newCount) {
+  const mode20 = state.roueCommu20Until > Date.now();
+  const start20 = mode20 && state.roueCommu20Start > 0 ? state.roueCommu20Start : 0;
+  const crossed = [];
+  if (mode20 && start20 > 0) {
+    for (let m = 50; m <= Math.min(start20, newCount); m += 50) { if (m > oldCount) crossed.push(m); }
+    for (let j = 1; start20 + j * 20 <= newCount; j++) { const m = start20 + j * 20; if (m > oldCount) crossed.push(m); }
+  } else {
+    for (let m = 50; m <= newCount; m += 50) { if (m > oldCount) crossed.push(m); }
+  }
+  return crossed;
+}
+
 function _applySubsAdd(n) {
   const oldTotal = state.subsCount || 0;
   const newTotal = oldTotal + n;
-  const oldRoues = Math.floor(oldTotal / 50);
-  const newRoues = Math.floor(newTotal / 50);
-  const unlocks = newRoues - oldRoues;
+  const crossed = _subsMilestonesCrossed(oldTotal, newTotal);
   state.subsCount = newTotal;
   saveState();
   renderModerationPage();
-  if (unlocks > 0) {
-    for (let i = oldRoues + 1; i <= newRoues; i++) {
-      addLog(`Roue Communautaire débloquée ! (palier ${i * 50} subs atteint)`, 'gold', 'rotate', true);
-    }
-    const nextMilestone = (newRoues + 1) * 50;
+  if (crossed.length > 0) {
+    crossed.forEach(m => addLog(`Roue Communautaire débloquée ! (palier ${m} subs atteint)`, 'gold', 'rotate', true));
+    const nextMilestone = _subsNextMilestone(newTotal);
     showConfirm(
-      unlocks > 1 ? `${unlocks}× Roues Communautaires débloquées !` : 'Roue Communautaire débloquée !',
-      `<div style="text-align:center;padding:8px 0"><i class="fa-solid fa-rotate" style="font-size:40px;color:var(--gold);margin-bottom:8px;display:block"></i><strong style="font-size:16px;color:var(--gold)">${unlocks > 1 ? `${unlocks}× Roues Communautaires` : 'La Roue Communautaire'} ${unlocks > 1 ? 'sont prêtes' : 'est prête'} !</strong><br><span style="color:var(--text-muted);font-size:13px;margin-top:4px;display:block">Total : <strong style="color:var(--gold)">${newTotal} subs</strong> — Prochain palier : ${nextMilestone}</span></div>`,
+      crossed.length > 1 ? `${crossed.length}× Roues Communautaires débloquées !` : 'Roue Communautaire débloquée !',
+      `<div style="text-align:center;padding:8px 0"><i class="fa-solid fa-rotate" style="font-size:40px;color:var(--gold);margin-bottom:8px;display:block"></i><strong style="font-size:16px;color:var(--gold)">${crossed.length > 1 ? `${crossed.length}× Roues Communautaires` : 'La Roue Communautaire'} ${crossed.length > 1 ? 'sont prêtes' : 'est prête'} !</strong><br><span style="color:var(--text-muted);font-size:13px;margin-top:4px;display:block">Total : <strong style="color:var(--gold)">${newTotal} subs</strong> — Prochain palier : ${nextMilestone}</span></div>`,
       () => {}, false, 'Fermer', null, true
     );
   } else {
-    const nextMilestone = (Math.floor(newTotal / 50) + 1) * 50;
-    toast(`+${n} sub${n > 1 ? 's' : ''} — Total : ${newTotal} (prochain palier : ${nextMilestone})`, 'gold');
+    toast(`+${n} sub${n > 1 ? 's' : ''} — Total : ${newTotal} (prochain palier : ${_subsNextMilestone(newTotal)})`, 'gold');
   }
+}
+
+function cancelMode20Subs() {
+  showConfirm('Annuler le mode 20 subs', 'Désactiver le mode 20 subs et revenir aux paliers de 50 ?', () => {
+    state.roueCommu20Until = 0;
+    state.roueCommu20Start = 0;
+    saveState();
+    renderSubsBanner();
+    toast('Mode 20 subs désactivé.', 'info');
+  }, true, 'Désactiver');
 }
 
 function resetSubs() {
@@ -4880,8 +4908,7 @@ function confirmSubsManual() {
   saveState();
   renderModerationPage();
   closeModal('modal-subs-manual');
-  const next = (Math.floor(n / 50) + 1) * 50;
-  toast(`Total subs mis à ${n} — prochain palier : ${next}.`, 'info');
+  toast(`Total subs mis à ${n} — prochain palier : ${_subsNextMilestone(n)}.`, 'info');
 }
 
 function setMaxGames(n) {
