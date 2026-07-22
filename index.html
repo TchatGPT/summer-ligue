@@ -4777,7 +4777,7 @@ function renderSubsBanner() {
     if (rouesTotal === 0 && count === 0) { milestonesEl.innerHTML = ''; return; }
     const items = [];
     for (let i = 1; i <= rouesTotal + 2; i++) {
-      const m = i * 50;
+      const m = i * step;
       const reached = count >= m;
       const isNext = !reached && m === nextMilestone;
       if (reached) {
