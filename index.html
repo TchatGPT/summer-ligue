@@ -1395,7 +1395,7 @@ main {
         <div class="ac-bg"><i class="fa-solid fa-divide"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-divide"></i></div>
         <div class="ac-title">Division totale ÷ 2</div>
-        <div class="ac-desc">Divise le score de chaque game par 2 (kills et bonus inchangés)</div>
+        <div class="ac-desc">Divise le nombre de games par 2, sélection équilibrée pour ≈ halver le total</div>
         <div class="ac-cooldown" style="display:none;font-size:10px;color:var(--text-muted);margin-top:4px"></div>
       </div>
 
@@ -4347,8 +4347,7 @@ function buildActionBody(type) {
         <button class="btn" style="width:100%;justify-content:center;opacity:0.4;cursor:not-allowed" disabled><i class="fa-solid fa-divide" style="margin-right:6px"></i>Indisponible — cooldown actif</button>`;
       }
       return `<p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">
-        Divise par 2 le <strong style="color:var(--rust-light)">score de chaque game</strong> de chaque joueur (arrondi au supérieur).
-        Kills, bonus points et nombre de games <strong style="color:var(--gold)">inchangés</strong>. Utilisable <strong>une fois toutes les 24h</strong>.
+        Divise par 2 le <strong style="color:var(--rust-light)">nombre de games</strong> de chaque joueur. Les games supprimées sont sélectionnées pour que le <strong style="color:var(--rust-light)">total restant soit ≈ moitié du total actuel</strong>. Scores individuels et bonus <strong style="color:var(--gold)">inchangés</strong>. Utilisable <strong>une fois toutes les 24h</strong>.
       </p>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="execAction()"><i class="fa-solid fa-divide" style="margin-right:6px"></i>Appliquer la Division ÷ 2</button>`;
     }
@@ -4994,22 +4993,32 @@ function cancelMode20Subs() {
 
 function doCommDivHalf() {
   if (state.commDivHalfUntil > Date.now()) { toast('Action encore en cooldown.', 'error'); return; }
-  showConfirm('Division scores ÷ 2', 'Le score de chaque game de chaque joueur sera divisé par 2 (arrondi au supérieur). Kills, bonus et nombre de games inchangés. Irréversible.', () => {
-    let totalGames = 0;
+  showConfirm('Division totale ÷ 2', 'Le nombre de games de chaque joueur est divisé par 2. Les games à supprimer sont choisies pour que le total restant soit proche de la moitié du total actuel. Irréversible.', () => {
+    let totalKept = 0, totalRemoved = 0;
     state.players.forEach(p => {
       if (!p.games.length) return;
-      p.games.forEach(g => {
-        g.score = Math.ceil(g.score / 2);
-        g.note = (g.note ? g.note + ' · ' : '') + '÷2';
-        totalGames++;
-      });
-      addLog(`<strong>${p.name}</strong> — Division ÷ 2 : scores de ${p.games.length} game${p.games.length > 1 ? 's' : ''} divisés par 2.`, 'rust', 'divide', true);
+      const n = p.games.length;
+      const totalScore = p.games.reduce((s, g) => s + g.score, 0);
+      // Sort descending, interleave even/odd indices for balanced score split
+      const sorted = [...p.games].sort((a, b) => b.score - a.score);
+      const evenGames = sorted.filter((_, i) => i % 2 === 0); // ceil(n/2) games
+      const oddGames  = sorted.filter((_, i) => i % 2 !== 0); // floor(n/2) games
+      // Pick the subset closest to half the total
+      const halfTarget = totalScore / 2;
+      const evenSum = evenGames.reduce((s, g) => s + g.score, 0);
+      const oddSum  = oddGames.reduce((s, g)  => s + g.score, 0);
+      // Always keep ceil(n/2) games — if odd n, even always wins; if even n, pick closest
+      p.games = (n % 2 !== 0 || Math.abs(evenSum - halfTarget) <= Math.abs(oddSum - halfTarget))
+        ? evenGames : oddGames;
+      const kept = p.games.length, removed = n - kept;
+      totalKept += kept; totalRemoved += removed;
+      addLog(`<strong>${p.name}</strong> — Division ÷ 2 : ${kept} game${kept > 1 ? 's' : ''} conservée${kept > 1 ? 's' : ''} (~${Math.round(p.games.reduce((s,g)=>s+g.score,0))} pts), ${removed} supprimée${removed > 1 ? 's' : ''}.`, 'rust', 'divide', true);
     });
     state.commDivHalfUntil = Date.now() + 24 * 60 * 60 * 1000;
     saveState();
     closeModal('modal-action');
     renderAll();
-    toast(`Division ÷ 2 appliquée — ${totalGames} games modifiées.`, 'info');
+    toast(`Division ÷ 2 — ${totalKept} games conservées, ${totalRemoved} supprimées.`, 'info');
   }, true, 'Diviser ÷ 2');
 }
 
