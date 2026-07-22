@@ -2350,7 +2350,7 @@ function renderClassement() {
         ${p.pendingCloneLriaa ? `<div style="font-size:10px;color:var(--purple)"><i class="fa-solid fa-gamepad"></i> Clone kills Lriaa actif</div>` : ''}
         ${state.jokerPlayerIds?.has(p.id) ? `<div style="display:inline-flex;align-items:center;gap:5px;margin-top:3px;background:rgba(212,175,55,0.15);border:1px solid var(--gold);border-radius:3px;padding:2px 6px;font-size:10px;font-weight:700;color:var(--gold);letter-spacing:0.5px"><i class="fa-solid fa-wand-magic-sparkles" style="font-size:9px"></i> JOKER EN COURS${isAdmin() ? `<button onclick="cancelJoker('${p.id}');event.stopPropagation()" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:12px;padding:0;line-height:1;margin-left:2px;opacity:0.7" title="Annuler le joker">×</button>` : ''}</div>` : ''}
       </td>
-      <td class="score-total">${total}<small style="font-size:12px;color:var(--text-muted);font-weight:400"> pts</small>${p.bonusPoints ? `<div style="font-size:11px;color:var(--green)">+${p.bonusPoints} bonus</div>` : ''}</td>
+      <td class="score-total">${total}<small style="font-size:12px;color:var(--text-muted);font-weight:400"> pts</small>${p.bonusPoints ? `<div style="font-size:11px;color:${p.bonusPoints > 0 ? 'var(--green)' : 'var(--rust-light)'}">${p.bonusPoints > 0 ? '+' : ''}${p.bonusPoints} bonus</div>` : ''}</td>
       <td class="stat-games">${p.games.length}/${(state.maxGames || 20) + (p.extraGames || 0)}</td>
       <td class="stat-kills">${totalKills}</td>
       <td class="stat-tops">
@@ -3620,7 +3620,7 @@ function showPlayerDetail(id) {
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
       <div class="stat-card" style="flex:1"><div class="sc-label">Score total</div><div class="sc-val sc-gold">${total}</div></div>
       <div class="stat-card" style="flex:1"><div class="sc-label">Games</div><div class="sc-val sc-blue">${p.games.length}</div></div>
-      <div class="stat-card" style="flex:1"><div class="sc-label">Bonus pts</div><div class="sc-val sc-green">${p.bonusPoints || 0}</div></div>
+      <div class="stat-card" style="flex:1"><div class="sc-label">Bonus pts</div><div class="sc-val ${(p.bonusPoints||0) >= 0 ? 'sc-green' : 'sc-rust'}">${(p.bonusPoints||0) > 0 ? '+' : ''}${p.bonusPoints || 0}</div></div>
     </div>
     ${p.skipNext ? '<div style="background:rgba(224,90,56,0.1);border:1px solid var(--rust);padding:8px 12px;border-radius:2px;margin-bottom:8px;font-size:13px"><i class="fa-solid fa-forward-step"></i> Skip activé pour la prochaine game</div>' : ''}
     ${p.freezeKills ? `<div style="background:rgba(74,142,201,0.1);border:1px solid var(--blue);padding:8px 12px;border-radius:2px;margin-bottom:8px;font-size:13px"><i class="fa-solid fa-snowflake"></i> Kills gelés à ${p.freezeKills} pour la prochaine game</div>` : ''}
