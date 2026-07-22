@@ -1394,7 +1394,7 @@ main {
       <div class="action-card action-card-gold" id="action-card-div-half" onclick="openAction('comm-div-half')">
         <div class="ac-bg"><i class="fa-solid fa-divide"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-divide"></i></div>
-        <div class="ac-title">Division totale ÷ 2</div>
+        <div class="ac-title">Divise des games ÷ 2</div>
         <div class="ac-desc">Supprime la moitié des games de chaque joueur au hasard</div>
         <div class="ac-cooldown" style="display:none;font-size:10px;color:var(--text-muted);margin-top:4px"></div>
       </div>
@@ -4993,7 +4993,7 @@ function cancelMode20Subs() {
 
 function doCommDivHalf() {
   if (state.commDivHalfUntil > Date.now()) { toast('Action encore en cooldown.', 'error'); return; }
-  showConfirm('Division totale ÷ 2', 'La moitié des games de chaque joueur sera supprimée aléatoirement — meilleure, moyenne ou pire, tout peut partir. Irréversible.', () => {
+  showConfirm('Divise des games ÷ 2', 'La moitié des games de chaque joueur sera supprimée aléatoirement — meilleure, moyenne ou pire, tout peut partir. Irréversible.', () => {
     let totalKept = 0, totalRemoved = 0;
     state.players.forEach(p => {
       if (!p.games.length) return;
