@@ -1328,6 +1328,13 @@ main {
         <div class="ac-desc">Tire 2 joueurs au hasard et échange deux games aléatoires de chacun</div>
       </div>
 
+      <div class="action-card action-card-gold" onclick="openAction('comm-roue-20subs')">
+        <div class="ac-bg"><i class="fa-solid fa-bolt"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-bolt"></i></div>
+        <div class="ac-title">Roue commu × 20 subs</div>
+        <div class="ac-desc">Active le mode 20 subs/roue pendant 24h (au lieu de 50)</div>
+      </div>
+
       <div class="action-card action-card-gold" onclick="openAction('comm-echange-rand3')">
         <div class="ac-bg"><i class="fa-solid fa-shuffle"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-shuffle"></i></div>
@@ -1628,6 +1635,7 @@ main {
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shuffle"></i> Échange 2 games aléatoires</div><div style="font-size:11px;color:var(--text-muted)">Tire 2 joueurs au hasard et échange deux games aléatoires de chacun</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shuffle"></i> Échange 3 games aléatoires</div><div style="font-size:11px;color:var(--text-muted)">Tire 3 joueurs au hasard — leurs games tournent entre eux (A→B→C→A)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-rotate"></i> Top 10 inversé</div><div style="font-size:11px;color:var(--text-muted)">Top 10 de la ligue perdent 20 pts, les autres en gagnent 20</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-bolt"></i> Roue commu × 20 subs (24h)</div><div style="font-size:11px;color:var(--text-muted)">Active la roue toutes les 20 subs pendant 24h — chrono visible dans la bannière</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-clone"></i> Clone meilleure → joueur aléatoire</div><div style="font-size:11px;color:var(--text-muted)">Tire un joueur au hasard et lui ajoute la meilleure game de toute la ligue (sans supprimer de game)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shuffle"></i> Clone meilleure → pire aléatoire</div><div style="font-size:11px;color:var(--text-muted)">Tire 2 joueurs au hasard — remplace la pire game de l'un par la meilleure game de l'autre</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-crown"></i> +5 pts par Top 1</div><div style="font-size:11px;color:var(--text-muted)">+5 pts de bonus par nouveau Top 1 depuis la dernière application (tous joueurs)</div></div></div>
@@ -2052,8 +2060,9 @@ let state = {
   log: [],
   top1BonusCounts: {}, // { [playerId]: nbTop1AlreadyCounted }
   jokerPlayerIds: new Set(), // joueurs ayant un joker actif
-  subsCount: 0,   // subs vers la prochaine Roue Commu (0 → 49)
-  maxGames: 20    // limite globale de games par joueur
+  subsCount: 0,       // subs vers la prochaine Roue Commu (0 → 49)
+  maxGames: 20,       // limite globale de games par joueur
+  roueCommu20Until: 0 // timestamp ms — mode 20 subs actif jusqu'à cette date (0 = inactif)
 };
 
 let currentTop = 0;
@@ -2131,6 +2140,8 @@ async function loadState() {
     if (cloneLriaaId) { const cp = state.players.find(p => p.id === cloneLriaaId); if (cp) cp.pendingCloneLriaa = true; }
     const ingameNamesFlag = (flags || []).find(f => f.key === 'ingameNames');
     try { const m = JSON.parse(ingameNamesFlag?.value || '{}'); state.players.forEach(p => { if (m[p.id]) p.ingameName = m[p.id]; }); } catch {}
+    const roue20Flag = (flags || []).find(f => f.key === 'roueCommu20Until');
+    state.roueCommu20Until = parseInt(roue20Flag?.value || '0') || 0;
   } catch(e) {
     console.error('loadState error:', e);
   }
@@ -2200,7 +2211,8 @@ async function saveState() {
       { key: 'subsCount',         value: String(state.subsCount || 0) },
       { key: 'maxGames',          value: String(state.maxGames  || 20) },
       { key: 'cloneLriaaPlayerId', value: state.players.find(p => p.pendingCloneLriaa)?.id || '' },
-      { key: 'ingameNames', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.ingameName).map(p => [p.id, p.ingameName]))) }
+      { key: 'ingameNames', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.ingameName).map(p => [p.id, p.ingameName]))) },
+      { key: 'roueCommu20Until', value: String(state.roueCommu20Until || 0) }
     ]);
   } catch(e) { console.error('saveState flags:', e); }
   _savePending = false;
@@ -4082,6 +4094,7 @@ function openAction(type) {
     'comm-echange-best-worst': 'Échange meilleure ↔ pire (aléatoire)',
     'comm-echange-rand': 'Échange 2 games aléatoires',
     'comm-echange-rand3': 'Échange 3 games aléatoires',
+    'comm-roue-20subs': 'Roue commu × 20 subs (24h)',
     'comm-top10-inverse': 'Top 10 inversé',
     'comm-low-kills-bonus': '+5 pts games < 5 kills'
   };
@@ -4254,6 +4267,15 @@ function buildActionBody(type) {
       <div id="action-echange-rand-preview" style="margin-bottom:12px"></div>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCommEchangeRand()"><i class="fa-solid fa-shuffle" style="margin-right:6px"></i>Tirer au sort & échanger</button>`;
 
+    case 'comm-roue-20subs': {
+      const active = state.roueCommu20Until > Date.now();
+      const ms = state.roueCommu20Until - Date.now();
+      const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000);
+      return `<p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">
+        Active la roue toutes les <strong style="color:var(--gold)">20 subs</strong> pendant <strong style="color:var(--gold)">24h</strong> (au lieu de 50).${active ? `<br><span style="color:var(--rust-light)">⚡ Mode actif — expire dans ${h}h${String(m).padStart(2,'0')}min</span>` : ''}
+      </p>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="execAction()"><i class="fa-solid fa-bolt" style="margin-right:6px"></i>${active ? 'Prolonger de 24h' : 'Activer pour 24h'}</button>`;
+    }
     case 'comm-echange-rand3': return `
       <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">Trois joueurs sont tirés au sort, puis une game de chacun tourne entre eux (A→B, B→C, C→A).</p>
       <div id="action-echange-rand3-preview" style="margin-bottom:12px"></div>
@@ -4529,6 +4551,13 @@ function execAction() {
       toast(`Game ×2 : ${oldScore} → ${randGame.score} pts !`, 'gold');
       break;
     }
+    case 'comm-roue-20subs': {
+      state.roueCommu20Until = Date.now() + 24 * 60 * 60 * 1000;
+      addLog('Mode <strong>Roue × 20 subs</strong> activé pour 24h.', 'gold', 'bolt', true);
+      toast('Mode 20 subs/roue activé pendant 24h !', 'gold');
+      renderSubsBanner();
+      break;
+    }
     case 'comm-echange-rand3': doCommEchangeRand3(); return;
     case 'comm-top10-inverse': {
       const sorted = [...state.players].sort((a, b) => getTotalScore(b) - getTotalScore(a));
@@ -4688,26 +4717,38 @@ function addLog(msg, color, icon, pub = false) {
 // ============================================================
 function renderSubsBanner() {
   const count = state.subsCount || 0;
-  const rouesTotal = Math.floor(count / 50);
-  const nextMilestone = (rouesTotal + 1) * 50;
+  const now20 = Date.now();
+  const mode20 = state.roueCommu20Until > now20;
+  const step = mode20 ? 20 : 50;
+  const rouesTotal = Math.floor(count / step);
+  const nextMilestone = (rouesTotal + 1) * step;
   const remaining = nextMilestone - count;
-  const pct = Math.round((count % 50) / 50 * 100);
+  const pct = Math.round((count % step) / step * 100);
+
+  const fmtCountdown = () => {
+    if (!mode20) return '';
+    const ms = state.roueCommu20Until - Date.now();
+    if (ms <= 0) return '';
+    const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000), s = Math.floor((ms % 60000) / 1000);
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  };
 
   // Banner above classement
   const banner = document.getElementById('subs-banner');
   if (banner) {
     banner.style.display = 'block';
     document.getElementById('subs-banner-count').textContent = `${count} subs`;
-    document.getElementById('subs-banner-text').textContent = remaining > 0
+    const subText = remaining > 0
       ? `Prochain palier : ${nextMilestone} — encore ${remaining} sub${remaining > 1 ? 's' : ''}`
       : 'Roue Communautaire débloquée !';
+    const cd = fmtCountdown();
+    document.getElementById('subs-banner-text').innerHTML = subText + (mode20 ? ` <span style="color:var(--rust-light);font-weight:700">⚡ Mode 20 subs — ${cd}</span>` : '');
     document.getElementById('subs-banner-bar').style.width = pct + '%';
-    // Mini milestone pills in banner
     const bm = document.getElementById('subs-banner-milestones');
     if (bm) {
       const pill = (label, gold) => `<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:3px;line-height:1.6;${gold ? 'background:rgba(212,175,55,0.15);color:var(--gold);border:1px solid rgba(212,175,55,0.5)' : 'background:var(--bg2);color:var(--text-muted);border:1px dashed var(--border)'}">${label}</span>`;
       const pills = [];
-      for (let i = 1; i <= rouesTotal; i++) pills.push(pill(`✓ ${i * 50}`, true));
+      for (let i = 1; i <= rouesTotal; i++) pills.push(pill(`✓ ${i * step}`, true));
       pills.push(pill(`→ ${nextMilestone}`, false));
       bm.innerHTML = pills.join('');
     }
@@ -4721,6 +4762,13 @@ function renderSubsBanner() {
     document.getElementById('mod-subs-info').textContent = remaining > 0
       ? `Prochain palier dans ${remaining} sub${remaining > 1 ? 's' : ''} (palier ${nextMilestone})`
       : `Palier ${nextMilestone} atteint — Roue débloquée !`;
+    let mode20El = document.getElementById('mod-subs-20mode');
+    if (!mode20El) { mode20El = document.createElement('div'); mode20El.id = 'mod-subs-20mode'; mode20El.style = 'margin-top:8px'; disp.parentElement.appendChild(mode20El); }
+    if (mode20) {
+      mode20El.innerHTML = `<div style="display:inline-flex;align-items:center;gap:8px;background:rgba(180,50,50,0.15);border:1px solid var(--rust);border-radius:4px;padding:6px 12px;font-size:13px;font-weight:700;color:var(--rust-light)"><i class="fa-solid fa-bolt"></i> Mode 20 subs actif — expire dans <span id="mod-20-countdown">${fmtCountdown()}</span></div>`;
+    } else {
+      mode20El.innerHTML = '';
+    }
   }
 
   // Milestones recap in modération
@@ -5427,6 +5475,13 @@ async function autoRefresh() {
 }
 
 function setupAutoRefresh() {
+  // Countdown 1s pour le mode 20 subs
+  setInterval(() => {
+    if (state.roueCommu20Until > 0) {
+      if (Date.now() > state.roueCommu20Until) { state.roueCommu20Until = 0; saveState(); }
+      renderSubsBanner();
+    }
+  }, 1000);
   // Polling toutes les 20 secondes
   setInterval(autoRefresh, 20000);
 
