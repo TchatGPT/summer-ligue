@@ -4560,7 +4560,7 @@ function execAction() {
     }
     case 'comm-echange-rand3': doCommEchangeRand3(); return;
     case 'comm-top10-inverse': {
-      const sorted = [...state.players].sort((a, b) => getTotalScore(b) - getTotalScore(a));
+      const sorted = [...state.players].sort((a, b) => getPlayerTotal(b) - getPlayerTotal(a));
       const top10ids = new Set(sorted.slice(0, 10).map(p => p.id));
       state.players.forEach(p => {
         if (top10ids.has(p.id)) {
