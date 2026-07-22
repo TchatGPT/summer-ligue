@@ -1391,6 +1391,14 @@ main {
         <div class="ac-desc">Double le score d'une game tirée au sort pour un joueur</div>
       </div>
 
+      <div class="action-card action-card-gold" id="action-card-div-half" onclick="openAction('comm-div-half')">
+        <div class="ac-bg"><i class="fa-solid fa-divide"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-divide"></i></div>
+        <div class="ac-title">Division totale ÷ 2</div>
+        <div class="ac-desc">Divise kills, scores et bonus par 2, supprime la pire moitié des games</div>
+        <div class="ac-cooldown" style="display:none;font-size:10px;color:var(--text-muted);margin-top:4px"></div>
+      </div>
+
     </div>
   </div>
 
@@ -2065,7 +2073,8 @@ let state = {
   roueCommu20Until: 0,  // timestamp ms — mode 20 subs actif jusqu'à cette date (0 = inactif)
   roueCommu20Start: 0,  // subsCount au moment d'activation du mode 20
   roueCommu50Next: 0,   // prochain palier forcé après annulation du mode 20 (0 = pas de forçage)
-  roueCommu20Paused: 0  // ms restants quand le chrono est en pause (0 = pas en pause)
+  roueCommu20Paused: 0, // ms restants quand le chrono est en pause (0 = pas en pause)
+  commDivHalfUntil: 0  // timestamp ms — cooldown 24h de la Division ÷ 2
 };
 
 let currentTop = 0;
@@ -2151,6 +2160,8 @@ async function loadState() {
     state.roueCommu50Next = parseInt(roue50NextFlag?.value || '0') || 0;
     const roue20PausedFlag = (flags || []).find(f => f.key === 'roueCommu20Paused');
     state.roueCommu20Paused = parseInt(roue20PausedFlag?.value || '0') || 0;
+    const divHalfFlag = (flags || []).find(f => f.key === 'commDivHalfUntil');
+    state.commDivHalfUntil = parseInt(divHalfFlag?.value || '0') || 0;
   } catch(e) {
     console.error('loadState error:', e);
   }
@@ -2224,7 +2235,8 @@ async function saveState() {
       { key: 'roueCommu20Until', value: String(state.roueCommu20Until || 0) },
       { key: 'roueCommu20Start', value: String(state.roueCommu20Start || 0) },
       { key: 'roueCommu50Next', value: String(state.roueCommu50Next || 0) },
-      { key: 'roueCommu20Paused', value: String(state.roueCommu20Paused || 0) }
+      { key: 'roueCommu20Paused', value: String(state.roueCommu20Paused || 0) },
+      { key: 'commDivHalfUntil', value: String(state.commDivHalfUntil || 0) }
     ]);
   } catch(e) { console.error('saveState flags:', e); }
   _savePending = false;
@@ -2277,6 +2289,26 @@ function renderAll() {
   renderStats();
   renderModerationPage();
   renderStatsChart();
+  renderRoueCardStates();
+}
+
+function renderRoueCardStates() {
+  const el = document.getElementById('action-card-div-half');
+  if (!el) return;
+  const onCooldown = state.commDivHalfUntil > Date.now();
+  el.style.opacity = onCooldown ? '0.4' : '';
+  el.style.pointerEvents = onCooldown ? 'none' : '';
+  const cdEl = el.querySelector('.ac-cooldown');
+  if (cdEl) {
+    if (onCooldown) {
+      const ms = state.commDivHalfUntil - Date.now();
+      const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000);
+      cdEl.textContent = `⏳ ${h}h${String(m).padStart(2,'0')}min`;
+      cdEl.style.display = '';
+    } else {
+      cdEl.style.display = 'none';
+    }
+  }
 }
 
 function renderStats() {
@@ -4303,6 +4335,24 @@ function buildActionBody(type) {
       <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Ajoute <strong style="color:var(--text)">+5 pts</strong> à toutes les games avec <strong style="color:var(--text)">moins de 5 kills</strong> pour chaque joueur.</p>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Appliquer +5 pts</button>`;
 
+    case 'comm-div-half': {
+      const onCd = state.commDivHalfUntil > Date.now();
+      if (onCd) {
+        const ms = state.commDivHalfUntil - Date.now();
+        const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000);
+        return `<p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">
+          Divise par 2 les <strong>kills</strong>, <strong>scores de chaque game</strong> et <strong>points bonus</strong>, et supprime la <strong>pire moitié des games</strong> de chaque joueur.
+          <br><span style="color:var(--rust-light);margin-top:8px;display:block"><i class="fa-solid fa-clock"></i> Prochaine utilisation dans <strong>${h}h${String(m).padStart(2,'0')}min</strong></span>
+        </p>
+        <button class="btn" style="width:100%;justify-content:center;opacity:0.4;cursor:not-allowed" disabled><i class="fa-solid fa-divide" style="margin-right:6px"></i>Indisponible — cooldown actif</button>`;
+      }
+      return `<p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">
+        Divise par 2 les <strong style="color:var(--rust-light)">kills</strong>, <strong style="color:var(--rust-light)">scores de chaque game</strong> et <strong style="color:var(--rust-light)">points bonus</strong> de chaque joueur.
+        Supprime également la <strong style="color:var(--rust-light)">pire moitié des games</strong> de chaque joueur. Utilisable <strong>une fois toutes les 24h</strong>.
+      </p>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="execAction()"><i class="fa-solid fa-divide" style="margin-right:6px"></i>Appliquer la Division ÷ 2</button>`;
+    }
+
     default: return '<p>Action inconnue.</p>';
   }
 }
@@ -4588,6 +4638,8 @@ function execAction() {
       toast('Top 10 inversé appliqué !', 'gold');
       break;
     }
+    case 'comm-div-half': doCommDivHalf(); return;
+
     case 'comm-low-kills-bonus': {
       let totalGames = 0;
       state.players.forEach(p => {
@@ -4938,6 +4990,37 @@ function cancelMode20Subs() {
     renderSubsBanner();
     toast('Mode 20 subs désactivé.', 'info');
   }, true, 'Désactiver');
+}
+
+function doCommDivHalf() {
+  if (state.commDivHalfUntil > Date.now()) { toast('Action encore en cooldown.', 'error'); return; }
+  showConfirm('Division totale ÷ 2', 'Kills, scores, bonus et pire moitié des games seront divisés par 2 pour tous les joueurs. Irréversible.', () => {
+    let totalRemoved = 0, totalGames = 0;
+    state.players.forEach(p => {
+      if (!p.games.length) return;
+      // Keep best ceil(n/2) games, remove worst floor(n/2)
+      const sorted = [...p.games].sort((a, b) => b.score - a.score);
+      const keepCount = Math.ceil(sorted.length / 2);
+      const removed = sorted.length - keepCount;
+      totalRemoved += removed;
+      p.games = sorted.slice(0, keepCount);
+      // Halve kills and score on each remaining game
+      p.games.forEach(g => {
+        g.kills = Math.floor(g.kills / 2);
+        g.score = Math.floor(g.score / 2);
+        g.note = (g.note ? g.note + ' · ' : '') + '÷2';
+        totalGames++;
+      });
+      // Halve bonus points
+      p.bonusPoints = Math.floor((p.bonusPoints || 0) / 2);
+      addLog(`<strong>${p.name}</strong> — Division ÷ 2 : ${keepCount} game${keepCount > 1 ? 's' : ''} conservée${keepCount > 1 ? 's' : ''}, ${removed} supprimée${removed > 1 ? 's' : ''}.`, 'rust', 'divide', true);
+    });
+    state.commDivHalfUntil = Date.now() + 24 * 60 * 60 * 1000;
+    saveState();
+    closeModal('modal-action');
+    renderAll();
+    toast(`Division ÷ 2 appliquée — ${totalGames} games modifiées, ${totalRemoved} supprimées.`, 'info');
+  }, true, 'Diviser ÷ 2');
 }
 
 function resetSubs() {
