@@ -4889,7 +4889,8 @@ function _applySubsAdd(n) {
 
 function cancelMode20Subs() {
   showConfirm('Annuler le mode 20 subs', 'Désactiver le mode 20 subs et revenir aux paliers de 50 ?', () => {
-    state.roueCommu50Next = Math.ceil((state.subsCount + 50) / 50) * 50;
+    const _nextBase = (Math.floor(state.subsCount / 50) + 1) * 50;
+    state.roueCommu50Next = (_nextBase - state.subsCount < 20) ? _nextBase + 50 : _nextBase;
     state.roueCommu20Until = 0;
     state.roueCommu20Start = 0;
     saveState();
@@ -5527,7 +5528,8 @@ function setupAutoRefresh() {
   setInterval(() => {
     if (state.roueCommu20Until > 0) {
       if (Date.now() > state.roueCommu20Until) {
-        state.roueCommu50Next = Math.ceil((state.subsCount + 50) / 50) * 50;
+        const _nextBase = (Math.floor(state.subsCount / 50) + 1) * 50;
+        state.roueCommu50Next = (_nextBase - state.subsCount < 20) ? _nextBase + 50 : _nextBase;
         state.roueCommu20Until = 0;
         state.roueCommu20Start = 0;
         saveState();
