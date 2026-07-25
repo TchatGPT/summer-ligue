@@ -1,5 +1,6 @@
 node_modules/
 .claude/
+test-ocr.html
 .vercel/
 .env
 .env.local
