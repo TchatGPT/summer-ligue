@@ -4611,7 +4611,7 @@ function execAction() {
       const p = getP('p1');
       if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
       p.extraGames = (p.extraGames || 0) + 1;
-      const newMax = 20 + p.extraGames;
+      const newMax = (state.maxGames || 20) + p.extraGames;
       addLog(`<strong>${p.name}</strong> — game supplémentaire accordée (max ${newMax} games).`, 'purple', 'plus', true);
       toast(`${p.name} peut saisir 1 game supplémentaire !`);
       break;
