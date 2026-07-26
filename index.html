@@ -1391,6 +1391,13 @@ main {
         <div class="ac-desc">Double le score d'une game tirée au sort pour un joueur</div>
       </div>
 
+      <div class="action-card action-card-gold" onclick="openAction('comm-vol-score')">
+        <div class="ac-bg"><i class="fa-solid fa-user-secret"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-user-secret"></i></div>
+        <div class="ac-title">Vol de score</div>
+        <div class="ac-desc">Un joueur au hasard échange son score avec celui juste au-dessus de lui au classement</div>
+      </div>
+
     </div>
   </div>
 
@@ -2143,6 +2150,8 @@ async function loadState() {
     if (cloneLriaaId) { const cp = state.players.find(p => p.id === cloneLriaaId); if (cp) cp.pendingCloneLriaa = true; }
     const ingameNamesFlag = (flags || []).find(f => f.key === 'ingameNames');
     try { const m = JSON.parse(ingameNamesFlag?.value || '{}'); state.players.forEach(p => { if (m[p.id]) p.ingameName = m[p.id]; }); } catch {}
+    const scoreOffsetsFlag = (flags || []).find(f => f.key === 'scoreOffsets');
+    try { const m = JSON.parse(scoreOffsetsFlag?.value || '{}'); state.players.forEach(p => { p.scoreOffset = m[p.id] || 0; }); } catch { state.players.forEach(p => { p.scoreOffset = 0; }); }
     const roue20Flag = (flags || []).find(f => f.key === 'roueCommu20Until');
     state.roueCommu20Until = parseInt(roue20Flag?.value || '0') || 0;
     const roue20StartFlag = (flags || []).find(f => f.key === 'roueCommu20Start');
@@ -2221,6 +2230,7 @@ async function saveState() {
       { key: 'maxGames',          value: String(state.maxGames  || 20) },
       { key: 'cloneLriaaPlayerId', value: state.players.find(p => p.pendingCloneLriaa)?.id || '' },
       { key: 'ingameNames', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.ingameName).map(p => [p.id, p.ingameName]))) },
+      { key: 'scoreOffsets', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.scoreOffset).map(p => [p.id, p.scoreOffset]))) },
       { key: 'roueCommu20Until', value: String(state.roueCommu20Until || 0) },
       { key: 'roueCommu20Start', value: String(state.roueCommu20Start || 0) },
       { key: 'roueCommu50Next', value: String(state.roueCommu50Next || 0) },
@@ -2248,7 +2258,7 @@ function getPlayerTotal(player) {
   const sorted = [...games].sort((a, b) => b.score - a.score);
   const counted = sorted.slice(0, maxGames);
   const gamesSum = counted.reduce((s, g) => s + g.score, 0);
-  return gamesSum + (player.bonusPoints || 0);
+  return gamesSum + (player.bonusPoints || 0) + (player.scoreOffset || 0);
 }
 
 function getBestGame(player) {
@@ -2362,7 +2372,7 @@ function renderClassement() {
         ${p.pendingCloneLriaa ? `<div style="font-size:10px;color:var(--purple)"><i class="fa-solid fa-gamepad"></i> Clone kills Lriaa actif</div>` : ''}
         ${state.jokerPlayerIds?.has(p.id) ? `<div style="display:inline-flex;align-items:center;gap:5px;margin-top:3px;background:rgba(212,175,55,0.15);border:1px solid var(--gold);border-radius:3px;padding:2px 6px;font-size:10px;font-weight:700;color:var(--gold);letter-spacing:0.5px"><i class="fa-solid fa-wand-magic-sparkles" style="font-size:9px"></i> JOKER EN COURS${isAdmin() ? `<button onclick="cancelJoker('${p.id}');event.stopPropagation()" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:12px;padding:0;line-height:1;margin-left:2px;opacity:0.7" title="Annuler le joker">×</button>` : ''}</div>` : ''}
       </td>
-      <td class="score-total">${total}<small style="font-size:12px;color:var(--text-muted);font-weight:400"> pts</small>${p.bonusPoints ? `<div style="font-size:11px;color:${p.bonusPoints > 0 ? 'var(--green)' : 'var(--rust-light)'}">${p.bonusPoints > 0 ? '+' : ''}${p.bonusPoints} bonus</div>` : ''}</td>
+      <td class="score-total">${total}<small style="font-size:12px;color:var(--text-muted);font-weight:400"> pts</small>${p.bonusPoints ? `<div style="font-size:11px;color:${p.bonusPoints > 0 ? 'var(--green)' : 'var(--rust-light)'}">${p.bonusPoints > 0 ? '+' : ''}${p.bonusPoints} bonus</div>` : ''}${p.scoreOffset ? `<div style="font-size:11px;color:${p.scoreOffset > 0 ? 'var(--green)' : 'var(--rust-light)'}"><i class="fa-solid fa-user-secret" style="font-size:9px"></i> ${p.scoreOffset > 0 ? '+' : ''}${p.scoreOffset} vol</div>` : ''}</td>
       <td class="stat-games">${p.games.length}/${(state.maxGames || 20) + (p.extraGames || 0)}</td>
       <td class="stat-kills">${totalKills}</td>
       <td class="stat-tops">
@@ -3634,6 +3644,7 @@ function showPlayerDetail(id) {
       <div class="stat-card" style="flex:1"><div class="sc-label">Games</div><div class="sc-val sc-blue">${p.games.length}</div></div>
       <div class="stat-card" style="flex:1"><div class="sc-label">Bonus pts</div><div class="sc-val ${(p.bonusPoints||0) >= 0 ? 'sc-green' : 'sc-rust'}">${(p.bonusPoints||0) > 0 ? '+' : ''}${p.bonusPoints || 0}</div></div>
     </div>
+    ${p.scoreOffset ? `<div style="background:rgba(212,175,55,0.1);border:1px solid var(--gold);padding:8px 12px;border-radius:2px;margin-bottom:8px;font-size:13px"><i class="fa-solid fa-user-secret" style="color:var(--gold)"></i> Vol de score : <strong>${p.scoreOffset > 0 ? '+' : ''}${p.scoreOffset} pts</strong> appliqués sur le total — les games ci-dessous sont inchangées</div>` : ''}
     ${p.skipNext ? '<div style="background:rgba(224,90,56,0.1);border:1px solid var(--rust);padding:8px 12px;border-radius:2px;margin-bottom:8px;font-size:13px"><i class="fa-solid fa-forward-step"></i> Skip activé pour la prochaine game</div>' : ''}
     ${p.freezeKills ? `<div style="background:rgba(74,142,201,0.1);border:1px solid var(--blue);padding:8px 12px;border-radius:2px;margin-bottom:8px;font-size:13px"><i class="fa-solid fa-snowflake"></i> Kills gelés à ${p.freezeKills} pour la prochaine game</div>` : ''}
     ${p.pendingMult ? `<div style="background:rgba(155,89,182,0.1);border:1px solid var(--purple);padding:8px 12px;border-radius:2px;margin-bottom:8px;font-size:13px"><i class="fa-solid fa-xmark"></i> Multiplicateur ×${p.pendingMult} activé (roue) — s'appliquera sur la prochaine game (kills uniquement)</div>` : ''}
@@ -4073,6 +4084,38 @@ function doCommEchangeRand3() {
   );
 }
 
+function doCommVolScore() {
+  const eligible = state.players.filter(p => p.games.length > 0);
+  if (eligible.length < 2) { toast('Il faut au moins 2 joueurs avec des games.', 'error'); return; }
+  const sorted = [...eligible].sort((a, b) => getPlayerTotal(b) - getPlayerTotal(a));
+  // Seuls les joueurs ayant quelqu'un au-dessus d'eux avec un total différent : sinon l'échange ne changerait rien
+  const candidates = [];
+  for (let i = 1; i < sorted.length; i++) {
+    if (getPlayerTotal(sorted[i]) !== getPlayerTotal(sorted[i - 1])) candidates.push(i);
+  }
+  if (!candidates.length) { toast('Tous les joueurs sont à égalité — rien à voler.', 'error'); return; }
+  const i = candidates[Math.floor(Math.random() * candidates.length)];
+  const voleur  = sorted[i];      // tiré au sort, il vole vers le haut
+  const victime = sorted[i - 1];  // juste au-dessus de lui au classement
+  const tVoleur = getPlayerTotal(voleur), tVictime = getPlayerTotal(victime);
+  const el = document.getElementById('action-vol-score-preview');
+  const desc = `<strong>${escHtml(voleur.name)}</strong> (#${i + 1}) vole le score de <strong>${escHtml(victime.name)}</strong> (#${i})<br>` +
+    `<strong>${escHtml(voleur.name)}</strong> : <span style="color:var(--text-muted)">${tVoleur}</span> → <span style="color:var(--gold)">${tVictime} pts</span><br>` +
+    `<strong>${escHtml(victime.name)}</strong> : <span style="color:var(--text-muted)">${tVictime}</span> → <span style="color:var(--rust-light)">${tVoleur} pts</span>`;
+  if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.8">${desc}</div>`;
+  showConfirm('Confirmer le vol de score', desc,
+    () => {
+      // Décalage posé à côté des games : ni les games ni leur nombre ne bougent
+      const delta = tVictime - tVoleur;
+      voleur.scoreOffset  = (voleur.scoreOffset  || 0) + delta;
+      victime.scoreOffset = (victime.scoreOffset || 0) - delta;
+      addLog(`Vol de score : <strong>${voleur.name}</strong> (${tVoleur} → ${tVictime} pts) ↔ <strong>${victime.name}</strong> (${tVictime} → ${tVoleur} pts)`, 'gold', 'user-secret', true);
+      toast(`${voleur.name} a volé le score de ${victime.name} !`, 'gold');
+      saveState(); closeModal('modal-action'); renderAll();
+    }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
+  );
+}
+
 // ============================================================
 // ACTIONS ROUES
 // ============================================================
@@ -4108,7 +4151,8 @@ function openAction(type) {
     'comm-echange-rand3': 'Échange 3 games aléatoires',
     'comm-roue-20subs': 'Roue commu × 20 subs (24h)',
     'comm-top10-inverse': 'Top 10 inversé',
-    'comm-low-kills-bonus': '+5 pts games < 5 kills'
+    'comm-low-kills-bonus': '+5 pts games < 5 kills',
+    'comm-vol-score': 'Vol de score'
   };
   document.getElementById('modal-action-title').textContent = titles[type] || type;
   document.getElementById('modal-action-body').innerHTML = buildActionBody(type);
@@ -4302,6 +4346,11 @@ function buildActionBody(type) {
     case 'comm-low-kills-bonus': return `
       <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Ajoute <strong style="color:var(--text)">+5 pts</strong> à toutes les games avec <strong style="color:var(--text)">moins de 5 kills</strong> pour chaque joueur.</p>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Appliquer +5 pts</button>`;
+
+    case 'comm-vol-score': return `
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">Un joueur est tiré au sort, puis <strong style="color:var(--gold)">échange son score total</strong> avec le joueur situé <strong style="color:var(--gold)">juste au-dessus de lui</strong> au classement. Les games et leur nombre restent <strong>identiques</strong> — seul le total change.</p>
+      <div id="action-vol-score-preview" style="margin-bottom:12px"></div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCommVolScore()"><i class="fa-solid fa-user-secret" style="margin-right:6px"></i>Tirer au sort & voler</button>`;
 
     default: return '<p>Action inconnue.</p>';
   }
