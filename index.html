@@ -2072,7 +2072,8 @@ let state = {
   roueCommu20Until: 0,  // timestamp ms — mode 20 subs actif jusqu'à cette date (0 = inactif)
   roueCommu20Start: 0,  // subsCount au moment d'activation du mode 20
   roueCommu50Next: 0,   // prochain palier forcé après annulation du mode 20 (0 = pas de forçage)
-  roueCommu20Paused: 0 // ms restants quand le chrono est en pause (0 = pas en pause)
+  roueCommu20Paused: 0, // ms restants quand le chrono est en pause (0 = pas en pause)
+  volPairs: []        // paires deja passees par le Vol de score ("idA|idB" trié) — jamais retirées au sort, sinon le vol s'annulerait
 };
 
 let currentTop = 0;
@@ -2152,6 +2153,8 @@ async function loadState() {
     try { const m = JSON.parse(ingameNamesFlag?.value || '{}'); state.players.forEach(p => { if (m[p.id]) p.ingameName = m[p.id]; }); } catch {}
     const scoreOffsetsFlag = (flags || []).find(f => f.key === 'scoreOffsets');
     try { const m = JSON.parse(scoreOffsetsFlag?.value || '{}'); state.players.forEach(p => { p.scoreOffset = m[p.id] || 0; }); } catch { state.players.forEach(p => { p.scoreOffset = 0; }); }
+    const volPairsFlag = (flags || []).find(f => f.key === 'volPairs');
+    try { state.volPairs = JSON.parse(volPairsFlag?.value || '[]'); } catch { state.volPairs = []; }
     const roue20Flag = (flags || []).find(f => f.key === 'roueCommu20Until');
     state.roueCommu20Until = parseInt(roue20Flag?.value || '0') || 0;
     const roue20StartFlag = (flags || []).find(f => f.key === 'roueCommu20Start');
@@ -2231,6 +2234,7 @@ async function saveState() {
       { key: 'cloneLriaaPlayerId', value: state.players.find(p => p.pendingCloneLriaa)?.id || '' },
       { key: 'ingameNames', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.ingameName).map(p => [p.id, p.ingameName]))) },
       { key: 'scoreOffsets', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.scoreOffset).map(p => [p.id, p.scoreOffset]))) },
+      { key: 'volPairs', value: JSON.stringify(_livePairs()) },
       { key: 'roueCommu20Until', value: String(state.roueCommu20Until || 0) },
       { key: 'roueCommu20Start', value: String(state.roueCommu20Start || 0) },
       { key: 'roueCommu50Next', value: String(state.roueCommu50Next || 0) },
@@ -2250,6 +2254,15 @@ function calcGameScore(kills, top, mult) {
   else if (top === 2) topPts = 15;
   else if (top === 3) topPts = 8;
   return killsPts + topPts;
+}
+
+// Clé d'une paire de joueurs, indépendante du sens du vol (A vole B == B vole A)
+function _volPairKey(a, b) { return [a.id, b.id].sort().join('|'); }
+
+// Paires de vol dont les deux joueurs existent encore (purge les joueurs supprimés)
+function _livePairs() {
+  const ids = new Set(state.players.map(p => p.id));
+  return (state.volPairs || []).filter(k => k.split('|').every(id => ids.has(id)));
 }
 
 function getPlayerTotal(player) {
@@ -4088,12 +4101,22 @@ function doCommVolScore() {
   const eligible = state.players.filter(p => p.games.length > 0);
   if (eligible.length < 2) { toast('Il faut au moins 2 joueurs avec des games.', 'error'); return; }
   const sorted = [...eligible].sort((a, b) => getPlayerTotal(b) - getPlayerTotal(a));
-  // Seuls les joueurs ayant quelqu'un au-dessus d'eux avec un total différent : sinon l'échange ne changerait rien
+  // Une paire déjà volée est écartée : après un échange les deux joueurs permutent au classement,
+  // donc les retirer au sort referait l'échange en sens inverse et annulerait le vol précédent.
+  const dejaVolees = new Set(_livePairs());
   const candidates = [];
+  let nbDejaVole = 0;
   for (let i = 1; i < sorted.length; i++) {
-    if (getPlayerTotal(sorted[i]) !== getPlayerTotal(sorted[i - 1])) candidates.push(i);
+    if (getPlayerTotal(sorted[i]) === getPlayerTotal(sorted[i - 1])) continue;
+    if (dejaVolees.has(_volPairKey(sorted[i], sorted[i - 1]))) { nbDejaVole++; continue; }
+    candidates.push(i);
   }
-  if (!candidates.length) { toast('Tous les joueurs sont à égalité — rien à voler.', 'error'); return; }
+  if (!candidates.length) {
+    toast(nbDejaVole
+      ? `Aucune paire disponible : les ${nbDejaVole} voisins possibles se sont déjà volés.`
+      : 'Tous les joueurs sont à égalité — rien à voler.', 'error');
+    return;
+  }
   const i = candidates[Math.floor(Math.random() * candidates.length)];
   const voleur  = sorted[i];      // tiré au sort, il vole vers le haut
   const victime = sorted[i - 1];  // juste au-dessus de lui au classement
@@ -4109,6 +4132,7 @@ function doCommVolScore() {
       const delta = tVictime - tVoleur;
       voleur.scoreOffset  = (voleur.scoreOffset  || 0) + delta;
       victime.scoreOffset = (victime.scoreOffset || 0) - delta;
+      state.volPairs = [..._livePairs(), _volPairKey(voleur, victime)];
       addLog(`Vol de score : <strong>${voleur.name}</strong> (${tVoleur} → ${tVictime} pts) ↔ <strong>${victime.name}</strong> (${tVictime} → ${tVoleur} pts)`, 'gold', 'user-secret', true);
       toast(`${voleur.name} a volé le score de ${victime.name} !`, 'gold');
       saveState(); closeModal('modal-action'); renderAll();
@@ -4348,7 +4372,7 @@ function buildActionBody(type) {
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Appliquer +5 pts</button>`;
 
     case 'comm-vol-score': return `
-      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">Un joueur est tiré au sort, puis <strong style="color:var(--gold)">échange son score total</strong> avec le joueur situé <strong style="color:var(--gold)">juste au-dessus de lui</strong> au classement. Les games et leur nombre restent <strong>identiques</strong> — seul le total change.</p>
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">Un joueur est tiré au sort, puis <strong style="color:var(--gold)">échange son score total</strong> avec le joueur situé <strong style="color:var(--gold)">juste au-dessus de lui</strong> au classement. Les games et leur nombre restent <strong>identiques</strong> — seul le total change.<br><span style="color:var(--text-muted)">Les vols s'accumulent : deux joueurs qui se sont déjà volés ne peuvent plus être retirés au sort ensemble, pour qu'un nouveau vol n'annule jamais le précédent.</span></p>
       <div id="action-vol-score-preview" style="margin-bottom:12px"></div>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCommVolScore()"><i class="fa-solid fa-user-secret" style="margin-right:6px"></i>Tirer au sort & voler</button>`;
 
