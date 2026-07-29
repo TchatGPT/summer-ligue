@@ -591,6 +591,65 @@ main {
 @keyframes fadeOut { to { opacity: 0; transform: translateX(100%); } }
 @keyframes iaSpin { to { transform: rotate(360deg); } }
 
+/* ---- Roulette russe (Roue de Folie) ---- */
+.rr-cylinder {
+  position: relative; width: 200px; height: 200px; margin: 4px auto 16px;
+  border-radius: 50%; border: 2px solid rgba(224,90,56,0.35);
+  background: radial-gradient(circle at 50% 38%, rgba(224,90,56,0.10), rgba(0,0,0,0.28));
+}
+.rr-cylinder.spinning { animation: rrSpin 1.8s cubic-bezier(.15,.75,.2,1) forwards; }
+.rr-chamber {
+  position: absolute; left: 50%; top: 50%;
+  width: 46px; height: 46px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 18px;
+  color: var(--text-muted); background: var(--bg3); border: 2px solid var(--border);
+  transition: color .25s, border-color .25s, background .25s, opacity .25s;
+}
+.rr-chamber.safe { border-color: var(--green); color: var(--green); opacity: .4; }
+.rr-chamber.hit  { border-color: var(--rust-light); color: #fff; background: var(--rust); animation: rrPulse 1s ease-out 3; }
+.rr-hub {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+  width: 54px; height: 54px; border-radius: 50%;
+  background: var(--bg2); border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted); font-size: 19px;
+}
+.rr-list { display: flex; flex-direction: column; gap: 4px; }
+.rr-row {
+  display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+  border-radius: 3px; background: var(--bg3); border: 1px solid var(--border);
+  font-size: 12px; transition: opacity .25s, border-color .25s, background .25s;
+}
+.rr-row.safe { opacity: .42; }
+.rr-row.hit  { border-color: var(--rust-light); background: rgba(224,90,56,0.14); }
+.rr-num {
+  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+  background: var(--bg2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+}
+.rr-name { font-weight: 600; color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rr-meta { color: var(--text-muted); font-size: 11px; white-space: nowrap; }
+.rr-status { font-size: 11px; font-weight: 700; min-width: 64px; text-align: right; }
+.rr-row.safe .rr-status { color: var(--green); }
+.rr-row.hit  .rr-status { color: var(--rust-light); }
+.rr-wrap.shaking { animation: rrShake .55s ease-in-out; }
+.rr-verdict { margin-top: 14px; text-align: center; }
+.rr-bang {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
+  font-size: 34px; letter-spacing: 3px; color: var(--rust-light);
+  animation: rrBang .45s ease-out;
+}
+.rr-victim { font-size: 13px; color: var(--text); margin-top: 2px; }
+@keyframes rrSpin  { from { transform: rotate(0deg); } to { transform: rotate(1080deg); } }
+@keyframes rrShake { 0%,100% { transform: translateX(0); } 15% { transform: translateX(-9px); } 30% { transform: translateX(9px); } 45% { transform: translateX(-6px); } 60% { transform: translateX(6px); } 80% { transform: translateX(-3px); } }
+@keyframes rrPulse { 0% { box-shadow: 0 0 0 0 rgba(224,90,56,.75); } 70% { box-shadow: 0 0 0 16px rgba(224,90,56,0); } 100% { box-shadow: 0 0 0 0 rgba(224,90,56,0); } }
+@keyframes rrBang  { from { transform: scale(2.2); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .rr-cylinder.spinning, .rr-wrap.shaking, .rr-chamber.hit, .rr-bang { animation: none; }
+}
+
 /* SCORE PREVIEW */
 .score-preview {
   background: var(--bg3);
@@ -878,6 +937,7 @@ main {
 }
 .roue-comm-color { color: var(--gold); }
 .roue-perso-color { color: var(--purple); }
+.roue-folie-color { color: var(--rust-light); }
 
 
 .action-list-compact {
@@ -928,6 +988,8 @@ main {
 .action-card-gold:hover { border-color: var(--gold); background: rgba(212,175,55,0.06); }
 .action-card-purple { border-color: rgba(155,89,182,0.25); }
 .action-card-purple:hover { border-color: var(--purple); background: rgba(155,89,182,0.06); }
+.action-card-rust { border-color: rgba(224,90,56,0.28); }
+.action-card-rust:hover { border-color: var(--rust-light); background: rgba(224,90,56,0.07); }
 .ac-bg {
   position: absolute;
   right: -10px;
@@ -944,6 +1006,8 @@ main {
 .ac-icon { font-size: 20px; margin-bottom: 4px; position: relative; }
 .action-card-gold .ac-icon { color: var(--gold); }
 .action-card-purple .ac-icon { color: var(--purple); }
+.action-card-rust .ac-bg { color: var(--rust-light); }
+.action-card-rust .ac-icon { color: var(--rust-light); }
 .ac-title { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.3; position: relative; }
 .ac-desc { font-size: 10px; color: var(--text-muted); line-height: 1.4; position: relative; }
 @media (max-width: 700px) { .action-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; } }
@@ -1525,6 +1589,26 @@ main {
 
     </div>
   </div>
+
+  <!-- ROUE DE FOLIE -->
+  <div class="roue-section" style="margin-top:20px;border-color:rgba(224,90,56,0.3);background:rgba(180,60,40,0.04)">
+    <div class="roue-header" style="border-bottom-color:rgba(224,90,56,0.25)">
+      <div>
+        <div class="roue-title roue-folie-color"><i class="fa-solid fa-burst" style="font-size:14px;margin-right:6px"></i>Roue de Folie</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px"><i class="fa-solid fa-triangle-exclamation" style="color:var(--rust-light)"></i> Actions extrêmes et irréversibles — à sortir aux grands moments</div>
+      </div>
+    </div>
+    <div class="action-grid">
+
+      <div class="action-card action-card-rust" onclick="openAction('folie-roulette')">
+        <div class="ac-bg"><i class="fa-solid fa-gun"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-gun"></i></div>
+        <div class="ac-title">Roulette russe</div>
+        <div class="ac-desc">6 joueurs dans le barillet, 1 seule balle — le touché perd sa meilleure game</div>
+      </div>
+
+    </div>
+  </div>
 </div>
 
 <!-- PAGE JOUEURS -->
@@ -1682,6 +1766,19 @@ main {
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-forward-step"></i> Skip ta game</div><div style="font-size:11px;color:var(--text-muted)">Badge accordé — le joueur peut choisir de skipper sa prochaine game (annulable à la saisie)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-plus"></i> Game supplémentaire</div><div style="font-size:11px;color:var(--text-muted)">Ajoute une game bonus hors limite des 20 pour le joueur ciblé</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-trophy"></i> +10 pts à partir du top 10</div><div style="font-size:11px;color:var(--text-muted)">Si le joueur finit dans le top 10 Warzone, +10 pts s'appliquent sur sa prochaine game</div></div></div>
+    </div>
+  </div>
+
+  <!-- ROUE DE FOLIE -->
+  <div class="roue-section" style="margin-top:20px;border-color:rgba(224,90,56,0.3);background:rgba(180,60,40,0.04)">
+    <div class="roue-header" style="border-bottom-color:rgba(224,90,56,0.25)">
+      <div>
+        <div class="roue-title roue-folie-color">Roue de Folie</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Actions extrêmes et irréversibles</div>
+      </div>
+    </div>
+    <div class="action-list-compact">
+      <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-gun"></i> Roulette russe</div><div style="font-size:11px;color:var(--text-muted)">6 joueurs sont tirés au sort et placés dans le barillet, une seule balle est chambrée. Le joueur touché perd définitivement sa meilleure game, les 5 autres sont épargnés.</div></div></div>
     </div>
   </div>
 </div>
@@ -4149,6 +4246,107 @@ function doCommVolScore() {
 }
 
 // ============================================================
+// ROUE DE FOLIE — Roulette russe
+// ============================================================
+let _roulette = null;   // { picks: [joueur x6], balle: index du chargeur, tire: bool, gen }
+let _rouletteGen = 0;   // invalide les animations en cours si un nouveau barillet est chargé
+
+function doFolieRouletteDraw() {
+  const eligible = state.players.filter(p => p.games.length > 0);
+  if (eligible.length < 6) { toast(`Il faut au moins 6 joueurs avec des games (${eligible.length} actuellement).`, 'error'); return; }
+  _roulette = {
+    picks: [...eligible].sort(() => Math.random() - 0.5).slice(0, 6),
+    balle: Math.floor(Math.random() * 6),
+    tire: false,
+    gen: ++_rouletteGen
+  };
+  renderRouletteStage();
+  const actions = document.getElementById('rr-actions');
+  if (actions) actions.innerHTML =
+    `<button class="btn btn-solid-gold" style="width:100%;justify-content:center;background:var(--rust);border-color:var(--rust)" onclick="doFolieRouletteFire()"><i class="fa-solid fa-gun" style="margin-right:6px"></i>Appuyer sur la détente</button>
+     <button class="btn" style="width:100%;justify-content:center;margin-top:8px" onclick="doFolieRouletteDraw()"><i class="fa-solid fa-rotate" style="margin-right:6px"></i>Retirer au sort</button>`;
+}
+
+function renderRouletteStage() {
+  const el = document.getElementById('rr-stage');
+  if (!el || !_roulette) return;
+  // Les 6 chambres sont disposées en cercle, la première en haut puis tous les 60°
+  const chambres = _roulette.picks.map((p, k) => {
+    const angle = (-90 + k * 60) * Math.PI / 180;
+    const x = Math.round(Math.cos(angle) * 74), y = Math.round(Math.sin(angle) * 74);
+    return `<div class="rr-chamber" id="rr-ch-${k}" style="transform:translate(-50%,-50%) translate(${x}px,${y}px)">${k + 1}</div>`;
+  }).join('');
+  const lignes = _roulette.picks.map((p, k) => {
+    const best = getBestGame(p);
+    return `<div class="rr-row" id="rr-row-${k}">
+      <span class="rr-num">${k + 1}</span>
+      <span class="rr-name">${escHtml(p.name)}</span>
+      <span class="rr-meta">meilleure : ${best ? best.score + ' pts' : '—'}</span>
+      <span class="rr-status" id="rr-st-${k}"></span>
+    </div>`;
+  }).join('');
+  el.innerHTML = `<div class="rr-wrap" id="rr-wrap">
+    <div class="rr-cylinder" id="rr-cylinder">${chambres}<div class="rr-hub"><i class="fa-solid fa-gun"></i></div></div>
+    <div class="rr-list">${lignes}</div>
+    <div class="rr-verdict" id="rr-verdict"></div>
+  </div>`;
+}
+
+function doFolieRouletteFire() {
+  if (!_roulette || _roulette.tire) return;
+  if (!getBestGame(_roulette.picks[_roulette.balle])) { toast('Le joueur chambré n\'a plus de game — retire au sort.', 'error'); return; }
+  showConfirm('Appuyer sur la détente',
+    'Six joueurs sont dans le barillet, une balle est chambrée. Le joueur touché perdra <strong>définitivement</strong> sa meilleure game. Irréversible.',
+    () => {
+      _roulette.tire = true;
+      const actions = document.getElementById('rr-actions');
+      if (actions) actions.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:12px;padding:8px">Le barillet tourne…</div>';
+      const cyl = document.getElementById('rr-cylinder');
+      if (cyl) cyl.classList.add('spinning');
+      // Une chambre est testée après l'autre : autant de clics à vide que de rang de la balle
+      const gen = _roulette.gen;
+      let t = 1900;
+      for (let k = 0; k <= _roulette.balle; k++) {
+        const touche = (k === _roulette.balle);
+        if (touche) t += 500; // silence avant le coup
+        setTimeout(() => { if (_roulette && _roulette.gen === gen) rouletteStep(k, touche); }, t);
+        t += 620;
+      }
+    }, true, 'Tirer');
+}
+
+function rouletteStep(k, touche) {
+  const ch = document.getElementById('rr-ch-' + k);
+  const row = document.getElementById('rr-row-' + k);
+  const st = document.getElementById('rr-st-' + k);
+  if (ch) ch.classList.add(touche ? 'hit' : 'safe');
+  if (row) row.classList.add(touche ? 'hit' : 'safe');
+  if (st) st.innerHTML = touche
+    ? '<i class="fa-solid fa-skull"></i> TOUCHÉ'
+    : '<i class="fa-solid fa-circle-check"></i> clic';
+  if (touche) rouletteBang();
+}
+
+function rouletteBang() {
+  const victime = _roulette.picks[_roulette.balle];
+  const best = getBestGame(victime);
+  if (!best) return;
+  const wrap = document.getElementById('rr-wrap');
+  if (wrap) wrap.classList.add('shaking');
+  const verdict = document.getElementById('rr-verdict');
+  if (verdict) verdict.innerHTML =
+    `<div class="rr-bang"><i class="fa-solid fa-burst"></i> BANG</div>
+     <div class="rr-victim"><strong>${escHtml(victime.name)}</strong> perd sa meilleure game — <span style="color:var(--rust-light)">${best.score} pts</span></div>`;
+  victime.games = victime.games.filter(g => g.id !== best.id);
+  const epargnes = _roulette.picks.filter((_, i) => i !== _roulette.balle).map(p => p.name).join(', ');
+  addLog(`Roulette russe : <strong>${victime.name}</strong> est touché et perd sa meilleure game (${best.score} pts). Épargnés : ${epargnes}.`, 'rust', 'gun', true);
+  toast(`${victime.name} est touché — meilleure game perdue !`, 'error');
+  saveState(); renderAll();
+  const actions = document.getElementById('rr-actions');
+  if (actions) actions.innerHTML = `<button class="btn" style="width:100%;justify-content:center" onclick="closeModal('modal-action')">Fermer</button>`;
+}
+
+// ============================================================
 // ACTIONS ROUES
 // ============================================================
 function openAction(type) {
@@ -4185,7 +4383,8 @@ function openAction(type) {
     'comm-roue-20subs': 'Roue commu × 20 subs (24h)',
     'comm-top10-inverse': 'Top 10 inversé',
     'comm-low-kills-bonus': '+5 pts games < 5 kills',
-    'comm-vol-score': 'Vol de score'
+    'comm-vol-score': 'Vol de score',
+    'folie-roulette': 'Roulette russe'
   };
   document.getElementById('modal-action-title').textContent = titles[type] || type;
   document.getElementById('modal-action-body').innerHTML = buildActionBody(type);
@@ -4389,6 +4588,13 @@ function buildActionBody(type) {
       <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">Un joueur est tiré au sort, puis <strong style="color:var(--gold)">copie le score total</strong> du joueur situé <strong style="color:var(--gold)">juste au-dessus de lui</strong> au classement. Celui du dessus <strong>garde son score</strong>, il ne perd rien. Les games et leur nombre restent <strong>identiques</strong> — seul le total change.</p>
       <div id="action-vol-score-preview" style="margin-bottom:12px"></div>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCommVolScore()"><i class="fa-solid fa-user-secret" style="margin-right:6px"></i>Tirer au sort & cloner</button>`;
+
+    case 'folie-roulette': return `
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">Six joueurs sont tirés au sort et placés dans le barillet. <strong style="color:var(--rust-light)">Une seule balle</strong> : le joueur touché perd définitivement sa <strong>meilleure game</strong>, les cinq autres sont épargnés. Les games des autres joueurs ne bougent pas.</p>
+      <div id="rr-stage" style="margin-bottom:12px"></div>
+      <div id="rr-actions">
+        <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doFolieRouletteDraw()"><i class="fa-solid fa-gun" style="margin-right:6px"></i>Charger le barillet</button>
+      </div>`;
 
     default: return '<p>Action inconnue.</p>';
   }
