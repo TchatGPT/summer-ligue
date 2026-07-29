@@ -1389,6 +1389,13 @@ main {
         <div class="ac-desc">La pire game de chaque joueur passe à 0 pt — la game reste, elle ne rapporte plus rien</div>
       </div>
 
+      <div class="action-card action-card-rust" onclick="openAction('folie-jokers3')">
+        <div class="ac-bg"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+        <div class="ac-title">3 Jokers pour tout le monde</div>
+        <div class="ac-desc">Chaque joueur reçoit 3 jokers — un joker permet de ne pas compter une game</div>
+      </div>
+
     </div>
   </div>
 
@@ -1839,6 +1846,7 @@ main {
       <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-gun"></i> Roulette russe</div><div style="font-size:11px;color:var(--text-muted)">6 joueurs sont tirés au sort et placés dans le barillet, une seule balle est chambrée. Le joueur touché perd définitivement sa meilleure game, les 5 autres sont épargnés.</div></div></div>
       <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-arrows-spin"></i> Échange général</div><div style="font-size:11px;color:var(--text-muted)">Tous les joueurs ayant au moins une game entrent dans une chaîne tirée au sort : chacun donne une game au hasard au suivant et en reçoit une du précédent. Le nombre de games de chacun ne change pas.</div></div></div>
       <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-ban"></i> Pire game à 0</div><div style="font-size:11px;color:var(--text-muted)">La pire game de chaque joueur voit son score ramené à 0 pt. La game n'est pas supprimée, elle reste dans le détail mais ne rapporte plus rien — le nombre de games est donc inchangé. Les joueurs dont la pire game vaut déjà 0 ne sont pas touchés.</div></div></div>
+      <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-wand-magic-sparkles"></i> 3 Jokers pour tout le monde</div><div style="font-size:11px;color:var(--text-muted)">Chaque joueur de la ligue reçoit 3 jokers, qui s'ajoutent à ceux qu'il possède déjà. Un joker permet de ne pas compter une game. Le compteur est visible dans le classement et se décrémente à chaque utilisation (3 → 2 → 1 → 0) ; à 0 le badge disparaît.</div></div></div>
     </div>
   </div>
 </div>
@@ -2316,6 +2324,8 @@ async function loadState() {
     try { const m = JSON.parse(ingameNamesFlag?.value || '{}'); state.players.forEach(p => { if (m[p.id]) p.ingameName = m[p.id]; }); } catch {}
     const scoreOffsetsFlag = (flags || []).find(f => f.key === 'scoreOffsets');
     try { const m = JSON.parse(scoreOffsetsFlag?.value || '{}'); state.players.forEach(p => { p.scoreOffset = m[p.id] || 0; }); } catch { state.players.forEach(p => { p.scoreOffset = 0; }); }
+    const jokerCountsFlag = (flags || []).find(f => f.key === 'jokerCounts');
+    try { const m = JSON.parse(jokerCountsFlag?.value || '{}'); state.players.forEach(p => { p.jokerCount = m[p.id] || 0; }); } catch { state.players.forEach(p => { p.jokerCount = 0; }); }
     const roue20Flag = (flags || []).find(f => f.key === 'roueCommu20Until');
     state.roueCommu20Until = parseInt(roue20Flag?.value || '0') || 0;
     const roue20StartFlag = (flags || []).find(f => f.key === 'roueCommu20Start');
@@ -2395,6 +2405,7 @@ async function saveState() {
       { key: 'cloneLriaaPlayerId', value: state.players.find(p => p.pendingCloneLriaa)?.id || '' },
       { key: 'ingameNames', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.ingameName).map(p => [p.id, p.ingameName]))) },
       { key: 'scoreOffsets', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.scoreOffset).map(p => [p.id, p.scoreOffset]))) },
+      { key: 'jokerCounts', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.jokerCount > 0).map(p => [p.id, p.jokerCount]))) },
       { key: 'roueCommu20Until', value: String(state.roueCommu20Until || 0) },
       { key: 'roueCommu20Start', value: String(state.roueCommu20Start || 0) },
       { key: 'roueCommu50Next', value: String(state.roueCommu50Next || 0) },
@@ -2535,6 +2546,7 @@ function renderClassement() {
         ${p.pendingBonus ? `<div style="font-size:10px;color:var(--green)"><i class="fa-solid fa-bolt-lightning"></i> +${p.pendingBonus}pts top10</div>` : ''}
         ${p.pendingCloneLriaa ? `<div style="font-size:10px;color:var(--purple)"><i class="fa-solid fa-gamepad"></i> Clone kills Lriaa actif</div>` : ''}
         ${state.jokerPlayerIds?.has(p.id) ? `<div style="display:inline-flex;align-items:center;gap:5px;margin-top:3px;background:rgba(212,175,55,0.15);border:1px solid var(--gold);border-radius:3px;padding:2px 6px;font-size:10px;font-weight:700;color:var(--gold);letter-spacing:0.5px"><i class="fa-solid fa-wand-magic-sparkles" style="font-size:9px"></i> JOKER EN COURS${isAdmin() ? `<button onclick="cancelJoker('${p.id}');event.stopPropagation()" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:12px;padding:0;line-height:1;margin-left:2px;opacity:0.7" title="Annuler le joker">×</button>` : ''}</div>` : ''}
+        ${p.jokerCount > 0 ? `<div style="display:inline-flex;align-items:center;gap:5px;margin-top:3px;margin-left:4px;background:rgba(212,175,55,0.15);border:1px solid var(--gold);border-radius:3px;padding:2px 6px;font-size:10px;font-weight:700;color:var(--gold);letter-spacing:0.5px"><i class="fa-solid fa-wand-magic-sparkles" style="font-size:9px"></i> ${p.jokerCount} JOKER${p.jokerCount > 1 ? 'S' : ''}${isAdmin() ? `<button onclick="useJoker('${p.id}');event.stopPropagation()" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:15px;font-weight:900;padding:0 2px;line-height:1;margin-left:2px;opacity:0.75" title="Utiliser un joker (−1)">−</button>` : ''}</div>` : ''}
       </td>
       <td class="score-total">${total}<small style="font-size:12px;color:var(--text-muted);font-weight:400"> pts</small>${p.bonusPoints ? `<div style="font-size:11px;color:${p.bonusPoints > 0 ? 'var(--green)' : 'var(--rust-light)'}">${p.bonusPoints > 0 ? '+' : ''}${p.bonusPoints} bonus</div>` : ''}${p.scoreOffset ? `<div style="font-size:11px;color:${p.scoreOffset > 0 ? 'var(--green)' : 'var(--rust-light)'}"><i class="fa-solid fa-user-secret" style="font-size:9px"></i> ${p.scoreOffset > 0 ? '+' : ''}${p.scoreOffset} clone</div>` : ''}</td>
       <td class="stat-games">${p.games.length}/${(state.maxGames || 20) + (p.extraGames || 0)}</td>
@@ -3124,6 +3136,21 @@ function cancelJoker(playerId) {
       renderAll();
     }
   );
+}
+
+// Décrémente le compteur de jokers depuis le classement (3 → 2 → 1 → 0).
+// À 0 le badge disparaît de lui-même, le rendu étant conditionné à jokerCount > 0.
+function useJoker(playerId) {
+  const p = state.players.find(x => x.id === playerId);
+  if (!p || !p.jokerCount) return;
+  p.jokerCount -= 1;
+  const reste = p.jokerCount;
+  addLog(`<strong>${p.name}</strong> — Joker utilisé (${reste} restant${reste > 1 ? 's' : ''}).`, 'gold', 'wand-magic-sparkles', true);
+  toast(reste > 0
+    ? `${p.name} — joker utilisé, ${reste} restant${reste > 1 ? 's' : ''}.`
+    : `${p.name} — dernier joker utilisé.`, 'gold');
+  saveState();
+  renderAll();
 }
 
 function cancelSkip(playerId) {
@@ -3808,6 +3835,7 @@ function showPlayerDetail(id) {
       <div class="stat-card" style="flex:1"><div class="sc-label">Games</div><div class="sc-val sc-blue">${p.games.length}</div></div>
       <div class="stat-card" style="flex:1"><div class="sc-label">Bonus pts</div><div class="sc-val ${(p.bonusPoints||0) >= 0 ? 'sc-green' : 'sc-rust'}">${(p.bonusPoints||0) > 0 ? '+' : ''}${p.bonusPoints || 0}</div></div>
     </div>
+    ${p.jokerCount > 0 ? `<div style="background:rgba(212,175,55,0.1);border:1px solid var(--gold);padding:8px 12px;border-radius:2px;margin-bottom:8px;font-size:13px;display:flex;align-items:center;gap:8px"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--gold)"></i><span style="flex:1"><strong>${p.jokerCount} joker${p.jokerCount > 1 ? 's' : ''}</strong> disponible${p.jokerCount > 1 ? 's' : ''} — chacun permet de ne pas compter une game</span>${isAdmin() ? `<button onclick="useJoker('${p.id}')" style="background:none;border:1px solid var(--gold);color:var(--gold);border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer;line-height:1.4">− Utiliser</button>` : ''}</div>` : ''}
     ${p.scoreOffset ? `<div style="background:rgba(212,175,55,0.1);border:1px solid var(--gold);padding:8px 12px;border-radius:2px;margin-bottom:8px;font-size:13px"><i class="fa-solid fa-user-secret" style="color:var(--gold)"></i> Clone de score : <strong>${p.scoreOffset > 0 ? '+' : ''}${p.scoreOffset} pts</strong> appliqués sur le total — les games ci-dessous sont inchangées</div>` : ''}
     ${p.skipNext ? '<div style="background:rgba(224,90,56,0.1);border:1px solid var(--rust);padding:8px 12px;border-radius:2px;margin-bottom:8px;font-size:13px"><i class="fa-solid fa-forward-step"></i> Skip activé pour la prochaine game</div>' : ''}
     ${p.freezeKills ? `<div style="background:rgba(74,142,201,0.1);border:1px solid var(--blue);padding:8px 12px;border-radius:2px;margin-bottom:8px;font-size:13px"><i class="fa-solid fa-snowflake"></i> Kills gelés à ${p.freezeKills} pour la prochaine game</div>` : ''}
@@ -4497,7 +4525,8 @@ function openAction(type) {
     'comm-low-kills-bonus': '+5 pts games < 5 kills',
     'comm-vol-score': 'Vol de score',
     'folie-roulette': 'Roulette russe',
-    'folie-worst-zero': 'Pire game à 0'
+    'folie-worst-zero': 'Pire game à 0',
+    'folie-jokers3': '3 Jokers pour tout le monde'
   };
   document.getElementById('modal-action-title').textContent = titles[type] || type;
   document.getElementById('modal-action-body').innerHTML = buildActionBody(type);
@@ -4713,6 +4742,19 @@ function buildActionBody(type) {
       <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">La <strong style="color:var(--rust-light)">pire game de chaque joueur</strong> voit son score ramené à <strong style="color:var(--rust-light)">0 pt</strong>. La game n'est pas supprimée : elle reste dans le détail, mais ne rapporte plus rien.<br><strong>Le nombre de games ne change pas.</strong> Les joueurs dont la pire game vaut déjà 0 ne sont pas touchés.</p>
       <div id="action-worst-zero-preview" style="margin-bottom:12px"></div>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center;background:var(--rust);border-color:var(--rust)" onclick="doFolieWorstZero()"><i class="fa-solid fa-ban" style="margin-right:6px"></i>Mettre toutes les pires games à 0</button>`;
+
+    case 'folie-jokers3': {
+      const nb = state.players.length;
+      const dejaAvecJokers = state.players.filter(p => p.jokerCount > 0).length;
+      return `
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px"><strong style="color:var(--rust-light)">Chaque joueur</strong> de la ligue reçoit <strong style="color:var(--gold)">3 jokers</strong>. Un joker permet de <strong>ne pas compter une game</strong>.<br>
+      Le compteur s'affiche dans le classement et se décrémente d'un clic sur le <strong>−</strong> : 3 → 2 → 1 → 0. À 0, le badge disparaît.</p>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.8;margin-bottom:14px">
+        <strong>${nb} joueur${nb > 1 ? 's' : ''}</strong> recevront 3 jokers chacun
+        ${dejaAvecJokers ? `<br><span style="color:var(--text-muted)">${dejaAvecJokers} joueur${dejaAvecJokers > 1 ? 's ont' : ' a'} déjà des jokers — les 3 nouveaux s'ajoutent à leur compteur</span>` : ''}
+      </div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;background:var(--rust);border-color:var(--rust)" onclick="execAction()"><i class="fa-solid fa-wand-magic-sparkles" style="margin-right:6px"></i>Donner 3 jokers à tout le monde</button>`;
+    }
 
     default: return '<p>Action inconnue.</p>';
   }
@@ -4964,6 +5006,13 @@ function execAction() {
       break;
     }
     case 'comm-rand-x2': doCommRandX2(); return;
+    case 'folie-jokers3': {
+      if (!state.players.length) { toast('Aucun joueur dans la ligue.', 'error'); return; }
+      state.players.forEach(p => { p.jokerCount = (p.jokerCount || 0) + 3; });
+      addLog(`Roue de Folie — <strong>3 jokers</strong> accordés à tous les joueurs (${state.players.length} joueurs).`, 'rust', 'wand-magic-sparkles', true);
+      toast(`3 jokers pour tout le monde — ${state.players.length} joueurs servis !`, 'gold');
+      break;
+    }
     case 'comm-roue-20subs': {
       state.roueCommu20Until = Date.now() + 24 * 60 * 60 * 1000;
       state.roueCommu20Start = state.subsCount || 0;
