@@ -1358,6 +1358,40 @@ main {
 <div id="page-actions" class="page">
   <h1 class="section-title" style="margin-bottom:20px">Actions <span>Roues</span></h1>
 
+  <!-- ROUE DE FOLIE -->
+  <div class="roue-section" style="margin-bottom:20px;border-color:rgba(224,90,56,0.3);background:rgba(180,60,40,0.04)">
+    <div class="roue-header" style="border-bottom-color:rgba(224,90,56,0.25)">
+      <div>
+        <div class="roue-title roue-folie-color"><i class="fa-solid fa-burst" style="font-size:14px;margin-right:6px"></i>Roue de Folie</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px"><i class="fa-solid fa-triangle-exclamation" style="color:var(--rust-light)"></i> Actions extrêmes et irréversibles — débloquée à 600 subs, puis tous les 200 subs</div>
+      </div>
+    </div>
+    <div class="action-grid">
+
+      <div class="action-card action-card-rust" onclick="openAction('folie-roulette')">
+        <div class="ac-bg"><i class="fa-solid fa-gun"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-gun"></i></div>
+        <div class="ac-title">Roulette russe</div>
+        <div class="ac-desc">6 joueurs dans le barillet, 1 seule balle — le touché perd sa meilleure game</div>
+      </div>
+
+      <div class="action-card action-card-rust" onclick="openAction('folie-echange-all')">
+        <div class="ac-bg"><i class="fa-solid fa-arrows-spin"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-arrows-spin"></i></div>
+        <div class="ac-title">Échange général</div>
+        <div class="ac-desc">Toute la ligue tourne — chaque joueur donne une game au hasard et en reçoit une</div>
+      </div>
+
+      <div class="action-card action-card-rust" onclick="openAction('folie-worst-zero')">
+        <div class="ac-bg"><i class="fa-solid fa-ban"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-ban"></i></div>
+        <div class="ac-title">Pire game à 0</div>
+        <div class="ac-desc">La pire game de chaque joueur passe à 0 pt — la game reste, elle ne rapporte plus rien</div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- ROUE COMMUNAUTAIRE -->
   <div class="roue-section">
     <div class="roue-header">
@@ -1593,40 +1627,6 @@ main {
         <div class="ac-icon"><i class="fa-solid fa-trophy"></i></div>
         <div class="ac-title">+10 pts à partir du top 10</div>
         <div class="ac-desc">Si le joueur finit dans le top 10 Warzone, +10 pts s'appliquent sur sa prochaine game</div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ROUE DE FOLIE -->
-  <div class="roue-section" style="margin-top:20px;border-color:rgba(224,90,56,0.3);background:rgba(180,60,40,0.04)">
-    <div class="roue-header" style="border-bottom-color:rgba(224,90,56,0.25)">
-      <div>
-        <div class="roue-title roue-folie-color"><i class="fa-solid fa-burst" style="font-size:14px;margin-right:6px"></i>Roue de Folie</div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:4px"><i class="fa-solid fa-triangle-exclamation" style="color:var(--rust-light)"></i> Actions extrêmes et irréversibles — débloquée à 600 subs, puis tous les 200 subs</div>
-      </div>
-    </div>
-    <div class="action-grid">
-
-      <div class="action-card action-card-rust" onclick="openAction('folie-roulette')">
-        <div class="ac-bg"><i class="fa-solid fa-gun"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-gun"></i></div>
-        <div class="ac-title">Roulette russe</div>
-        <div class="ac-desc">6 joueurs dans le barillet, 1 seule balle — le touché perd sa meilleure game</div>
-      </div>
-
-      <div class="action-card action-card-rust" onclick="openAction('folie-echange-all')">
-        <div class="ac-bg"><i class="fa-solid fa-arrows-spin"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-arrows-spin"></i></div>
-        <div class="ac-title">Échange général</div>
-        <div class="ac-desc">Toute la ligue tourne — chaque joueur donne une game au hasard et en reçoit une</div>
-      </div>
-
-      <div class="action-card action-card-rust" onclick="openAction('folie-worst-zero')">
-        <div class="ac-bg"><i class="fa-solid fa-ban"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-ban"></i></div>
-        <div class="ac-title">Pire game à 0</div>
-        <div class="ac-desc">La pire game de chaque joueur passe à 0 pt — la game reste, elle ne rapporte plus rien</div>
       </div>
 
     </div>
