@@ -1626,7 +1626,7 @@ main {
         <div class="ac-bg"><i class="fa-solid fa-ban"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-ban"></i></div>
         <div class="ac-title">Pire game à 0</div>
-        <div class="ac-desc">La pire game de chaque joueur tombe à 0 pt — la game reste, son score est annulé</div>
+        <div class="ac-desc">La pire game de chaque joueur passe à 0 pt — la game reste, elle ne rapporte plus rien</div>
       </div>
 
     </div>
@@ -4348,10 +4348,10 @@ function doFolieWorstZero() {
     () => {
       cibles.forEach(x => {
         x.g.score = 0;
-        x.g.note = (x.g.note ? x.g.note + ' · ' : '') + 'pire game annulée (roue de folie)';
+        x.g.note = (x.g.note ? x.g.note + ' · ' : '') + 'pire game mise à 0 (roue de folie)';
       });
       addLog(`Pire game à 0 : ${cibles.length} joueur${cibles.length > 1 ? 's' : ''} touché${cibles.length > 1 ? 's' : ''}, ${totalPerdu} pts retirés au total.`, 'rust', 'ban', true);
-      toast(`Pire game annulée pour ${cibles.length} joueur${cibles.length > 1 ? 's' : ''} — ${totalPerdu} pts retirés.`, 'error');
+      toast(`Pire game mise à 0 pour ${cibles.length} joueur${cibles.length > 1 ? 's' : ''} — ${totalPerdu} pts retirés.`, 'error');
       saveState(); closeModal('modal-action'); renderAll();
     }, true, 'Mettre à zéro', () => { if (el) el.innerHTML = ''; }
   );
@@ -4712,7 +4712,7 @@ function buildActionBody(type) {
     case 'folie-worst-zero': return `
       <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">La <strong style="color:var(--rust-light)">pire game de chaque joueur</strong> voit son score ramené à <strong style="color:var(--rust-light)">0 pt</strong>. La game n'est pas supprimée : elle reste dans le détail, mais ne rapporte plus rien.<br><strong>Le nombre de games ne change pas.</strong> Les joueurs dont la pire game vaut déjà 0 ne sont pas touchés.</p>
       <div id="action-worst-zero-preview" style="margin-bottom:12px"></div>
-      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;background:var(--rust);border-color:var(--rust)" onclick="doFolieWorstZero()"><i class="fa-solid fa-ban" style="margin-right:6px"></i>Annuler toutes les pires games</button>`;
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;background:var(--rust);border-color:var(--rust)" onclick="doFolieWorstZero()"><i class="fa-solid fa-ban" style="margin-right:6px"></i>Mettre toutes les pires games à 0</button>`;
 
     default: return '<p>Action inconnue.</p>';
   }
