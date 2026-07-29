@@ -1406,13 +1406,6 @@ main {
         <div class="ac-desc">Tire 3 joueurs au hasard — leurs games tournent entre eux (A→B→C→A)</div>
       </div>
 
-      <div class="action-card action-card-gold" onclick="openAction('comm-echange-10')">
-        <div class="ac-bg"><i class="fa-solid fa-arrows-spin"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-arrows-spin"></i></div>
-        <div class="ac-title">Échange 10 games aléatoires</div>
-        <div class="ac-desc">Tire 10 joueurs au hasard — une game de chacun tourne en chaîne entre eux</div>
-      </div>
-
       <div class="action-card action-card-gold" onclick="openAction('comm-top10-inverse')">
         <div class="ac-bg"><i class="fa-solid fa-arrows-up-down"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-arrows-up-down"></i></div>
@@ -1607,6 +1600,13 @@ main {
         <div class="ac-desc">6 joueurs dans le barillet, 1 seule balle — le touché perd sa meilleure game</div>
       </div>
 
+      <div class="action-card action-card-rust" onclick="openAction('folie-echange-all')">
+        <div class="ac-bg"><i class="fa-solid fa-arrows-spin"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-arrows-spin"></i></div>
+        <div class="ac-title">Échange général</div>
+        <div class="ac-desc">Toute la ligue tourne — chaque joueur donne une game au hasard et en reçoit une</div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -1779,6 +1779,7 @@ main {
     </div>
     <div class="action-list-compact">
       <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-gun"></i> Roulette russe</div><div style="font-size:11px;color:var(--text-muted)">6 joueurs sont tirés au sort et placés dans le barillet, une seule balle est chambrée. Le joueur touché perd définitivement sa meilleure game, les 5 autres sont épargnés.</div></div></div>
+      <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-arrows-spin"></i> Échange général</div><div style="font-size:11px;color:var(--text-muted)">Tous les joueurs ayant au moins une game entrent dans une chaîne tirée au sort : chacun donne une game au hasard au suivant et en reçoit une du précédent. Le nombre de games de chacun ne change pas.</div></div></div>
     </div>
   </div>
 </div>
@@ -4188,27 +4189,29 @@ function doCommEchangeRand3() {
   );
 }
 
-function doCommEchange10() {
+function doFolieEchangeAll() {
   const eligible = state.players.filter(p => p.games.length > 0);
-  if (eligible.length < 10) { toast(`Il faut au moins 10 joueurs avec des games (${eligible.length} actuellement).`, 'error'); return; }
-  const picks = [...eligible].sort(() => Math.random() - 0.5).slice(0, 10)
+  if (eligible.length < 2) { toast(`Il faut au moins 2 joueurs avec des games (${eligible.length} actuellement).`, 'error'); return; }
+  // Toute la ligue entre dans la chaîne, dans un ordre tiré au sort
+  const picks = [...eligible].sort(() => Math.random() - 0.5)
     .map(p => ({ p, g: p.games[Math.floor(Math.random() * p.games.length)] }));
   const gameNumOf = (player, game) => [...player.games].sort((a, b) => b.score - a.score).findIndex(g => g.id === game.id) + 1;
   const nums = picks.map(x => gameNumOf(x.p, x.g));
-  const el = document.getElementById('action-echange-10-preview');
+  const el = document.getElementById('action-echange-all-preview');
   const desc = picks.map((x, k) => `<strong>${escHtml(x.p.name)}</strong> donne game #${nums[k]} <span style="color:var(--gold)">(${x.g.score} pts)</span> → <strong>${escHtml(picks[(k + 1) % picks.length].p.name)}</strong>`).join('<br>');
   if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.9;max-height:280px;overflow-y:auto">${desc}</div>`;
-  showConfirm('Confirmer l\'échange', desc,
+  showConfirm('Confirmer l\'échange général',
+    `<strong>${picks.length} joueurs</strong> vont échanger une game en chaîne.<br><br>${desc}`,
     () => {
       // Toutes les games tirées sont retirées d'abord, puis redistribuées :
       // sinon une game déjà déplacée pourrait être reprise à son nouveau propriétaire.
       picks.forEach(x => { x.p.games = x.p.games.filter(g => g.id !== x.g.id); });
       picks.forEach((x, k) => {
         const dest = picks[(k + 1) % picks.length].p;
-        dest.games.push({ ...x.g, id: uid(), note: (x.g.note ? x.g.note + ' · ' : '') + `échange 10 joueurs (de ${x.p.name})` });
+        dest.games.push({ ...x.g, id: uid(), note: (x.g.note ? x.g.note + ' · ' : '') + `échange général (de ${x.p.name})` });
       });
-      addLog(`Échange 10 games : ${picks.map(x => x.p.name).join(' → ')} → ${picks[0].p.name}`, 'gold', 'arrows-spin', true);
-      toast('Échange 10 games effectué !', 'gold');
+      addLog(`Échange général sur ${picks.length} joueurs : ${picks.map(x => x.p.name).join(' → ')} → ${picks[0].p.name}`, 'rust', 'arrows-spin', true);
+      toast(`Échange général effectué sur ${picks.length} joueurs !`, 'gold');
       saveState(); closeModal('modal-action'); renderAll();
     }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
   );
@@ -4379,7 +4382,7 @@ function openAction(type) {
     'comm-echange-best-worst': 'Échange meilleure ↔ pire (aléatoire)',
     'comm-echange-rand': 'Échange 2 games aléatoires',
     'comm-echange-rand3': 'Échange 3 games aléatoires',
-    'comm-echange-10': 'Échange 10 games aléatoires',
+    'folie-echange-all': 'Échange général',
     'comm-roue-20subs': 'Roue commu × 20 subs (24h)',
     'comm-top10-inverse': 'Top 10 inversé',
     'comm-low-kills-bonus': '+5 pts games < 5 kills',
@@ -4570,10 +4573,10 @@ function buildActionBody(type) {
       <div id="action-echange-rand3-preview" style="margin-bottom:12px"></div>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCommEchangeRand3()"><i class="fa-solid fa-shuffle" style="margin-right:6px"></i>Tirer au sort & échanger</button>`;
 
-    case 'comm-echange-10': return `
-      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">Dix joueurs sont tirés au sort, puis une game de chacun tourne en chaîne entre eux (A→B, B→C, … J→A). Chacun donne une game et en reçoit une : <strong>le nombre de games de chaque joueur ne change pas</strong>.</p>
-      <div id="action-echange-10-preview" style="margin-bottom:12px"></div>
-      <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCommEchange10()"><i class="fa-solid fa-arrows-spin" style="margin-right:6px"></i>Tirer au sort & échanger</button>`;
+    case 'folie-echange-all': return `
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px"><strong style="color:var(--rust-light)">Tous les joueurs</strong> ayant au moins une game entrent dans la chaîne, dans un ordre tiré au sort. Chacun donne <strong>une game au hasard</strong> au suivant et en reçoit une du précédent (A→B, B→C, … →A).<br>Chacun donne une game et en reçoit une : <strong>le nombre de games de chaque joueur ne change pas</strong>, et aucun point n'est créé ni perdu.</p>
+      <div id="action-echange-all-preview" style="margin-bottom:12px"></div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;background:var(--rust);border-color:var(--rust)" onclick="doFolieEchangeAll()"><i class="fa-solid fa-arrows-spin" style="margin-right:6px"></i>Tirer au sort & échanger</button>`;
 
     case 'comm-top10-inverse': return `
       <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">Les joueurs dans le <strong style="color:var(--rust-light)">Top 10</strong> perdent <strong style="color:var(--rust-light)">20 pts</strong>, les autres en <strong style="color:var(--gold)">gagnent 20</strong>.</p>
@@ -4866,7 +4869,7 @@ function execAction() {
       break;
     }
     case 'comm-echange-rand3': doCommEchangeRand3(); return;
-    case 'comm-echange-10': doCommEchange10(); return;
+    case 'folie-echange-all': doFolieEchangeAll(); return;
     case 'comm-top10-inverse': {
       const sorted = [...state.players].sort((a, b) => getPlayerTotal(b) - getPlayerTotal(a));
       const top10ids = new Set(sorted.slice(0, 10).map(p => p.id));
