@@ -1467,7 +1467,7 @@ main {
         <div class="ac-bg"><i class="fa-solid fa-dice"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-dice"></i></div>
         <div class="ac-title">Game aléatoire × 2</div>
-        <div class="ac-desc">Double le score d'une game tirée au sort pour un joueur</div>
+        <div class="ac-desc">Joueur tiré au sort — une de ses games au hasard voit son score doublé</div>
       </div>
 
       <div class="action-card action-card-gold" onclick="openAction('comm-vol-score')">
@@ -1787,7 +1787,7 @@ main {
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shuffle"></i> Clone meilleure → pire aléatoire</div><div style="font-size:11px;color:var(--text-muted)">Tire 2 joueurs au hasard — remplace la pire game de l'un par la meilleure game de l'autre</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-crown"></i> +5 pts par Top 1</div><div style="font-size:11px;color:var(--text-muted)">+5 pts de bonus par nouveau Top 1 depuis la dernière application (tous joueurs)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-angles-up"></i> Pire game × 2</div><div style="font-size:11px;color:var(--text-muted)">Double le score de la pire game de chaque joueur</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-dice"></i> Game aléatoire × 2</div><div style="font-size:11px;color:var(--text-muted)">Double le score d'une game tirée au sort pour un joueur ciblé</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-dice"></i> Game aléatoire × 2</div><div style="font-size:11px;color:var(--text-muted)">Un joueur est tiré au sort, puis une de ses games au hasard voit son score doublé</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-user-secret"></i> Vol de score</div><div style="font-size:11px;color:var(--text-muted)">Un joueur tiré au sort copie le score total du joueur juste au-dessus de lui au classement. Celui du dessus garde son score, il ne perd rien. Les games et leur nombre ne changent pas</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-bolt-lightning"></i> +5 pts petites games</div><div style="font-size:11px;color:var(--text-muted)">Ajoute +5 pts à toutes les games de moins de 5 kills pour chaque joueur</div></div></div>
     </div>
@@ -4299,6 +4299,28 @@ function doCommVolScore() {
   );
 }
 
+function doCommRandX2() {
+  const eligible = state.players.filter(p => p.games.length > 0);
+  if (!eligible.length) { toast('Aucun joueur avec des games.', 'error'); return; }
+  const p = eligible[Math.floor(Math.random() * eligible.length)];
+  const game = p.games[Math.floor(Math.random() * p.games.length)];
+  const num = [...p.games].sort((a, b) => b.score - a.score).findIndex(g => g.id === game.id) + 1;
+  const el = document.getElementById('action-rand-x2-preview');
+  const desc = `<strong>${escHtml(p.name)}</strong> est tiré au sort<br>` +
+    `Sa game #${num} passe de <span style="color:var(--text-muted)">${game.score}</span> à <span style="color:var(--gold)">${game.score * 2} pts</span>`;
+  if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.8">${desc}</div>`;
+  showConfirm('Confirmer le × 2', desc,
+    () => {
+      const oldScore = game.score;
+      game.score = oldScore * 2;
+      game.note = (game.note ? game.note + ' · ' : '') + '×2 aléatoire (roue commu)';
+      addLog(`Game aléatoire ×2 : <strong>${p.name}</strong> — game #${num}, ${oldScore} → ${game.score} pts.`, 'gold', 'dice', true);
+      toast(`${p.name} — game ×2 : ${oldScore} → ${game.score} pts !`, 'gold');
+      saveState(); closeModal('modal-action'); renderAll();
+    }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
+  );
+}
+
 // ============================================================
 // ROUE DE FOLIE — Roulette russe
 // ============================================================
@@ -4595,9 +4617,9 @@ function buildActionBody(type) {
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Appliquer × 2 à tous</button>`;
 
     case 'comm-rand-x2': return `
-      ${playerSelect('p1', 'Joueur')}
-      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Une game tirée au sort aura son score multiplié par 2.</p>
-      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Tirer au sort et × 2</button>`;
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">Un <strong style="color:var(--gold)">joueur est tiré au sort</strong> parmi ceux ayant des games, puis une de ses games est tirée au hasard et voit son score <strong style="color:var(--gold)">multiplié par 2</strong>.</p>
+      <div id="action-rand-x2-preview" style="margin-bottom:12px"></div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCommRandX2()"><i class="fa-solid fa-dice" style="margin-right:6px"></i>Tirer au sort & × 2</button>`;
 
     case 'comm-echange-best-worst': return `
       <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">Deux joueurs sont tirés au sort. La <strong style="color:var(--text)">meilleure game</strong> de l'un est échangée contre la <strong style="color:var(--text)">pire game</strong> de l'autre.</p>
@@ -4899,18 +4921,7 @@ function execAction() {
       toast(`Pire game ×2 appliquée à ${totalApplied} joueur${totalApplied > 1 ? 's' : ''} !`, 'gold');
       break;
     }
-    case 'comm-rand-x2': {
-      const p = getP('p1');
-      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
-      if (!p.games.length) { toast('Aucune game trouvée.', 'error'); return; }
-      const randGame = p.games[Math.floor(Math.random() * p.games.length)];
-      const oldScore = randGame.score;
-      randGame.score = Math.round(randGame.score * 2);
-      randGame.note = (randGame.note ? randGame.note + ' · ' : '') + `×2 aléatoire (roue commu)`;
-      addLog(`<strong>${p.name}</strong> — game aléatoire ×2 : ${oldScore} → ${randGame.score} pts.`, 'gold', 'shuffle', true);
-      toast(`Game ×2 : ${oldScore} → ${randGame.score} pts !`, 'gold');
-      break;
-    }
+    case 'comm-rand-x2': doCommRandX2(); return;
     case 'comm-roue-20subs': {
       state.roueCommu20Until = Date.now() + 24 * 60 * 60 * 1000;
       state.roueCommu20Start = state.subsCount || 0;
