@@ -1622,6 +1622,13 @@ main {
         <div class="ac-desc">Toute la ligue tourne — chaque joueur donne une game au hasard et en reçoit une</div>
       </div>
 
+      <div class="action-card action-card-rust" onclick="openAction('folie-worst-zero')">
+        <div class="ac-bg"><i class="fa-solid fa-ban"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-ban"></i></div>
+        <div class="ac-title">Pire game à 0</div>
+        <div class="ac-desc">La pire game de chaque joueur tombe à 0 pt — la game reste, son score est annulé</div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -1831,6 +1838,7 @@ main {
     <div class="action-list-compact">
       <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-gun"></i> Roulette russe</div><div style="font-size:11px;color:var(--text-muted)">6 joueurs sont tirés au sort et placés dans le barillet, une seule balle est chambrée. Le joueur touché perd définitivement sa meilleure game, les 5 autres sont épargnés.</div></div></div>
       <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-arrows-spin"></i> Échange général</div><div style="font-size:11px;color:var(--text-muted)">Tous les joueurs ayant au moins une game entrent dans une chaîne tirée au sort : chacun donne une game au hasard au suivant et en reçoit une du précédent. Le nombre de games de chacun ne change pas.</div></div></div>
+      <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-ban"></i> Pire game à 0</div><div style="font-size:11px;color:var(--text-muted)">La pire game de chaque joueur voit son score ramené à 0 pt. La game n'est pas supprimée, elle reste dans le détail mais ne rapporte plus rien — le nombre de games est donc inchangé. Les joueurs dont la pire game vaut déjà 0 ne sont pas touchés.</div></div></div>
     </div>
   </div>
 </div>
@@ -4321,6 +4329,34 @@ function doCommRandX2() {
   );
 }
 
+function doFolieWorstZero() {
+  const eligible = state.players.filter(p => p.games.length > 0);
+  if (!eligible.length) { toast('Aucun joueur avec des games.', 'error'); return; }
+  // Une pire game déjà à 0 n'a rien à perdre : on l'écarte pour ne pas annoncer un effet inexistant
+  const cibles = eligible.map(p => ({ p, g: getWorstGame(p) })).filter(x => x.g && x.g.score !== 0);
+  if (!cibles.length) { toast('Toutes les pires games sont déjà à 0.', 'error'); return; }
+  const totalPerdu = cibles.reduce((s, x) => s + x.g.score, 0);
+  const el = document.getElementById('action-worst-zero-preview');
+  const lignes = cibles
+    .slice()
+    .sort((a, b) => b.g.score - a.g.score)
+    .map(x => `<strong>${escHtml(x.p.name)}</strong> — pire game <span style="color:var(--text-muted)">${x.g.score}</span> → <span style="color:var(--rust-light)">0 pt</span>`)
+    .join('<br>');
+  const desc = `<strong>${cibles.length} joueur${cibles.length > 1 ? 's' : ''}</strong> touché${cibles.length > 1 ? 's' : ''} · <strong style="color:var(--rust-light)">−${totalPerdu} pts</strong> au total<br><br>${lignes}`;
+  if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.9;max-height:280px;overflow-y:auto">${desc}</div>`;
+  showConfirm('Confirmer la mise à zéro', desc,
+    () => {
+      cibles.forEach(x => {
+        x.g.score = 0;
+        x.g.note = (x.g.note ? x.g.note + ' · ' : '') + 'pire game annulée (roue de folie)';
+      });
+      addLog(`Pire game à 0 : ${cibles.length} joueur${cibles.length > 1 ? 's' : ''} touché${cibles.length > 1 ? 's' : ''}, ${totalPerdu} pts retirés au total.`, 'rust', 'ban', true);
+      toast(`Pire game annulée pour ${cibles.length} joueur${cibles.length > 1 ? 's' : ''} — ${totalPerdu} pts retirés.`, 'error');
+      saveState(); closeModal('modal-action'); renderAll();
+    }, true, 'Mettre à zéro', () => { if (el) el.innerHTML = ''; }
+  );
+}
+
 // ============================================================
 // ROUE DE FOLIE — Roulette russe
 // ============================================================
@@ -4460,7 +4496,8 @@ function openAction(type) {
     'comm-top10-inverse': 'Top 10 inversé',
     'comm-low-kills-bonus': '+5 pts games < 5 kills',
     'comm-vol-score': 'Vol de score',
-    'folie-roulette': 'Roulette russe'
+    'folie-roulette': 'Roulette russe',
+    'folie-worst-zero': 'Pire game à 0'
   };
   document.getElementById('modal-action-title').textContent = titles[type] || type;
   document.getElementById('modal-action-body').innerHTML = buildActionBody(type);
@@ -4671,6 +4708,11 @@ function buildActionBody(type) {
       <div id="rr-actions">
         <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doFolieRouletteDraw()"><i class="fa-solid fa-gun" style="margin-right:6px"></i>Charger le barillet</button>
       </div>`;
+
+    case 'folie-worst-zero': return `
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">La <strong style="color:var(--rust-light)">pire game de chaque joueur</strong> voit son score ramené à <strong style="color:var(--rust-light)">0 pt</strong>. La game n'est pas supprimée : elle reste dans le détail, mais ne rapporte plus rien.<br><strong>Le nombre de games ne change pas.</strong> Les joueurs dont la pire game vaut déjà 0 ne sont pas touchés.</p>
+      <div id="action-worst-zero-preview" style="margin-bottom:12px"></div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;background:var(--rust);border-color:var(--rust)" onclick="doFolieWorstZero()"><i class="fa-solid fa-ban" style="margin-right:6px"></i>Annuler toutes les pires games</button>`;
 
     default: return '<p>Action inconnue.</p>';
   }
