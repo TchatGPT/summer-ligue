@@ -1403,6 +1403,13 @@ main {
         <div class="ac-desc">Les 5 derniers du classement voient leur pire game remplacée par un clone de la meilleure game de la ligue</div>
       </div>
 
+      <div class="action-card action-card-rust" onclick="openAction('folie-freeze-all')">
+        <div class="ac-bg"><i class="fa-solid fa-lock"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-lock"></i></div>
+        <div class="ac-title">Chacun fige une game au hasard</div>
+        <div class="ac-desc">Toute la ligue — une game tirée au sort par joueur devient intouchable (clonage toujours possible)</div>
+      </div>
+
     </div>
   </div>
 
@@ -1523,6 +1530,13 @@ main {
         <div class="ac-icon"><i class="fa-solid fa-user-secret"></i></div>
         <div class="ac-title">Vol de score</div>
         <div class="ac-desc">Un joueur au hasard copie le score du joueur juste au-dessus de lui — celui-ci garde le sien</div>
+      </div>
+
+      <div class="action-card action-card-gold" onclick="openAction('comm-freeze-best')">
+        <div class="ac-bg"><i class="fa-solid fa-lock"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-lock"></i></div>
+        <div class="ac-title">3 joueurs figent leur meilleure game</div>
+        <div class="ac-desc">Tirés au sort — leur meilleure game ne peut plus être supprimée, échangée ni piquée (clonage toujours possible)</div>
       </div>
 
     </div>
@@ -1810,6 +1824,7 @@ main {
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-angles-up"></i> Pire game × 2</div><div style="font-size:11px;color:var(--text-muted)">Double le score de la pire game de chaque joueur</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-dice"></i> Game aléatoire × 2</div><div style="font-size:11px;color:var(--text-muted)">Un joueur est tiré au sort, puis une de ses games au hasard voit son score doublé</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-user-secret"></i> Vol de score</div><div style="font-size:11px;color:var(--text-muted)">Un joueur tiré au sort copie le score total du joueur juste au-dessus de lui au classement. Celui du dessus garde son score, il ne perd rien. Les games et leur nombre ne changent pas</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-lock"></i> 3 joueurs figent leur meilleure game</div><div style="font-size:11px;color:var(--text-muted)">3 joueurs sont tirés au sort et leur meilleure game est figée : elle ne peut plus être supprimée, échangée ni piquée par aucune action de roue. Elle reste clonable — un autre joueur peut en recevoir une copie. Le gel est indiqué dans le détail des games du joueur.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-bolt-lightning"></i> +5 pts petites games</div><div style="font-size:11px;color:var(--text-muted)">Ajoute +5 pts à toutes les games de moins de 5 kills pour chaque joueur</div></div></div>
     </div>
   </div>
@@ -1855,6 +1870,7 @@ main {
       <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-ban"></i> Pire game à 0</div><div style="font-size:11px;color:var(--text-muted)">La pire game de chaque joueur voit son score ramené à 0 pt. La game n'est pas supprimée, elle reste dans le détail mais ne rapporte plus rien — le nombre de games est donc inchangé. Les joueurs dont la pire game vaut déjà 0 ne sont pas touchés.</div></div></div>
       <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-wand-magic-sparkles"></i> 3 Jokers pour tout le monde</div><div style="font-size:11px;color:var(--text-muted)">Chaque joueur de la ligue reçoit 3 jokers, qui s'ajoutent à ceux qu'il possède déjà. Un joker permet de ne pas compter une game. Le compteur est visible dans le classement et se décrémente à chaque utilisation (3 → 2 → 1 → 0) ; à 0 le badge disparaît.</div></div></div>
       <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-life-ring"></i> Meilleure game aux 5 derniers</div><div style="font-size:11px;color:var(--text-muted)">Les 5 derniers du classement voient leur pire game remplacée par un clone de la meilleure game de toute la ligue. La meilleure game est copiée et non déplacée : son propriétaire la garde. Le nombre de games de chacun ne change pas.</div></div></div>
+      <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-lock"></i> Chacun fige une game au hasard</div><div style="font-size:11px;color:var(--text-muted)">Chaque joueur de la ligue voit une de ses games tirée au hasard passer en figée : plus supprimable, plus échangeable, plus piquable. Elle reste clonable. Les games déjà figées ne sont pas retirées au sort une seconde fois.</div></div></div>
     </div>
   </div>
 </div>
@@ -2334,6 +2350,8 @@ async function loadState() {
     try { const m = JSON.parse(scoreOffsetsFlag?.value || '{}'); state.players.forEach(p => { p.scoreOffset = m[p.id] || 0; }); } catch { state.players.forEach(p => { p.scoreOffset = 0; }); }
     const jokerCountsFlag = (flags || []).find(f => f.key === 'jokerCounts');
     try { const m = JSON.parse(jokerCountsFlag?.value || '{}'); state.players.forEach(p => { p.jokerCount = m[p.id] || 0; }); } catch { state.players.forEach(p => { p.jokerCount = 0; }); }
+    const lockedGamesFlag = (flags || []).find(f => f.key === 'lockedGames');
+    try { const ids = new Set(JSON.parse(lockedGamesFlag?.value || '[]')); state.players.forEach(p => p.games.forEach(g => { g.locked = ids.has(g.id); })); } catch { state.players.forEach(p => p.games.forEach(g => { g.locked = false; })); }
     const roue20Flag = (flags || []).find(f => f.key === 'roueCommu20Until');
     state.roueCommu20Until = parseInt(roue20Flag?.value || '0') || 0;
     const roue20StartFlag = (flags || []).find(f => f.key === 'roueCommu20Start');
@@ -2414,6 +2432,7 @@ async function saveState() {
       { key: 'ingameNames', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.ingameName).map(p => [p.id, p.ingameName]))) },
       { key: 'scoreOffsets', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.scoreOffset).map(p => [p.id, p.scoreOffset]))) },
       { key: 'jokerCounts', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.jokerCount > 0).map(p => [p.id, p.jokerCount]))) },
+      { key: 'lockedGames', value: JSON.stringify(state.players.flatMap(p => (p.games || []).filter(g => g.locked).map(g => g.id))) },
       { key: 'roueCommu20Until', value: String(state.roueCommu20Until || 0) },
       { key: 'roueCommu20Start', value: String(state.roueCommu20Start || 0) },
       { key: 'roueCommu50Next', value: String(state.roueCommu50Next || 0) },
@@ -2457,6 +2476,22 @@ function getWorstGame(player) {
 function getCountedGames(player) {
   const MAX_GAMES = (state.maxGames || 20) + (player.extraGames || 0);
   return [...player.games].sort((a, b) => b.score - a.score).slice(0, MAX_GAMES);
+}
+
+// ---- Games figées ----
+// Une game figée ne peut être ni supprimée, ni échangée, ni remplacée par une autre.
+// Elle reste clonable : le clone est une nouvelle game, qui n'hérite pas du gel.
+// Toutes les actions qui retirent ou déplacent une game doivent passer par ces helpers.
+function movableGames(player) { return (player.games || []).filter(g => !g.locked); }
+
+function getBestMovable(player) {
+  const l = movableGames(player);
+  return l.length ? l.reduce((b, g) => g.score > b.score ? g : b, l[0]) : null;
+}
+
+function getWorstMovable(player) {
+  const l = movableGames(player);
+  return l.length ? l.reduce((w, g) => g.score < w.score ? g : w, l[0]) : null;
 }
 
 // ============================================================
@@ -3821,6 +3856,7 @@ function showPlayerDetail(id) {
       return `<div class="game-card ${isBest ? 'best-game' : ''} ${isWorst ? 'worst-game' : ''}" ${isAdmin() ? 'style="padding-bottom:24px"' : ''}>
         ${isBest ? '<span class="gc-tag" style="background:var(--gold);color:var(--bg)">BEST</span>' : ''}
         ${isWorst && !isBest ? '<span class="gc-tag" style="background:var(--rust);color:white">PIRE</span>' : ''}
+        ${g.locked ? `<div style="display:inline-flex;align-items:center;gap:4px;margin-bottom:3px;background:rgba(74,142,201,0.15);border:1px solid var(--blue);border-radius:3px;padding:1px 6px;font-size:9px;font-weight:700;color:var(--blue);letter-spacing:0.5px"><i class="fa-solid fa-lock" style="font-size:8px"></i> FIGÉE${isAdmin() ? `<button onclick="unlockGame('${p.id}','${g.id}');event.stopPropagation()" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:11px;padding:0;line-height:1;margin-left:2px;opacity:0.75" title="Dégeler cette game">×</button>` : ''}</div>` : ''}
         <div class="gc-num">Game ${i + 1} · ${g.date || ''}</div>
         <div class="gc-score">${g.score}</div>
         <div class="gc-detail">${g.kills} kills · ${g.top === 1 ? 'Top 1' : g.top === 2 ? 'Top 2' : g.top === 3 ? 'Top 3' : '—'}</div>
@@ -3856,10 +3892,24 @@ function showPlayerDetail(id) {
   openModal('modal-player');
 }
 
+function unlockGame(playerId, gameId) {
+  const p = state.players.find(x => x.id === playerId);
+  const g = p?.games.find(x => x.id === gameId);
+  if (!g || !g.locked) return;
+  g.locked = false;
+  addLog(`<strong>${p.name}</strong> — game de ${g.score} pts dégelée.`, 'blue', 'lock-open', true);
+  toast(`Game dégelée pour ${p.name}.`, 'info');
+  saveState();
+  renderAll();
+  showPlayerDetail(playerId);
+}
+
 function deleteGame(playerId, gameId) {
   const p = state.players.find(x => x.id === playerId);
   if (!p) return;
   const g = p.games.find(x => x.id === gameId);
+  // Une game figée est protégée, y compris contre le Joker : il faut la dégeler d'abord
+  if (g && g.locked) { toast('Cette game est figée — dégelez-la d\'abord pour la supprimer.', 'error'); return; }
   closeModal('modal-player');
   showConfirm(
     'Supprimer une game',
@@ -4100,18 +4150,18 @@ function doEchange() {
   const eligible = state.players.filter(p => p.games.length > 0);
   if (eligible.length < 2) { toast('Il faut au moins 2 joueurs avec des games.', 'error'); return; }
 
-  // Tirer joueur A (a une meilleure game)
-  const poolA = eligible.filter(p => getBestGame(p));
+  // Tirer joueur A (a une meilleure game non figée à donner)
+  const poolA = eligible.filter(p => getBestMovable(p));
   if (!poolA.length) { toast('Aucun joueur éligible pour joueur A.', 'error'); return; }
   const pa = poolA[Math.floor(Math.random() * poolA.length)];
 
-  // Tirer joueur B différent de A (a une pire game)
-  const poolB = eligible.filter(p => p.id !== pa.id && getWorstGame(p));
+  // Tirer joueur B différent de A (a une pire game non figée à donner)
+  const poolB = eligible.filter(p => p.id !== pa.id && getWorstMovable(p));
   if (!poolB.length) { toast('Aucun joueur éligible pour joueur B.', 'error'); return; }
   const pb = poolB[Math.floor(Math.random() * poolB.length)];
 
-  const bestA = getBestGame(pa);
-  const worstB = getWorstGame(pb);
+  const bestA = getBestMovable(pa);
+  const worstB = getWorstMovable(pb);
 
   // Afficher le résultat dans le preview avant d'appliquer
   const el = document.getElementById('echange-preview');
@@ -4170,11 +4220,12 @@ function doCloneBestWorstRand() {
   const poolA = state.players.filter(p => p.games.length > 0 && getBestGame(p));
   if (poolA.length < 2) { toast('Il faut au moins 2 joueurs avec des games.', 'error'); return; }
   const src = poolA[Math.floor(Math.random() * poolA.length)];
-  const poolB = state.players.filter(p => p.id !== src.id);
+  // dst doit avoir une pire game non figée à céder, ou aucune game du tout
+  const poolB = state.players.filter(p => p.id !== src.id && (p.games.length === 0 || getWorstMovable(p)));
   if (!poolB.length) { toast('Aucun joueur éligible.', 'error'); return; }
   const dst = poolB[Math.floor(Math.random() * poolB.length)];
-  const srcBest = getBestGame(src);
-  const dstWorst = getWorstGame(dst);
+  const srcBest = getBestGame(src); // la source est seulement clonée : une game figée peut l'être
+  const dstWorst = getWorstMovable(dst);
   const el = document.getElementById('action-clone-rand-preview');
   if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px">
     <div style="margin-bottom:4px"><strong>${escHtml(src.name)}</strong> — meilleure game : <span style="color:var(--gold)">${srcBest.score} pts (${srcBest.kills} kills)</span></div>
@@ -4195,14 +4246,15 @@ function doCloneBestWorstRand() {
 function doCommEchangeBestWorst() {
   const eligible = state.players.filter(p => p.games.length > 0);
   if (eligible.length < 2) { toast('Il faut au moins 2 joueurs avec des games.', 'error'); return; }
-  const poolA = eligible.filter(p => getBestGame(p));
-  if (!poolA.length) { toast('Aucun joueur éligible.', 'error'); return; }
+  // Les deux games sont cédées : elles doivent être non figées
+  const poolA = eligible.filter(p => getBestMovable(p));
+  if (!poolA.length) { toast('Aucun joueur éligible (meilleures games figées).', 'error'); return; }
   const pa = poolA[Math.floor(Math.random() * poolA.length)];
-  const poolB = eligible.filter(p => p.id !== pa.id && getWorstGame(p));
-  if (!poolB.length) { toast('Aucun joueur éligible pour B.', 'error'); return; }
+  const poolB = eligible.filter(p => p.id !== pa.id && getWorstMovable(p));
+  if (!poolB.length) { toast('Aucun joueur éligible pour B (pires games figées).', 'error'); return; }
   const pb = poolB[Math.floor(Math.random() * poolB.length)];
-  const bestA = getBestGame(pa);
-  const worstB = getWorstGame(pb);
+  const bestA = getBestMovable(pa);
+  const worstB = getWorstMovable(pb);
   const el = document.getElementById('action-echange-bp-preview');
   if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px">
     <div style="margin-bottom:6px"><strong>${escHtml(pa.name)}</strong> donne sa meilleure : <span style="color:var(--gold)">${bestA.score} pts</span></div>
@@ -4223,8 +4275,9 @@ function doCommEchangeBestWorst() {
 }
 
 function doCommEchangeRand() {
-  const eligible = state.players.filter(p => p.games.length >= 2);
-  if (eligible.length < 2) { toast('Il faut au moins 2 joueurs avec 2 games chacun.', 'error'); return; }
+  // Il faut 2 games NON FIGÉES à céder de chaque côté
+  const eligible = state.players.filter(p => movableGames(p).length >= 2);
+  if (eligible.length < 2) { toast('Il faut au moins 2 joueurs avec 2 games non figées chacun.', 'error'); return; }
   const pa = eligible[Math.floor(Math.random() * eligible.length)];
   const poolB = eligible.filter(p => p.id !== pa.id);
   const pb = poolB[Math.floor(Math.random() * poolB.length)];
@@ -4232,8 +4285,8 @@ function doCommEchangeRand() {
     const shuffled = [...games].sort(() => Math.random() - 0.5);
     return [shuffled[0], shuffled[1]];
   };
-  const [gameA1, gameA2] = pickTwo(pa.games);
-  const [gameB1, gameB2] = pickTwo(pb.games);
+  const [gameA1, gameA2] = pickTwo(movableGames(pa));
+  const [gameB1, gameB2] = pickTwo(movableGames(pb));
   const el = document.getElementById('action-echange-rand-preview');
   const gameNumOf = (player, game) => [...player.games].sort((a,b) => b.score - a.score).findIndex(g => g.id === game.id) + 1;
   const nA1 = gameNumOf(pa, gameA1), nA2 = gameNumOf(pa, gameA2);
@@ -4256,12 +4309,13 @@ function doCommEchangeRand() {
 }
 
 function doCommEchangeRand3() {
-  const eligible = state.players.filter(p => p.games.length > 0);
-  if (eligible.length < 3) { toast('Il faut au moins 3 joueurs avec des games.', 'error'); return; }
+  // Chaque joueur doit avoir au moins une game non figée à céder
+  const eligible = state.players.filter(p => movableGames(p).length > 0);
+  if (eligible.length < 3) { toast('Il faut au moins 3 joueurs avec des games non figées.', 'error'); return; }
   const shuffled = [...eligible].sort(() => Math.random() - 0.5);
   const pa = shuffled[0], pb = shuffled[1], pc = shuffled[2];
   const randGame = arr => arr[Math.floor(Math.random() * arr.length)];
-  const gameA = randGame(pa.games), gameB = randGame(pb.games), gameC = randGame(pc.games);
+  const gameA = randGame(movableGames(pa)), gameB = randGame(movableGames(pb)), gameC = randGame(movableGames(pc));
   const gameNumOf = (player, game) => [...player.games].sort((a,b) => b.score - a.score).findIndex(g => g.id === game.id) + 1;
   const nA = gameNumOf(pa, gameA), nB = gameNumOf(pb, gameB), nC = gameNumOf(pc, gameC);
   const el = document.getElementById('action-echange-rand3-preview');
@@ -4285,11 +4339,12 @@ function doCommEchangeRand3() {
 }
 
 function doFolieEchangeAll() {
-  const eligible = state.players.filter(p => p.games.length > 0);
-  if (eligible.length < 2) { toast(`Il faut au moins 2 joueurs avec des games (${eligible.length} actuellement).`, 'error'); return; }
+  // Seuls les joueurs ayant une game non figée à céder entrent dans la chaîne
+  const eligible = state.players.filter(p => movableGames(p).length > 0);
+  if (eligible.length < 2) { toast(`Il faut au moins 2 joueurs avec des games non figées (${eligible.length} actuellement).`, 'error'); return; }
   // Toute la ligue entre dans la chaîne, dans un ordre tiré au sort
   const picks = [...eligible].sort(() => Math.random() - 0.5)
-    .map(p => ({ p, g: p.games[Math.floor(Math.random() * p.games.length)] }));
+    .map(p => { const mv = movableGames(p); return { p, g: mv[Math.floor(Math.random() * mv.length)] }; });
   const gameNumOf = (player, game) => [...player.games].sort((a, b) => b.score - a.score).findIndex(g => g.id === game.id) + 1;
   const nums = picks.map(x => gameNumOf(x.p, x.g));
   const el = document.getElementById('action-echange-all-preview');
@@ -4369,8 +4424,8 @@ function doFolieWorstZero() {
   const eligible = state.players.filter(p => p.games.length > 0);
   if (!eligible.length) { toast('Aucun joueur avec des games.', 'error'); return; }
   // Une pire game déjà à 0 n'a rien à perdre : on l'écarte pour ne pas annoncer un effet inexistant
-  const cibles = eligible.map(p => ({ p, g: getWorstGame(p) })).filter(x => x.g && x.g.score !== 0);
-  if (!cibles.length) { toast('Toutes les pires games sont déjà à 0.', 'error'); return; }
+  const cibles = eligible.map(p => ({ p, g: getWorstMovable(p) })).filter(x => x.g && x.g.score !== 0);
+  if (!cibles.length) { toast('Aucune pire game à mettre à 0 (déjà à 0 ou figées).', 'error'); return; }
   const totalPerdu = cibles.reduce((s, x) => s + x.g.score, 0);
   const el = document.getElementById('action-worst-zero-preview');
   const lignes = cibles
@@ -4399,8 +4454,10 @@ function doFolieCloneBottom5() {
   // Meilleure game de toute la ligue, tous joueurs confondus
   let best = null, bestOwner = null;
   eligible.forEach(p => p.games.forEach(g => { if (!best || g.score > best.score) { best = g; bestOwner = p; } }));
-  const sorted = [...eligible].sort((a, b) => getPlayerTotal(b) - getPlayerTotal(a));
-  const derniers = sorted.slice(-Math.min(5, sorted.length)).map(p => ({ p, worst: getWorstGame(p), rang: sorted.indexOf(p) + 1 }));
+  // Seuls les joueurs ayant une pire game non figée peuvent la voir remplacée
+  const sorted = [...eligible].filter(p => getWorstMovable(p)).sort((a, b) => getPlayerTotal(b) - getPlayerTotal(a));
+  if (sorted.length < 2) { toast('Pas assez de joueurs ayant une pire game non figée.', 'error'); return; }
+  const derniers = sorted.slice(-Math.min(5, sorted.length)).map(p => ({ p, worst: getWorstMovable(p), rang: sorted.indexOf(p) + 1 }));
   const gain = derniers.reduce((s, x) => s + (best.score - x.worst.score), 0);
   const el = document.getElementById('action-clone-bottom5-preview');
   const lignes = derniers.map(x =>
@@ -4424,6 +4481,51 @@ function doFolieCloneBottom5() {
   );
 }
 
+function doCommFreezeBest() {
+  // Un joueur dont la meilleure game est déjà figée n'a rien à gagner : on l'écarte
+  const eligible = state.players.filter(p => { const b = getBestGame(p); return b && !b.locked; });
+  if (!eligible.length) { toast('Aucune meilleure game à figer (déjà figées ou aucune game).', 'error'); return; }
+  const picks = [...eligible].sort(() => Math.random() - 0.5).slice(0, Math.min(3, eligible.length))
+    .map(p => ({ p, g: getBestGame(p) }));
+  const el = document.getElementById('action-freeze-best-preview');
+  const lignes = picks.map(x => `<strong>${escHtml(x.p.name)}</strong> — meilleure game <span style="color:var(--gold)">${x.g.score} pts</span> → <span style="color:var(--blue)">figée</span>`).join('<br>');
+  const desc = `<strong>${picks.length} joueur${picks.length > 1 ? 's' : ''}</strong> tiré${picks.length > 1 ? 's' : ''} au sort<br><br>${lignes}`;
+  if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.9">${desc}</div>`;
+  showConfirm('Confirmer le gel', desc,
+    () => {
+      picks.forEach(x => {
+        x.g.locked = true;
+        x.g.note = (x.g.note ? x.g.note + ' · ' : '') + 'game figée (roue commu)';
+      });
+      addLog(`Gel de la meilleure game : ${picks.map(x => `<strong>${x.p.name}</strong> (${x.g.score} pts)`).join(', ')}.`, 'blue', 'lock', true);
+      toast(`${picks.length} meilleure${picks.length > 1 ? 's' : ''} game${picks.length > 1 ? 's' : ''} figée${picks.length > 1 ? 's' : ''} !`, 'gold');
+      saveState(); closeModal('modal-action'); renderAll();
+    }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
+  );
+}
+
+function doFolieFreezeAll() {
+  // Une game déjà figée ne peut pas être re-tirée : chacun fige une game encore libre
+  const eligible = state.players.filter(p => movableGames(p).length > 0);
+  if (!eligible.length) { toast('Aucune game à figer dans la ligue.', 'error'); return; }
+  const picks = eligible.map(p => { const mv = movableGames(p); return { p, g: mv[Math.floor(Math.random() * mv.length)] }; });
+  const el = document.getElementById('action-freeze-all-preview');
+  const lignes = picks.map(x => `<strong>${escHtml(x.p.name)}</strong> — game <span style="color:var(--gold)">${x.g.score} pts</span> → <span style="color:var(--blue)">figée</span>`).join('<br>');
+  const desc = `<strong>${picks.length} joueur${picks.length > 1 ? 's' : ''}</strong> concerné${picks.length > 1 ? 's' : ''}<br><br>${lignes}`;
+  if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.9;max-height:280px;overflow-y:auto">${desc}</div>`;
+  showConfirm('Confirmer le gel général', desc,
+    () => {
+      picks.forEach(x => {
+        x.g.locked = true;
+        x.g.note = (x.g.note ? x.g.note + ' · ' : '') + 'game figée (roue de folie)';
+      });
+      addLog(`Gel général : une game figée pour ${picks.length} joueur${picks.length > 1 ? 's' : ''}.`, 'blue', 'lock', true);
+      toast(`Une game figée pour ${picks.length} joueur${picks.length > 1 ? 's' : ''} !`, 'gold');
+      saveState(); closeModal('modal-action'); renderAll();
+    }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
+  );
+}
+
 // ============================================================
 // ROUE DE FOLIE — Roulette russe
 // ============================================================
@@ -4431,8 +4533,10 @@ let _roulette = null;   // { picks: [joueur x6], balle: index du chargeur, tire:
 let _rouletteGen = 0;   // invalide les animations en cours si un nouveau barillet est chargé
 
 function doFolieRouletteDraw() {
-  const eligible = state.players.filter(p => p.games.length > 0);
-  if (eligible.length < 6) { toast(`Il faut au moins 6 joueurs avec des games (${eligible.length} actuellement).`, 'error'); return; }
+  // Une game figée ne peut pas être perdue : seuls les joueurs ayant une meilleure game
+  // non figée entrent dans le barillet
+  const eligible = state.players.filter(p => getBestMovable(p));
+  if (eligible.length < 6) { toast(`Il faut au moins 6 joueurs avec des games non figées (${eligible.length} actuellement).`, 'error'); return; }
   _roulette = {
     picks: [...eligible].sort(() => Math.random() - 0.5).slice(0, 6),
     balle: Math.floor(Math.random() * 6),
@@ -4456,7 +4560,7 @@ function renderRouletteStage() {
     return `<div class="rr-chamber" id="rr-ch-${k}" style="transform:translate(-50%,-50%) translate(${x}px,${y}px)">${k + 1}</div>`;
   }).join('');
   const lignes = _roulette.picks.map((p, k) => {
-    const best = getBestGame(p);
+    const best = getBestMovable(p); // celle réellement en jeu si le coup part
     return `<div class="rr-row" id="rr-row-${k}">
       <span class="rr-num">${k + 1}</span>
       <span class="rr-name">${escHtml(p.name)}</span>
@@ -4473,7 +4577,7 @@ function renderRouletteStage() {
 
 function doFolieRouletteFire() {
   if (!_roulette || _roulette.tire) return;
-  if (!getBestGame(_roulette.picks[_roulette.balle])) { toast('Le joueur chambré n\'a plus de game — retire au sort.', 'error'); return; }
+  if (!getBestMovable(_roulette.picks[_roulette.balle])) { toast('Le joueur chambré n\'a plus de game non figée — retire au sort.', 'error'); return; }
   showConfirm('Appuyer sur la détente',
     'Six joueurs sont dans le barillet, une balle est chambrée. Le joueur touché perdra <strong>définitivement</strong> sa meilleure game. Irréversible.',
     () => {
@@ -4508,7 +4612,7 @@ function rouletteStep(k, touche) {
 
 function rouletteBang() {
   const victime = _roulette.picks[_roulette.balle];
-  const best = getBestGame(victime);
+  const best = getBestMovable(victime); // une game figée ne peut pas être perdue
   if (!best) return;
   const wrap = document.getElementById('rr-wrap');
   if (wrap) wrap.classList.add('shaking');
@@ -4566,7 +4670,9 @@ function openAction(type) {
     'folie-roulette': 'Roulette russe',
     'folie-worst-zero': 'Pire game à 0',
     'folie-jokers3': '3 Jokers pour tout le monde',
-    'folie-clone-bottom5': 'Meilleure game aux 5 derniers'
+    'folie-clone-bottom5': 'Meilleure game aux 5 derniers',
+    'comm-freeze-best': '3 joueurs figent leur meilleure game',
+    'folie-freeze-all': 'Chacun fige une game au hasard'
   };
   document.getElementById('modal-action-title').textContent = titles[type] || type;
   document.getElementById('modal-action-body').innerHTML = buildActionBody(type);
@@ -4578,7 +4684,10 @@ function populateGameSelect(selId, playerId, showKills) {
   const sel = document.getElementById(selId);
   if (!sel) return;
   if (!p || !p.games.length) { sel.innerHTML = '<option value="">— aucune game —</option>'; return; }
-  const sorted = [...p.games].sort((a,b) => b.score - a.score);
+  // Ce sélecteur ne sert qu'à supprimer une game : les games figées en sont exclues
+  const dispo = movableGames(p);
+  if (!dispo.length) { sel.innerHTML = '<option value="">— toutes les games sont figées —</option>'; return; }
+  const sorted = [...dispo].sort((a,b) => b.score - a.score);
   sel.innerHTML = sorted.map((g, i) =>
     `<option value="${g.id}">${showKills ? `${g.kills} kills (${g.score} pts)` : `${g.score} pts (${g.kills} kills) — Game ${i+1}`}</option>`
   ).join('');
@@ -4802,6 +4911,18 @@ function buildActionBody(type) {
       <div id="action-clone-bottom5-preview" style="margin-bottom:12px"></div>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center;background:var(--rust);border-color:var(--rust)" onclick="doFolieCloneBottom5()"><i class="fa-solid fa-life-ring" style="margin-right:6px"></i>Cloner pour les 5 derniers</button>`;
 
+    case 'comm-freeze-best': return `
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px"><strong style="color:var(--gold)">3 joueurs</strong> sont tirés au sort. Leur <strong>meilleure game</strong> est <strong style="color:var(--blue)">figée</strong> : elle ne peut plus être supprimée, échangée ni piquée par aucune action de roue.<br>
+      Elle reste <strong>clonable</strong> — un autre joueur peut en recevoir une copie. Le gel est visible dans le détail des games du joueur.</p>
+      <div id="action-freeze-best-preview" style="margin-bottom:12px"></div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCommFreezeBest()"><i class="fa-solid fa-lock" style="margin-right:6px"></i>Tirer au sort & figer</button>`;
+
+    case 'folie-freeze-all': return `
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px"><strong style="color:var(--rust-light)">Chaque joueur</strong> de la ligue voit <strong>une de ses games tirée au hasard</strong> passer en <strong style="color:var(--blue)">figée</strong> : plus supprimable, plus échangeable, plus piquable.<br>
+      Elle reste <strong>clonable</strong>. Les games déjà figées ne sont pas retirées au sort une seconde fois.</p>
+      <div id="action-freeze-all-preview" style="margin-bottom:12px"></div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;background:var(--rust);border-color:var(--rust)" onclick="doFolieFreezeAll()"><i class="fa-solid fa-lock" style="margin-right:6px"></i>Figer une game pour chacun</button>`;
+
     default: return '<p>Action inconnue.</p>';
   }
 }
@@ -4845,7 +4966,7 @@ function execAction() {
     case 'remove-worst': {
       let count = 0;
       state.players.forEach(p => {
-        const worst = getWorstGame(p);
+        const worst = getWorstMovable(p); // une game figée ne peut pas être supprimée
         if (worst) {
           p.games = p.games.filter(g => g.id !== worst.id);
           count++;
@@ -4895,8 +5016,8 @@ function execAction() {
       const pa = getP('p1'), pb = getP('p2');
       if (!pa || !pb) { toast('Sélectionnez deux joueurs.', 'error'); return; }
       if (pa.id === pb.id) { toast('Deux joueurs différents.', 'error'); return; }
-      const bestA = getBestGame(pa); const worstB = getWorstGame(pb);
-      if (!bestA || !worstB) { toast('Games manquantes.', 'error'); return; }
+      const bestA = getBestMovable(pa); const worstB = getWorstMovable(pb);
+      if (!bestA || !worstB) { toast('Games manquantes ou figées — échange impossible.', 'error'); return; }
       pa.games = pa.games.filter(g => g.id !== bestA.id);
       pb.games = pb.games.filter(g => g.id !== worstB.id);
       pa.games.push({ ...worstB, id: uid(), note: (worstB.note ? worstB.note + ' · ' : '') + `échange perso avec ${pb.name}` });
@@ -4993,6 +5114,7 @@ function execAction() {
       if (!gameId) { toast('Sélectionnez une game à supprimer.', 'error'); return; }
       const game = p.games.find(g => g.id === gameId);
       if (!game) { toast('Game introuvable.', 'error'); return; }
+      if (game.locked) { toast('Cette game est figée — impossible de la supprimer.', 'error'); return; }
       p.games = p.games.filter(g => g.id !== gameId);
       addLog(`<strong>${p.name}</strong> — game (${game.score} pts) supprimée.`, 'rust', 'trash-can', true);
       toast(`Game supprimée pour ${p.name}.`, 'error');
@@ -5011,8 +5133,8 @@ function execAction() {
       if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
       const best = getBestGame(p);
       const worst = getWorstGame(p);
-      const pool = p.games.filter(g => g.id !== best?.id && g.id !== worst?.id);
-      if (!pool.length) { toast('Pas assez de games (meilleure et pire protégées).', 'error'); return; }
+      const pool = p.games.filter(g => !g.locked && g.id !== best?.id && g.id !== worst?.id);
+      if (!pool.length) { toast('Pas assez de games (meilleure, pire et games figées protégées).', 'error'); return; }
       const rand = pool[Math.floor(Math.random() * pool.length)];
       p.games = p.games.filter(g => g.id !== rand.id);
       addLog(`<strong>${p.name}</strong> — game aléatoire supprimée (${rand.score} pts).`, 'rust', 'dice', true);
