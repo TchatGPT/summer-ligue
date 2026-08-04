@@ -3856,13 +3856,19 @@ function showPlayerDetail(id) {
 
   const gamesHtml = p.games.length === 0
     ? '<p style="color:var(--text-muted);text-align:center;padding:20px">Aucune game.</p>'
-    : `<div class="player-detail-games">${p.games.map((g, i) => {
+    : `<div class="player-detail-games">${(() => {
+      // Quand la meilleure game est figée, c'est la meilleure NON figée qui est réellement
+      // exposée aux actions de roue : on la signale comme 2e best.
+      const secondBest = (best && best.locked) ? getBestMovable(p) : null;
+      return p.games.map((g, i) => {
       const isBest = best && g.id === best.id;
+      const isSecondBest = secondBest && g.id === secondBest.id;
       const isWorst = worst && g.id === worst.id;
       const isCounted = counted.some(c => c.id === g.id);
       return `<div class="game-card ${isBest ? 'best-game' : ''} ${isWorst ? 'worst-game' : ''}" ${isAdmin() ? 'style="padding-bottom:24px"' : ''}>
         ${isBest ? '<span class="gc-tag" style="background:var(--gold);color:var(--bg)">BEST</span>' : ''}
-        ${isWorst && !isBest ? '<span class="gc-tag" style="background:var(--rust);color:white">PIRE</span>' : ''}
+        ${isSecondBest && !isBest ? '<span class="gc-tag" style="background:var(--gold-light);color:var(--bg)">2ᵉ BEST</span>' : ''}
+        ${isWorst && !isBest && !isSecondBest ? '<span class="gc-tag" style="background:var(--rust);color:white">PIRE</span>' : ''}
         ${g.locked ? `<div style="display:inline-flex;align-items:center;gap:4px;margin-bottom:3px;background:rgba(74,142,201,0.15);border:1px solid var(--blue);border-radius:3px;padding:1px 6px;font-size:9px;font-weight:700;color:var(--blue);letter-spacing:0.5px"><i class="fa-solid fa-lock" style="font-size:8px"></i> FIGÉE${isAdmin() ? `<button onclick="unlockGame('${p.id}','${g.id}');event.stopPropagation()" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:11px;padding:0;line-height:1;margin-left:2px;opacity:0.75" title="Dégeler cette game">×</button>` : ''}</div>` : ''}
         <div class="gc-num">Game ${i + 1} · ${g.date || ''}</div>
         <div class="gc-score">${g.score}</div>
@@ -3878,7 +3884,8 @@ function showPlayerDetail(id) {
             <i class="fa-solid fa-trash" style="font-size:11px"></i>
           </button>` : ''}
       </div>`;
-    }).join('')}</div>`;
+      }).join('');
+    })()}</div>`;
 
   document.getElementById('modal-player-body').innerHTML = `
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
@@ -4181,8 +4188,8 @@ function doEchange() {
     () => {
       pa.games = pa.games.filter(g => g.id !== bestA.id);
       pb.games = pb.games.filter(g => g.id !== worstB.id);
-      pa.games.push({ ...worstB, id: uid(), note: (worstB.note ? worstB.note + ' · ' : '') + `échange comm avec ${pb.name}` });
-      pb.games.push({ ...bestA, id: uid(), note: (bestA.note ? bestA.note + ' · ' : '') + `échange comm avec ${pa.name}` });
+      pa.games.push({ ...worstB, id: uid(), locked: false, note: (worstB.note ? worstB.note + ' · ' : '') + `échange comm avec ${pb.name}` });
+      pb.games.push({ ...bestA, id: uid(), locked: false, note: (bestA.note ? bestA.note + ' · ' : '') + `échange comm avec ${pa.name}` });
       saveState();
       closeModal('modal-echange');
       renderAll();
@@ -4214,7 +4221,7 @@ function doCloneBestWorst() {
   showConfirm('Confirmer le clone',
     `Ajouter la meilleure game de la ligue (<strong>${leagueBest.score} pts</strong> — ${escHtml(leagueBestOwner.name)}) à <strong>${escHtml(p.name)}</strong> ?`,
     () => {
-      p.games.push({ ...leagueBest, id: uid(), note: (leagueBest.note ? leagueBest.note + ' · ' : '') + `clone best ligue (${leagueBestOwner.name})` });
+      p.games.push({ ...leagueBest, id: uid(), locked: false, note: (leagueBest.note ? leagueBest.note + ' · ' : '') + `clone best ligue (${leagueBestOwner.name})` });
       addLog(`<strong>${p.name}</strong> — clone de la meilleure game de la ligue ajoutée (${leagueBest.score} pts — ${leagueBestOwner.name}).`, 'gold', 'clone', true);
       toast(`Clone effectué : ${leagueBest.score} pts (${leagueBestOwner.name}) → ${p.name} !`, 'gold');
       saveState(); closeModal('modal-action'); renderAll();
@@ -4241,7 +4248,7 @@ function doCloneBestWorstRand() {
     `Remplacer la pire game de <strong>${escHtml(dst.name)}</strong> (<strong>${dstWorst ? dstWorst.score + ' pts' : 'aucune'}</strong>) par la meilleure de <strong>${escHtml(src.name)}</strong> (<strong>${srcBest.score} pts</strong>) ?`,
     () => {
       if (dstWorst) dst.games = dst.games.filter(g => g.id !== dstWorst.id);
-      dst.games.push({ ...srcBest, id: uid(), note: (srcBest.note ? srcBest.note + ' · ' : '') + `clone best aléatoire (${src.name})` });
+      dst.games.push({ ...srcBest, id: uid(), locked: false, note: (srcBest.note ? srcBest.note + ' · ' : '') + `clone best aléatoire (${src.name})` });
       addLog(`<strong>${dst.name}</strong> — pire game remplacée par clone de la meilleure de <strong>${src.name}</strong> (${srcBest.score} pts).`, 'gold', 'shuffle', true);
       toast(`Clone : meilleure de ${src.name} (${srcBest.score} pts) → ${dst.name} !`, 'gold');
       saveState(); closeModal('modal-action'); renderAll();
@@ -4271,8 +4278,8 @@ function doCommEchangeBestWorst() {
     () => {
       pa.games = pa.games.filter(g => g.id !== bestA.id);
       pb.games = pb.games.filter(g => g.id !== worstB.id);
-      pa.games.push({ ...worstB, id: uid(), note: (worstB.note ? worstB.note + ' · ' : '') + `échange comm avec ${pb.name}` });
-      pb.games.push({ ...bestA, id: uid(), note: (bestA.note ? bestA.note + ' · ' : '') + `échange comm avec ${pa.name}` });
+      pa.games.push({ ...worstB, id: uid(), locked: false, note: (worstB.note ? worstB.note + ' · ' : '') + `échange comm avec ${pb.name}` });
+      pb.games.push({ ...bestA, id: uid(), locked: false, note: (bestA.note ? bestA.note + ' · ' : '') + `échange comm avec ${pa.name}` });
       addLog(`Échange : <strong>${pa.name}</strong> (best ${bestA.score} pts) ↔ <strong>${pb.name}</strong> (pire ${worstB.score} pts)`, 'gold', 'arrow-right-arrow-left', true);
       toast('Échange effectué !', 'gold');
       saveState(); closeModal('modal-action'); renderAll();
@@ -4305,8 +4312,8 @@ function doCommEchangeRand() {
       const idsB = new Set([gameB1.id, gameB2.id]);
       pa.games = pa.games.filter(g => !idsA.has(g.id));
       pb.games = pb.games.filter(g => !idsB.has(g.id));
-      [gameB1, gameB2].forEach(g => pa.games.push({ ...g, id: uid(), note: (g.note ? g.note + ' · ' : '') + `échange aléatoire avec ${pb.name}` }));
-      [gameA1, gameA2].forEach(g => pb.games.push({ ...g, id: uid(), note: (g.note ? g.note + ' · ' : '') + `échange aléatoire avec ${pa.name}` }));
+      [gameB1, gameB2].forEach(g => pa.games.push({ ...g, id: uid(), locked: false, note: (g.note ? g.note + ' · ' : '') + `échange aléatoire avec ${pb.name}` }));
+      [gameA1, gameA2].forEach(g => pb.games.push({ ...g, id: uid(), locked: false, note: (g.note ? g.note + ' · ' : '') + `échange aléatoire avec ${pa.name}` }));
       addLog(`Échange aléatoire : <strong>${pa.name}</strong> (#${nA1} ${gameA1.score}pts, #${nA2} ${gameA2.score}pts) ↔ <strong>${pb.name}</strong> (#${nB1} ${gameB1.score}pts, #${nB2} ${gameB2.score}pts)`, 'gold', 'shuffle', true);
       toast('Échange aléatoire effectué !', 'gold');
       saveState(); closeModal('modal-action'); renderAll();
@@ -4334,9 +4341,9 @@ function doCommEchangeRand3() {
       pa.games = pa.games.filter(g => g.id !== gameA.id);
       pb.games = pb.games.filter(g => g.id !== gameB.id);
       pc.games = pc.games.filter(g => g.id !== gameC.id);
-      pa.games.push({ ...gameC, id: uid(), note: (gameC.note ? gameC.note + ' · ' : '') + `échange 3 joueurs (de ${pc.name})` });
-      pb.games.push({ ...gameA, id: uid(), note: (gameA.note ? gameA.note + ' · ' : '') + `échange 3 joueurs (de ${pa.name})` });
-      pc.games.push({ ...gameB, id: uid(), note: (gameB.note ? gameB.note + ' · ' : '') + `échange 3 joueurs (de ${pb.name})` });
+      pa.games.push({ ...gameC, id: uid(), locked: false, note: (gameC.note ? gameC.note + ' · ' : '') + `échange 3 joueurs (de ${pc.name})` });
+      pb.games.push({ ...gameA, id: uid(), locked: false, note: (gameA.note ? gameA.note + ' · ' : '') + `échange 3 joueurs (de ${pa.name})` });
+      pc.games.push({ ...gameB, id: uid(), locked: false, note: (gameB.note ? gameB.note + ' · ' : '') + `échange 3 joueurs (de ${pb.name})` });
       addLog(`Échange 3 joueurs : <strong>${pa.name}</strong>→<strong>${pb.name}</strong>→<strong>${pc.name}</strong>→<strong>${pa.name}</strong>`, 'gold', 'shuffle', true);
       toast('Échange 3 games effectué !', 'gold');
       saveState(); closeModal('modal-action'); renderAll();
@@ -4364,7 +4371,7 @@ function doFolieEchangeAll() {
       picks.forEach(x => { x.p.games = x.p.games.filter(g => g.id !== x.g.id); });
       picks.forEach((x, k) => {
         const dest = picks[(k + 1) % picks.length].p;
-        dest.games.push({ ...x.g, id: uid(), note: (x.g.note ? x.g.note + ' · ' : '') + `échange général (de ${x.p.name})` });
+        dest.games.push({ ...x.g, id: uid(), locked: false, note: (x.g.note ? x.g.note + ' · ' : '') + `échange général (de ${x.p.name})` });
       });
       addLog(`Échange général sur ${picks.length} joueurs : ${picks.map(x => x.p.name).join(' → ')} → ${picks[0].p.name}`, 'rust', 'arrows-spin', true);
       toast(`Échange général effectué sur ${picks.length} joueurs !`, 'gold');
@@ -4478,7 +4485,7 @@ function doFolieCloneBottom5() {
         // La pire game est retirée puis remplacée par une copie de la meilleure :
         // le nombre de games reste identique, et l'original n'est pas déplacé.
         x.p.games = x.p.games.filter(g => g.id !== x.worst.id);
-        x.p.games.push({ ...best, id: uid(), note: (best.note ? best.note + ' · ' : '') + `clone de la meilleure game de la ligue (${bestOwner.name})` });
+        x.p.games.push({ ...best, id: uid(), locked: false, note: (best.note ? best.note + ' · ' : '') + `clone de la meilleure game de la ligue (${bestOwner.name})` });
       });
       addLog(`Meilleure game aux ${derniers.length} derniers : la game de <strong>${bestOwner.name}</strong> (${best.score} pts) remplace la pire game de ${derniers.map(x => x.p.name).join(', ')}.`, 'rust', 'life-ring', true);
       toast(`${derniers.length} joueurs remontés — +${gain} pts au total !`, 'gold');
@@ -5031,8 +5038,8 @@ function execAction() {
       if (!bestA || !worstB) { toast('Games manquantes ou figées — échange impossible.', 'error'); return; }
       pa.games = pa.games.filter(g => g.id !== bestA.id);
       pb.games = pb.games.filter(g => g.id !== worstB.id);
-      pa.games.push({ ...worstB, id: uid(), note: (worstB.note ? worstB.note + ' · ' : '') + `échange perso avec ${pb.name}` });
-      pb.games.push({ ...bestA, id: uid(), note: (bestA.note ? bestA.note + ' · ' : '') + `échange perso avec ${pa.name}` });
+      pa.games.push({ ...worstB, id: uid(), locked: false, note: (worstB.note ? worstB.note + ' · ' : '') + `échange perso avec ${pb.name}` });
+      pb.games.push({ ...bestA, id: uid(), locked: false, note: (bestA.note ? bestA.note + ' · ' : '') + `échange perso avec ${pa.name}` });
       addLog(`<strong>${pa.name}</strong> ↔ <strong>${pb.name}</strong> échange perso.`, 'purple', 'arrow-right-arrow-left', true);
       toast('Échange effectué !', 'purple');
       break;
