@@ -2356,6 +2356,8 @@ async function loadState() {
       state.players.forEach(p => { if (state.jokerPlayerIds.has(p.id)) p.jokerCount = (p.jokerCount || 0) + 1; });
       state.jokerPlayerIds = new Set();
     }
+    const rouePersoFlag = (flags || []).find(f => f.key === 'rouePersoCounts');
+    try { const m = JSON.parse(rouePersoFlag?.value || '{}'); state.players.forEach(p => { p.rouePersoCount = m[p.id] || 0; }); } catch { state.players.forEach(p => { p.rouePersoCount = 0; }); }
     const lockedGamesFlag = (flags || []).find(f => f.key === 'lockedGames');
     try { const ids = new Set(JSON.parse(lockedGamesFlag?.value || '[]')); state.players.forEach(p => p.games.forEach(g => { g.locked = ids.has(g.id); })); } catch { state.players.forEach(p => p.games.forEach(g => { g.locked = false; })); }
     const roue20Flag = (flags || []).find(f => f.key === 'roueCommu20Until');
@@ -2439,6 +2441,7 @@ async function saveState() {
       { key: 'scoreOffsets', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.scoreOffset).map(p => [p.id, p.scoreOffset]))) },
       { key: 'jokerCounts', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.jokerCount > 0).map(p => [p.id, p.jokerCount]))) },
       { key: 'lockedGames', value: JSON.stringify(state.players.flatMap(p => (p.games || []).filter(g => g.locked).map(g => g.id))) },
+      { key: 'rouePersoCounts', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.rouePersoCount > 0).map(p => [p.id, p.rouePersoCount]))) },
       { key: 'roueCommu20Until', value: String(state.roueCommu20Until || 0) },
       { key: 'roueCommu20Start', value: String(state.roueCommu20Start || 0) },
       { key: 'roueCommu50Next', value: String(state.roueCommu50Next || 0) },
@@ -2595,6 +2598,9 @@ function renderClassement() {
         ${p.pendingBonus ? `<div style="font-size:10px;color:var(--green)"><i class="fa-solid fa-bolt-lightning"></i> +${p.pendingBonus}pts top10</div>` : ''}
         ${p.pendingCloneLriaa ? `<div style="font-size:10px;color:var(--purple)"><i class="fa-solid fa-gamepad"></i> Clone kills Lriaa actif</div>` : ''}
         ${p.jokerCount > 0 ? `<div style="display:inline-flex;align-items:center;gap:5px;margin-top:3px;background:rgba(212,175,55,0.15);border:1px solid var(--gold);border-radius:3px;padding:2px 6px;font-size:10px;font-weight:700;color:var(--gold);letter-spacing:0.5px"><i class="fa-solid fa-wand-magic-sparkles" style="font-size:9px"></i> ${p.jokerCount} JOKER${p.jokerCount > 1 ? 'S' : ''}${isAdmin() ? `<button onclick="useJoker('${p.id}');event.stopPropagation()" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:15px;font-weight:900;padding:0 2px;line-height:1;margin-left:2px;opacity:0.75" title="Utiliser un joker (−1)">−</button>` : ''}</div>` : ''}
+        ${p.rouePersoCount > 0
+          ? `<div style="display:inline-flex;align-items:center;gap:4px;margin-top:3px;margin-left:4px;background:rgba(155,89,182,0.15);border:1px solid var(--purple);border-radius:3px;padding:2px 6px;font-size:10px;font-weight:700;color:var(--purple);letter-spacing:0.5px"><i class="fa-solid fa-ticket" style="font-size:9px"></i> ${p.rouePersoCount} ROUE${p.rouePersoCount > 1 ? 'S' : ''} PERSO${isAdmin() ? `<button onclick="useRouePerso('${p.id}');event.stopPropagation()" style="background:none;border:none;color:var(--purple);cursor:pointer;font-size:15px;font-weight:900;padding:0 3px;line-height:1;opacity:0.75" title="Roue perso utilisée (−1)">−</button><button onclick="addRouePerso('${p.id}');event.stopPropagation()" style="background:none;border:none;color:var(--purple);cursor:pointer;font-size:14px;font-weight:900;padding:0 2px;line-height:1;opacity:0.75" title="Ajouter une roue perso (+1)">+</button>` : ''}</div>`
+          : (isAdmin() ? `<button onclick="addRouePerso('${p.id}');event.stopPropagation()" style="margin-top:3px;margin-left:4px;background:none;border:1px dashed var(--border);color:var(--text-muted);border-radius:3px;padding:1px 6px;font-size:10px;font-weight:700;cursor:pointer;line-height:1.5" title="Ajouter une roue perso en attente">+ roue perso</button>` : '')}
       </td>
       <td class="score-total">${total}<small style="font-size:12px;color:var(--text-muted);font-weight:400"> pts</small>${p.bonusPoints ? `<div style="font-size:11px;color:${p.bonusPoints > 0 ? 'var(--green)' : 'var(--rust-light)'}">${p.bonusPoints > 0 ? '+' : ''}${p.bonusPoints} bonus</div>` : ''}${p.scoreOffset ? `<div style="font-size:11px;color:${p.scoreOffset > 0 ? 'var(--green)' : 'var(--rust-light)'}"><i class="fa-solid fa-user-secret" style="font-size:9px"></i> ${p.scoreOffset > 0 ? '+' : ''}${p.scoreOffset} clone</div>` : ''}</td>
       <td class="stat-games">${p.games.length}/${(state.maxGames || 20) + (p.extraGames || 0)}</td>
@@ -3199,6 +3205,31 @@ function useJoker(playerId) {
   toast(reste > 0
     ? `${p.name} — joker utilisé, ${reste} restant${reste > 1 ? 's' : ''}.`
     : `${p.name} — dernier joker utilisé.`, 'gold');
+  saveState();
+  renderAll();
+}
+
+// Compteur de roues perso en attente, piloté depuis le classement.
+// À 0 le badge disparaît ; seul l'admin garde un « + roue perso » pour en réamorcer une.
+function addRouePerso(playerId) {
+  const p = state.players.find(x => x.id === playerId);
+  if (!p) return;
+  p.rouePersoCount = (p.rouePersoCount || 0) + 1;
+  addLog(`<strong>${p.name}</strong> — roue perso en attente (${p.rouePersoCount} au total).`, 'purple', 'ticket', true);
+  toast(`${p.name} — ${p.rouePersoCount} roue${p.rouePersoCount > 1 ? 's' : ''} perso en attente.`, 'purple');
+  saveState();
+  renderAll();
+}
+
+function useRouePerso(playerId) {
+  const p = state.players.find(x => x.id === playerId);
+  if (!p || !p.rouePersoCount) return;
+  p.rouePersoCount -= 1;
+  const reste = p.rouePersoCount;
+  addLog(`<strong>${p.name}</strong> — roue perso utilisée (${reste} restante${reste > 1 ? 's' : ''}).`, 'purple', 'ticket', true);
+  toast(reste > 0
+    ? `${p.name} — ${reste} roue${reste > 1 ? 's' : ''} perso restante${reste > 1 ? 's' : ''}.`
+    : `${p.name} — dernière roue perso utilisée.`, 'purple');
   saveState();
   renderAll();
 }
@@ -3893,6 +3924,7 @@ function showPlayerDetail(id) {
       <div class="stat-card" style="flex:1"><div class="sc-label">Games</div><div class="sc-val sc-blue">${p.games.length}</div></div>
       <div class="stat-card" style="flex:1"><div class="sc-label">Bonus pts</div><div class="sc-val ${(p.bonusPoints||0) >= 0 ? 'sc-green' : 'sc-rust'}">${(p.bonusPoints||0) > 0 ? '+' : ''}${p.bonusPoints || 0}</div></div>
     </div>
+    ${p.rouePersoCount > 0 ? `<div style="background:rgba(155,89,182,0.1);border:1px solid var(--purple);padding:8px 12px;border-radius:2px;margin-bottom:8px;font-size:13px;display:flex;align-items:center;gap:8px"><i class="fa-solid fa-ticket" style="color:var(--purple)"></i><span style="flex:1"><strong>${p.rouePersoCount} roue${p.rouePersoCount > 1 ? 's' : ''} perso</strong> en attente</span>${isAdmin() ? `<button onclick="useRouePerso('${p.id}')" style="background:none;border:1px solid var(--purple);color:var(--purple);border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer;line-height:1.4">− Utiliser</button><button onclick="addRouePerso('${p.id}')" style="background:none;border:1px solid var(--purple);color:var(--purple);border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer;line-height:1.4">+ Ajouter</button>` : ''}</div>` : ''}
     ${p.jokerCount > 0 ? `<div style="background:rgba(212,175,55,0.1);border:1px solid var(--gold);padding:8px 12px;border-radius:2px;margin-bottom:8px;font-size:13px;display:flex;align-items:center;gap:8px"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--gold)"></i><span style="flex:1"><strong>${p.jokerCount} joker${p.jokerCount > 1 ? 's' : ''}</strong> disponible${p.jokerCount > 1 ? 's' : ''} — chacun permet de ne pas compter une game</span>${isAdmin() ? `<button onclick="useJoker('${p.id}')" style="background:none;border:1px solid var(--gold);color:var(--gold);border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer;line-height:1.4">− Utiliser</button><button onclick="cancelJoker('${p.id}')" style="background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer;line-height:1.4">✕ Retirer</button>` : ''}</div>` : ''}
     ${p.scoreOffset ? `<div style="background:rgba(212,175,55,0.1);border:1px solid var(--gold);padding:8px 12px;border-radius:2px;margin-bottom:8px;font-size:13px"><i class="fa-solid fa-user-secret" style="color:var(--gold)"></i> Clone de score : <strong>${p.scoreOffset > 0 ? '+' : ''}${p.scoreOffset} pts</strong> appliqués sur le total — les games ci-dessous sont inchangées</div>` : ''}
     ${p.skipNext ? '<div style="background:rgba(224,90,56,0.1);border:1px solid var(--rust);padding:8px 12px;border-radius:2px;margin-bottom:8px;font-size:13px"><i class="fa-solid fa-forward-step"></i> Skip activé pour la prochaine game</div>' : ''}
