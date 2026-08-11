@@ -1421,18 +1421,17 @@ main {
   </div>
 
   <!-- ROUE COMMUNAUTAIRE -->
-  <div class="roue-section">
+  <div class="roue-section" id="roue-commu-section">
     <div class="roue-header">
-      <div class="roue-title roue-comm-color">Roue Communautaire <span style="font-size:13px;color:var(--text-muted);font-weight:400">(par palier de 50 subgifts)</span></div>
+      <div class="roue-title roue-comm-color">Roue Communautaire <span style="font-size:13px;color:var(--text-muted);font-weight:400">(par palier de 50 subgifts)</span> <span style="font-size:12px;color:var(--text-muted);font-weight:400">— chaque action est bloquée 12h après usage</span></div>
     </div>
     <div class="action-grid">
 
-      <div class="action-card action-card-gold" id="action-card-best-x15" onclick="openAction('best-x15')">
+      <div class="action-card action-card-gold" onclick="openAction('best-x15')">
         <div class="ac-bg"><i class="fa-solid fa-star"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-star"></i></div>
         <div class="ac-title">Meilleure game × 1.5</div>
-        <div class="ac-desc">Multiplie le score de la meilleure game de chaque joueur par 1.5 — une fois toutes les 12h</div>
-        <div class="ac-cooldown" style="display:none;font-size:10px;color:var(--text-muted);margin-top:4px"></div>
+        <div class="ac-desc">Multiplie le score de la meilleure game de chaque joueur par 1.5</div>
       </div>
 
       <div class="action-card action-card-gold" onclick="openAction('add-bonus-game')">
@@ -1831,7 +1830,8 @@ main {
       </div>
     </div>
     <div class="action-list-compact">
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-star"></i> Meilleure game × 1.5</div><div style="font-size:11px;color:var(--text-muted)">Multiplie le score de la meilleure game de chaque joueur par 1.5. Utilisable une fois toutes les 12h : une fois déclenchée, l'action est bloquée et la carte affiche le temps restant.</div></div></div>
+      <div class="action-row" style="border-left:3px solid var(--gold)"><div><div class="action-row-name"><i class="fa-solid fa-clock" style="color:var(--gold)"></i> Blocage 12h après usage</div><div style="font-size:11px;color:var(--text-muted)">Chaque action de la Roue Communautaire est utilisable une fois toutes les 12h. Dès qu'elle est déclenchée, sa carte est grisée et affiche le temps restant avant sa prochaine disponibilité. Les cooldowns sont indépendants d'une action à l'autre, et ne concernent ni la Roue Perso ni la Roue de Folie.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-star"></i> Meilleure game × 1.5</div><div style="font-size:11px;color:var(--text-muted)">Multiplie le score de la meilleure game de chaque joueur par 1.5</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-circle-plus"></i> Ajout d'une game sup</div><div style="font-size:11px;color:var(--text-muted)">Accorde une game bonus hors limite à tous les joueurs (compteur +1 pour chacun)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-trash-can"></i> Suppression de la pire game</div><div style="font-size:11px;color:var(--text-muted)">Supprime la game avec le score le plus bas de chaque joueur</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-wand-magic-sparkles"></i> 1 Joker pour tous les participants</div><div style="font-size:11px;color:var(--text-muted)">Chaque joueur de la ligue reçoit 1 Joker, qui permet de ne pas compter une game. Les jokers se cumulent avec ceux obtenus via la Roue Perso ou la Roue de Folie : le compteur est visible dans le classement et se décrémente à chaque utilisation.</div></div></div>
@@ -2297,7 +2297,7 @@ let state = {
   roueCommu20Paused: 0,  // 1 = en pause, le compteur est figé
   roueCommu20Start: 0,   // subsCount au moment d'activation du mode 20
   roueCommu50Next: 0,    // prochain palier forcé après annulation du mode 20 (0 = pas de forçage)
-  bestX15Until: 0        // timestamp ms — cooldown 12h de Meilleure game × 1.5
+  actionCooldowns: {}    // { cléAction: timestamp ms } — blocage 12h après usage (Roue Commu)
 };
 
 let currentTop = 0;
@@ -2389,8 +2389,11 @@ async function loadState() {
     try { const m = JSON.parse(rouePersoFlag?.value || '{}'); state.players.forEach(p => { p.rouePersoCount = m[p.id] || 0; }); } catch { state.players.forEach(p => { p.rouePersoCount = 0; }); }
     const lockedGamesFlag = (flags || []).find(f => f.key === 'lockedGames');
     try { const ids = new Set(JSON.parse(lockedGamesFlag?.value || '[]')); state.players.forEach(p => p.games.forEach(g => { g.locked = ids.has(g.id); })); } catch { state.players.forEach(p => p.games.forEach(g => { g.locked = false; })); }
-    const bestX15Flag = (flags || []).find(f => f.key === 'bestX15Until');
-    state.bestX15Until = parseInt(bestX15Flag?.value || '0') || 0;
+    const cooldownsFlag = (flags || []).find(f => f.key === 'actionCooldowns');
+    try { state.actionCooldowns = JSON.parse(cooldownsFlag?.value || '{}') || {}; } catch { state.actionCooldowns = {}; }
+    // Migration de l'ancien cooldown unique de Meilleure game × 1.5
+    const ancienX15 = parseInt((flags || []).find(f => f.key === 'bestX15Until')?.value || '0') || 0;
+    if (ancienX15 > Date.now() && !state.actionCooldowns['best-x15']) state.actionCooldowns['best-x15'] = ancienX15;
     const roue20SinceFlag = (flags || []).find(f => f.key === 'roueCommu20Since');
     state.roueCommu20Since = parseInt(roue20SinceFlag?.value || '0') || 0;
     const roue20ElapsedFlag = (flags || []).find(f => f.key === 'roueCommu20Elapsed');
@@ -2481,7 +2484,8 @@ async function saveState() {
       { key: 'jokerCounts', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.jokerCount > 0).map(p => [p.id, p.jokerCount]))) },
       { key: 'lockedGames', value: JSON.stringify(state.players.flatMap(p => (p.games || []).filter(g => g.locked).map(g => g.id))) },
       { key: 'rouePersoCounts', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.rouePersoCount > 0).map(p => [p.id, p.rouePersoCount]))) },
-      { key: 'bestX15Until', value: String(state.bestX15Until || 0) },
+      { key: 'actionCooldowns', value: JSON.stringify(Object.fromEntries(Object.entries(state.actionCooldowns || {}).filter(([, t]) => t > Date.now()))) },
+      { key: 'bestX15Until', value: '0' }, // LEGACY — remplacé par actionCooldowns
       { key: 'roueCommu20Since', value: String(state.roueCommu20Since || 0) },
       { key: 'roueCommu20Elapsed', value: String(state.roueCommu20Elapsed || 0) },
       { key: 'roueCommu20Until', value: '0' }, // LEGACY — vidé, l'ancien décompte 24h n'existe plus
@@ -2566,15 +2570,55 @@ function renderAll() {
   renderCooldowns();
 }
 
-// Grise les cartes d'action encore en cooldown et affiche le temps restant.
+// ---- Cooldown des actions de la Roue Commu ----
+// Chaque action est bloquée 12h après usage. La liste des actions concernées est
+// lue depuis la section du DOM : une action ajoutée plus tard en hérite d'office.
+const COOLDOWN_MS = 12 * 60 * 60 * 1000;
+
+function _commuCards() {
+  const sec = document.getElementById('roue-commu-section');
+  if (!sec) return [];
+  return [...sec.querySelectorAll('.action-card')]
+    .map(el => ({ el, key: (el.getAttribute('onclick') || '').match(/openAction\('([^']+)'\)/)?.[1] }))
+    .filter(x => x.key);
+}
+
+function isCommuAction(key) {
+  return _commuCards().some(x => x.key === key);
+}
+
+function _cdRestant(key) {
+  return Math.max(0, (state.actionCooldowns?.[key] || 0) - Date.now());
+}
+
+function _setCooldown(key) {
+  if (!key) return;
+  if (!state.actionCooldowns) state.actionCooldowns = {};
+  state.actionCooldowns[key] = Date.now() + COOLDOWN_MS;
+}
+
+// Termine une action de roue déclenchée par une fonction dédiée :
+// pose le cooldown, sauvegarde, ferme la modale et redessine.
+function _finishCommuAction() {
+  if (currentAction && isCommuAction(currentAction)) _setCooldown(currentAction);
+  saveState();
+  closeModal('modal-action');
+  renderAll();
+}
+
+// Grise les cartes encore en cooldown et affiche le temps restant.
 function renderCooldowns() {
-  const el = document.getElementById('action-card-best-x15');
-  if (!el) return;
-  const restant = (state.bestX15Until || 0) - Date.now();
-  el.style.opacity = restant > 0 ? '0.4' : '';
-  el.style.pointerEvents = restant > 0 ? 'none' : '';
-  const cd = el.querySelector('.ac-cooldown');
-  if (cd) {
+  for (const { el, key } of _commuCards()) {
+    const restant = _cdRestant(key);
+    el.style.opacity = restant > 0 ? '0.4' : '';
+    el.style.pointerEvents = restant > 0 ? 'none' : '';
+    let cd = el.querySelector('.ac-cooldown');
+    if (!cd) {
+      cd = document.createElement('div');
+      cd.className = 'ac-cooldown';
+      cd.style.cssText = 'font-size:10px;color:var(--text-muted);margin-top:4px;position:relative';
+      el.appendChild(cd);
+    }
     cd.textContent = restant > 0 ? `⏳ ${_fmtDuree(restant)}` : '';
     cd.style.display = restant > 0 ? '' : 'none';
   }
@@ -4320,7 +4364,7 @@ function doCloneBestWorst() {
       p.games.push({ ...leagueBest, id: uid(), locked: false, note: (leagueBest.note ? leagueBest.note + ' · ' : '') + `clone best ligue (${leagueBestOwner.name})` });
       addLog(`<strong>${p.name}</strong> — clone de la meilleure game de la ligue ajoutée (${leagueBest.score} pts — ${leagueBestOwner.name}).`, 'gold', 'clone', true);
       toast(`Clone effectué : ${leagueBest.score} pts (${leagueBestOwner.name}) → ${p.name} !`, 'gold');
-      saveState(); closeModal('modal-action'); renderAll();
+      _finishCommuAction();
     }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
   );
 }
@@ -4347,7 +4391,7 @@ function doCloneBestWorstRand() {
       dst.games.push({ ...srcBest, id: uid(), locked: false, note: (srcBest.note ? srcBest.note + ' · ' : '') + `clone best aléatoire (${src.name})` });
       addLog(`<strong>${dst.name}</strong> — pire game remplacée par clone de la meilleure de <strong>${src.name}</strong> (${srcBest.score} pts).`, 'gold', 'shuffle', true);
       toast(`Clone : meilleure de ${src.name} (${srcBest.score} pts) → ${dst.name} !`, 'gold');
-      saveState(); closeModal('modal-action'); renderAll();
+      _finishCommuAction();
     }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
   );
 }
@@ -4378,7 +4422,7 @@ function doCommEchangeBestWorst() {
       pb.games.push({ ...bestA, id: uid(), locked: false, note: (bestA.note ? bestA.note + ' · ' : '') + `échange comm avec ${pa.name}` });
       addLog(`Échange : <strong>${pa.name}</strong> (best ${bestA.score} pts) ↔ <strong>${pb.name}</strong> (pire ${worstB.score} pts)`, 'gold', 'arrow-right-arrow-left', true);
       toast('Échange effectué !', 'gold');
-      saveState(); closeModal('modal-action'); renderAll();
+      _finishCommuAction();
     }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
   );
 }
@@ -4412,7 +4456,7 @@ function doCommEchangeRand() {
       [gameA1, gameA2].forEach(g => pb.games.push({ ...g, id: uid(), locked: false, note: (g.note ? g.note + ' · ' : '') + `échange aléatoire avec ${pa.name}` }));
       addLog(`Échange aléatoire : <strong>${pa.name}</strong> (#${nA1} ${gameA1.score}pts, #${nA2} ${gameA2.score}pts) ↔ <strong>${pb.name}</strong> (#${nB1} ${gameB1.score}pts, #${nB2} ${gameB2.score}pts)`, 'gold', 'shuffle', true);
       toast('Échange aléatoire effectué !', 'gold');
-      saveState(); closeModal('modal-action'); renderAll();
+      _finishCommuAction();
     }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
   );
 }
@@ -4442,7 +4486,7 @@ function doCommEchangeRand3() {
       pc.games.push({ ...gameB, id: uid(), locked: false, note: (gameB.note ? gameB.note + ' · ' : '') + `échange 3 joueurs (de ${pb.name})` });
       addLog(`Échange 3 joueurs : <strong>${pa.name}</strong>→<strong>${pb.name}</strong>→<strong>${pc.name}</strong>→<strong>${pa.name}</strong>`, 'gold', 'shuffle', true);
       toast('Échange 3 games effectué !', 'gold');
-      saveState(); closeModal('modal-action'); renderAll();
+      _finishCommuAction();
     }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
   );
 }
@@ -4471,7 +4515,7 @@ function doFolieEchangeAll() {
       });
       addLog(`Échange général sur ${picks.length} joueurs : ${picks.map(x => x.p.name).join(' → ')} → ${picks[0].p.name}`, 'rust', 'arrows-spin', true);
       toast(`Échange général effectué sur ${picks.length} joueurs !`, 'gold');
-      saveState(); closeModal('modal-action'); renderAll();
+      _finishCommuAction();
     }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
   );
 }
@@ -4502,7 +4546,7 @@ function doCommVolScore() {
       voleur.scoreOffset = (voleur.scoreOffset || 0) + (tModele - tVoleur);
       addLog(`Clone de score : <strong>${voleur.name}</strong> (${tVoleur} → ${tModele} pts) copie <strong>${modele.name}</strong>, qui garde ses ${tModele} pts`, 'gold', 'user-secret', true);
       toast(`${voleur.name} a cloné le score de ${modele.name} !`, 'gold');
-      saveState(); closeModal('modal-action'); renderAll();
+      _finishCommuAction();
     }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
   );
 }
@@ -4524,7 +4568,7 @@ function doCommRandX2() {
       game.note = (game.note ? game.note + ' · ' : '') + '×2 aléatoire (roue commu)';
       addLog(`Game aléatoire ×2 : <strong>${p.name}</strong> — game #${num}, ${oldScore} → ${game.score} pts.`, 'gold', 'dice', true);
       toast(`${p.name} — game ×2 : ${oldScore} → ${game.score} pts !`, 'gold');
-      saveState(); closeModal('modal-action'); renderAll();
+      _finishCommuAction();
     }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
   );
 }
@@ -4552,7 +4596,7 @@ function doFolieWorstZero() {
       });
       addLog(`Pire game à 0 : ${cibles.length} joueur${cibles.length > 1 ? 's' : ''} touché${cibles.length > 1 ? 's' : ''}, ${totalPerdu} pts retirés au total.`, 'rust', 'ban', true);
       toast(`Pire game mise à 0 pour ${cibles.length} joueur${cibles.length > 1 ? 's' : ''} — ${totalPerdu} pts retirés.`, 'error');
-      saveState(); closeModal('modal-action'); renderAll();
+      _finishCommuAction();
     }, true, 'Mettre à zéro', () => { if (el) el.innerHTML = ''; }
   );
 }
@@ -4585,7 +4629,7 @@ function doFolieCloneBottom5() {
       });
       addLog(`Meilleure game aux ${derniers.length} derniers : la game de <strong>${bestOwner.name}</strong> (${best.score} pts) remplace la pire game de ${derniers.map(x => x.p.name).join(', ')}.`, 'rust', 'life-ring', true);
       toast(`${derniers.length} joueurs remontés — +${gain} pts au total !`, 'gold');
-      saveState(); closeModal('modal-action'); renderAll();
+      _finishCommuAction();
     }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
   );
 }
@@ -4608,7 +4652,7 @@ function doCommFreezeBest() {
       });
       addLog(`Gel de la meilleure game : ${picks.map(x => `<strong>${x.p.name}</strong> (${x.g.score} pts)`).join(', ')}.`, 'blue', 'lock', true);
       toast(`${picks.length} meilleure${picks.length > 1 ? 's' : ''} game${picks.length > 1 ? 's' : ''} figée${picks.length > 1 ? 's' : ''} !`, 'gold');
-      saveState(); closeModal('modal-action'); renderAll();
+      _finishCommuAction();
     }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
   );
 }
@@ -4647,7 +4691,7 @@ function doCommEchangeFlooozii() {
       flo.games.push({ ...gA, id: uid(), locked: false, note: (gA.note ? gA.note + ' · ' : '') + `échange avec ${autre.name}` });
       addLog(`Échange avec <strong>${flo.name}</strong> : <strong>${autre.name}</strong> (${gA.score} pts) ↔ <strong>${flo.name}</strong> (${gF.score} pts).`, 'gold', 'right-left', true);
       toast(`${autre.name} ↔ ${flo.name} : échange effectué !`, 'gold');
-      saveState(); closeModal('modal-action'); renderAll();
+      _finishCommuAction();
     }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
   );
 }
@@ -4675,7 +4719,7 @@ function doCommCloneFlooozii() {
       autre.games.push({ ...best, id: uid(), locked: false, note: (best.note ? best.note + ' · ' : '') + `clone de la meilleure game de ${flo.name}` });
       addLog(`<strong>${autre.name}</strong> — game de ${cible.score} pts remplacée par un clone de la meilleure game de <strong>${flo.name}</strong> (${best.score} pts).`, 'gold', 'star', true);
       toast(`${autre.name} reçoit la meilleure game de ${flo.name} (${best.score} pts) !`, 'gold');
-      saveState(); closeModal('modal-action'); renderAll();
+      _finishCommuAction();
     }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
   );
 }
@@ -4697,7 +4741,7 @@ function doCommFreezeRand() {
       });
       addLog(`Gel aléatoire : ${picks.map(x => `<strong>${x.p.name}</strong> (${x.g.score} pts)`).join(', ')}.`, 'blue', 'lock', true);
       toast(`${picks.length} game${picks.length > 1 ? 's' : ''} figée${picks.length > 1 ? 's' : ''} au hasard !`, 'gold');
-      saveState(); closeModal('modal-action'); renderAll();
+      _finishCommuAction();
     }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
   );
 }
@@ -4725,7 +4769,7 @@ function doCommEchangeTop10() {
       });
       addLog(`Échange top 10 : ${picks.map(x => x.p.name).join(' → ')} → ${picks[0].p.name}`, 'gold', 'ranking-star', true);
       toast(`Échange effectué entre ${picks.length} joueurs du top 10 !`, 'gold');
-      saveState(); closeModal('modal-action'); renderAll();
+      _finishCommuAction();
     }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
   );
 }
@@ -4751,7 +4795,7 @@ function doFolieHalfRand() {
       });
       addLog(`Une game ÷ 2 : ${picks.length} joueur${picks.length > 1 ? 's' : ''} touché${picks.length > 1 ? 's' : ''}, ${totalPerdu} pts retirés au total.`, 'rust', 'divide', true);
       toast(`Une game divisée par 2 pour ${picks.length} joueur${picks.length > 1 ? 's' : ''} — ${totalPerdu} pts retirés.`, 'error');
-      saveState(); closeModal('modal-action'); renderAll();
+      _finishCommuAction();
     }, true, 'Diviser', () => { if (el) el.innerHTML = ''; }
   );
 }
@@ -4773,7 +4817,7 @@ function doFolieFreezeAll() {
       });
       addLog(`Gel général : une game figée pour ${picks.length} joueur${picks.length > 1 ? 's' : ''}.`, 'blue', 'lock', true);
       toast(`Une game figée pour ${picks.length} joueur${picks.length > 1 ? 's' : ''} !`, 'gold');
-      saveState(); closeModal('modal-action'); renderAll();
+      _finishCommuAction();
     }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
   );
 }
@@ -4958,18 +5002,20 @@ function buildActionBody(type) {
       </select>
     </div>`;
 
+  // Barrage commun : une action de Roue Commu encore en cooldown n'affiche aucun bouton
+  const _cdRestantType = _cdRestant(type);
+  if (_cdRestantType > 0 && isCommuAction(type)) {
+    return `<p style="color:var(--text-muted);font-size:13px;margin-bottom:16px">
+        Cette action de la <strong style="color:var(--gold)">Roue Communautaire</strong> a déjà été utilisée.<br>
+        <span style="color:var(--rust-light);margin-top:8px;display:block"><i class="fa-solid fa-clock"></i> Prochaine utilisation dans <strong>${_fmtDuree(_cdRestantType)}</strong></span>
+      </p>
+      <button class="btn" style="width:100%;justify-content:center;opacity:0.4;cursor:not-allowed" disabled><i class="fa-solid fa-clock" style="margin-right:6px"></i>Indisponible — bloquée 12h</button>`;
+  }
+
   switch(type) {
-    case 'best-x15': {
-      const restant = (state.bestX15Until || 0) - Date.now();
-      if (restant > 0) {
-        return `<p style="color:var(--text-muted);margin-bottom:16px;font-size:13px">La meilleure game de <strong>chaque joueur</strong> aura son score multiplié par 1.5.
-          <br><span style="color:var(--rust-light);margin-top:8px;display:block"><i class="fa-solid fa-clock"></i> Action bloquée — prochaine utilisation dans <strong>${_fmtDuree(restant)}</strong></span></p>
-        <button class="btn" style="width:100%;justify-content:center;opacity:0.4;cursor:not-allowed" disabled><i class="fa-solid fa-star" style="margin-right:6px"></i>Indisponible — cooldown 12h</button>`;
-      }
-      return `<p style="color:var(--text-muted);margin-bottom:16px;font-size:13px">La meilleure game de <strong>chaque joueur</strong> aura son score multiplié par 1.5.
-        <br><span style="color:var(--text-muted)">Utilisable <strong>une fois toutes les 12h</strong> : une fois déclenchée, l'action est bloquée pendant 12h.</span></p>
+    case 'best-x15': return `
+      <p style="color:var(--text-muted);margin-bottom:16px;font-size:13px">La meilleure game de <strong>chaque joueur</strong> aura son score multiplié par 1.5.</p>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="execAction()">Appliquer à tous</button>`;
-    }
 
     case 'remove-worst': return `
       <p style="color:var(--text-muted);margin-bottom:16px;font-size:13px">Supprime la game avec le score le plus bas de <strong>chaque joueur</strong>.</p>
@@ -5237,6 +5283,12 @@ function selectMult(v) {
 function execAction() {
   if (!isAdmin()) { toast('Action non autorisée.', 'error'); return; }
   const type = currentAction;
+  // Revérifié ici et pas seulement à l'affichage : une modale laissée ouverte avant
+  // la fin du cooldown ne doit pas permettre de le contourner.
+  if (isCommuAction(type)) {
+    const restant = _cdRestant(type);
+    if (restant > 0) { toast(`Action bloquée — encore ${_fmtDuree(restant)}.`, 'error'); return; }
+  }
   const getP = (id) => {
     const el = document.getElementById('act-' + id);
     return el ? state.players.find(p => p.id === el.value) : null;
@@ -5244,9 +5296,6 @@ function execAction() {
 
   switch(type) {
     case 'best-x15': {
-      // Blocage 12h après chaque utilisation — revérifié ici, pas seulement dans la modale
-      const restant = (state.bestX15Until || 0) - Date.now();
-      if (restant > 0) { toast(`Action bloquée — encore ${_fmtDuree(restant)} avant la prochaine utilisation.`, 'error'); return; }
       let count = 0;
       state.players.forEach(p => {
         const best = getBestGame(p);
@@ -5256,9 +5305,8 @@ function execAction() {
           count++;
         }
       });
-      state.bestX15Until = Date.now() + 12 * 60 * 60 * 1000;
-      addLog(`Meilleure game ×1.5 appliquée à ${count} joueur(s) — action bloquée 12h.`, 'gold', 'star', true);
-      toast(`×1.5 sur ${count} meilleures games — bloquée 12h.`, 'gold');
+      addLog(`Meilleure game ×1.5 appliquée à ${count} joueur(s).`, 'gold', 'star', true);
+      toast(`×1.5 sur ${count} meilleures games !`, 'gold');
       break;
     }
     case 'remove-worst': {
@@ -5503,6 +5551,9 @@ function execAction() {
     }
   }
 
+  // Seules les actions arrivées jusqu'ici ont réellement été appliquées : les cas qui
+  // échouent font `return` plus haut et ne déclenchent donc pas le cooldown.
+  if (isCommuAction(type)) _setCooldown(type);
   saveState();
   closeModal('modal-action');
   renderAll();
@@ -6517,7 +6568,7 @@ function setupAutoRefresh() {
   // « tourne depuis … » tant qu'il est en cours. Une minute suffit largement.
   setInterval(() => {
     if (state.roueCommu20Since > 0) renderSubsBanner();
-    if (state.bestX15Until > 0) renderCooldowns();
+    if (Object.keys(state.actionCooldowns || {}).length) renderCooldowns();
   }, 60000);
   // Polling toutes les 20 secondes
   setInterval(autoRefresh, 20000);
