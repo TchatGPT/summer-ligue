@@ -2591,6 +2591,12 @@ function _cdRestant(key) {
   return Math.max(0, (state.actionCooldowns?.[key] || 0) - Date.now());
 }
 
+// Temps restant arrondi à la minute SUPÉRIEURE : juste après un clic il reste
+// 11h59min59s, et afficher « 11h59 » donnerait l'impression d'un cooldown raté.
+function _fmtRestant(ms) {
+  return _fmtDuree(Math.ceil(ms / 60000) * 60000);
+}
+
 function _setCooldown(key) {
   if (!key) return;
   if (!state.actionCooldowns) state.actionCooldowns = {};
@@ -2619,7 +2625,7 @@ function renderCooldowns() {
       cd.style.cssText = 'font-size:10px;color:var(--text-muted);margin-top:4px;position:relative';
       el.appendChild(cd);
     }
-    cd.textContent = restant > 0 ? `⏳ ${_fmtDuree(restant)}` : '';
+    cd.textContent = restant > 0 ? `⏳ ${_fmtRestant(restant)}` : '';
     cd.style.display = restant > 0 ? '' : 'none';
   }
 }
@@ -5007,7 +5013,7 @@ function buildActionBody(type) {
   if (_cdRestantType > 0 && isCommuAction(type)) {
     return `<p style="color:var(--text-muted);font-size:13px;margin-bottom:16px">
         Cette action de la <strong style="color:var(--gold)">Roue Communautaire</strong> a déjà été utilisée.<br>
-        <span style="color:var(--rust-light);margin-top:8px;display:block"><i class="fa-solid fa-clock"></i> Prochaine utilisation dans <strong>${_fmtDuree(_cdRestantType)}</strong></span>
+        <span style="color:var(--rust-light);margin-top:8px;display:block"><i class="fa-solid fa-clock"></i> Prochaine utilisation dans <strong>${_fmtRestant(_cdRestantType)}</strong></span>
       </p>
       <button class="btn" style="width:100%;justify-content:center;opacity:0.4;cursor:not-allowed" disabled><i class="fa-solid fa-clock" style="margin-right:6px"></i>Indisponible — bloquée 12h</button>`;
   }
@@ -5287,7 +5293,7 @@ function execAction() {
   // la fin du cooldown ne doit pas permettre de le contourner.
   if (isCommuAction(type)) {
     const restant = _cdRestant(type);
-    if (restant > 0) { toast(`Action bloquée — encore ${_fmtDuree(restant)}.`, 'error'); return; }
+    if (restant > 0) { toast(`Action bloquée — encore ${_fmtRestant(restant)}.`, 'error'); return; }
   }
   const getP = (id) => {
     const el = document.getElementById('act-' + id);
@@ -6546,7 +6552,9 @@ let _savePending = false;
 function _stateFingerprint() {
   return state.players.map(p => `${p.id}:${p.games.length}:${p.bonusPoints}`).join('|')
     + '|logs:' + state.log.length
-    + '|subs:' + state.subsCount;
+    + '|subs:' + state.subsCount
+    // sans ça, un cooldown posé depuis un autre onglet ne griserait pas les cartes ici
+    + '|cd:' + Object.entries(state.actionCooldowns || {}).sort().map(([k, t]) => k + t).join(',');
 }
 
 async function autoRefresh() {
