@@ -1532,11 +1532,25 @@ main {
         <div class="ac-desc">Joueur tiré au sort — une de ses games au hasard voit son score doublé</div>
       </div>
 
+      <div class="action-card action-card-gold" onclick="openAction('comm-rand-x2-trio')">
+        <div class="ac-bg"><i class="fa-solid fa-dice-three"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-dice-three"></i></div>
+        <div class="ac-title">Game aléatoire × 2 — 3 joueurs</div>
+        <div class="ac-desc">3 joueurs tirés au sort — une game au hasard de chacun voit son score doublé</div>
+      </div>
+
       <div class="action-card action-card-gold" onclick="openAction('comm-vol-score')">
         <div class="ac-bg"><i class="fa-solid fa-user-secret"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-user-secret"></i></div>
         <div class="ac-title">Vol de score</div>
         <div class="ac-desc">Un joueur au hasard copie le score du joueur juste au-dessus de lui — celui-ci garde le sien</div>
+      </div>
+
+      <div class="action-card action-card-gold" onclick="openAction('comm-vol-score-2')">
+        <div class="ac-bg"><i class="fa-solid fa-angles-up"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-angles-up"></i></div>
+        <div class="ac-title">Vol de score — 2 places au-dessus</div>
+        <div class="ac-desc">Un joueur au hasard copie le score du joueur situé 2 places au-dessus de lui — celui-ci garde le sien</div>
       </div>
 
       <div class="action-card action-card-gold" onclick="openAction('comm-freeze-best')">
@@ -1655,13 +1669,6 @@ main {
         <div class="ac-icon"><i class="fa-solid fa-dice"></i></div>
         <div class="ac-title">Enlève une game aléatoire</div>
         <div class="ac-desc">Supprime une game au hasard (ni la meilleure ni la pire)</div>
-      </div>
-
-      <div class="action-card action-card-purple" onclick="openAction('perso-skip')">
-        <div class="ac-bg"><i class="fa-solid fa-forward-step"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-forward-step"></i></div>
-        <div class="ac-title">Skip ta game</div>
-        <div class="ac-desc">La prochaine game du joueur ne sera pas comptabilisée</div>
       </div>
 
       <div class="action-card action-card-purple" onclick="openAction('perso-extra-game')">
@@ -1846,6 +1853,8 @@ main {
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-angles-up"></i> Pire game × 2</div><div style="font-size:11px;color:var(--text-muted)">Double le score de la pire game de chaque joueur</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-dice"></i> Game aléatoire × 2</div><div style="font-size:11px;color:var(--text-muted)">Un joueur est tiré au sort, puis une de ses games au hasard voit son score doublé</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-user-secret"></i> Vol de score</div><div style="font-size:11px;color:var(--text-muted)">Un joueur tiré au sort copie le score total du joueur juste au-dessus de lui au classement. Celui du dessus garde son score, il ne perd rien. Les games et leur nombre ne changent pas</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-angles-up"></i> Vol de score — 2 places au-dessus</div><div style="font-size:11px;color:var(--text-muted)">Même principe, mais le joueur tiré au sort copie le score du joueur situé 2 places au-dessus de lui au lieu d'une seule. Celui-ci garde son score, les games ne changent pas.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-dice-three"></i> Game aléatoire × 2 — 3 joueurs</div><div style="font-size:11px;color:var(--text-muted)">3 joueurs sont tirés au sort et, pour chacun, une game au hasard voit son score doublé.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-lock"></i> 3 joueurs figent leur meilleure game</div><div style="font-size:11px;color:var(--text-muted)">3 joueurs sont tirés au sort et leur meilleure game est figée : elle ne peut plus être supprimée, échangée ni piquée par aucune action de roue. Elle reste clonable — un autre joueur peut en recevoir une copie. Le gel est indiqué dans le détail des games du joueur.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-dice"></i> 3 joueurs figent une game au hasard</div><div style="font-size:11px;color:var(--text-muted)">3 joueurs sont tirés au sort et une de leurs games est figée au hasard, ni la meilleure ni la pire — uniquement une game intermédiaire. Un joueur avec 2 games ou moins n'est pas concerné.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-ranking-star"></i> Échange de games entre les 10 premiers</div><div style="font-size:11px;color:var(--text-muted)">Les 10 premiers du classement échangent une game en chaîne entre eux, dans un ordre tiré au sort. La game échangée n'est ni la meilleure ni la pire de son propriétaire. Chacun donne une game et en reçoit une : le nombre de games ne change pas et aucun point n'est créé ni perdu.</div></div></div>
@@ -1874,7 +1883,6 @@ main {
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-wand-magic-sparkles"></i> Joker</div><div style="font-size:11px;color:var(--text-muted)">Accorde 1 Joker au joueur ciblé, qui s'ajoute à ceux qu'il possède déjà. Un joker permet de ne pas compter une game.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-trash-can"></i> Enlève une mauvaise game</div><div style="font-size:11px;color:var(--text-muted)">Retire une game au choix du joueur (pas forcément la pire)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-dice"></i> Enlève une game aléatoire</div><div style="font-size:11px;color:var(--text-muted)">Supprime une game au hasard (la meilleure et la pire sont protégées)</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-forward-step"></i> Skip ta game</div><div style="font-size:11px;color:var(--text-muted)">Badge accordé — le joueur peut choisir de skipper sa prochaine game (annulable à la saisie)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-plus"></i> Game supplémentaire</div><div style="font-size:11px;color:var(--text-muted)">Ajoute un slot de game bonus hors limite globale pour le joueur ciblé</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-trophy"></i> +10 pts à partir du top 10</div><div style="font-size:11px;color:var(--text-muted)">Si le joueur finit dans le top 10 Warzone, +10 pts s'appliquent sur sa prochaine game</div></div></div>
     </div>
@@ -4602,6 +4610,63 @@ function doCommVolScore() {
   );
 }
 
+// Même principe que le Vol de score, mais en visant 2 rangs plus haut : c'est un
+// clone, le joueur copié garde son score.
+function doCommVolScore2() {
+  const eligible = state.players.filter(p => p.games.length > 0);
+  if (eligible.length < 3) { toast(`Il faut au moins 3 joueurs avec des games (${eligible.length} actuellement).`, 'error'); return; }
+  const sorted = [...eligible].sort((a, b) => getPlayerTotal(b) - getPlayerTotal(a));
+  // Il faut un joueur 2 rangs plus haut, et un total différent sinon le clone ne change rien
+  const candidates = [];
+  for (let i = 2; i < sorted.length; i++) {
+    if (getPlayerTotal(sorted[i]) !== getPlayerTotal(sorted[i - 2])) candidates.push(i);
+  }
+  if (!candidates.length) { toast('Aucun écart de score à 2 places d\'intervalle — rien à cloner.', 'error'); return; }
+  const i = candidates[Math.floor(Math.random() * candidates.length)];
+  const voleur = sorted[i];
+  const modele = sorted[i - 2];
+  const tVoleur = getPlayerTotal(voleur), tModele = getPlayerTotal(modele);
+  const el = document.getElementById('action-vol-score-2-preview');
+  const desc = `<strong>${escHtml(voleur.name)}</strong> (#${i + 1}) clone le score de <strong>${escHtml(modele.name)}</strong> (#${i - 1}), 2 places au-dessus<br>` +
+    `<strong>${escHtml(voleur.name)}</strong> : <span style="color:var(--text-muted)">${tVoleur}</span> → <span style="color:var(--gold)">${tModele} pts</span> <span style="color:var(--green)">(+${tModele - tVoleur})</span><br>` +
+    `<strong>${escHtml(modele.name)}</strong> : <span style="color:var(--gold)">${tModele} pts</span> <span style="color:var(--text-muted)">— inchangé, il ne perd rien</span>`;
+  if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.8">${desc}</div>`;
+  showConfirm('Confirmer le clone de score', desc,
+    () => {
+      voleur.scoreOffset = (voleur.scoreOffset || 0) + (tModele - tVoleur);
+      addLog(`Vol de score (2 places) : <strong>${voleur.name}</strong> (${tVoleur} → ${tModele} pts) copie <strong>${modele.name}</strong>, qui garde ses ${tModele} pts`, 'gold', 'angles-up', true);
+      toast(`${voleur.name} a cloné le score de ${modele.name} !`, 'gold');
+      _finishCommuAction();
+    }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
+  );
+}
+
+function doCommRandX2Trio() {
+  const eligible = state.players.filter(p => p.games.length > 0);
+  if (eligible.length < 3) { toast(`Il faut au moins 3 joueurs avec des games (${eligible.length} actuellement).`, 'error'); return; }
+  const picks = [...eligible].sort(() => Math.random() - 0.5).slice(0, 3).map(p => {
+    const g = p.games[Math.floor(Math.random() * p.games.length)];
+    const num = [...p.games].sort((a, b) => b.score - a.score).findIndex(x => x.id === g.id) + 1;
+    return { p, g, num };
+  });
+  const gain = picks.reduce((s, x) => s + x.g.score, 0);
+  const el = document.getElementById('action-rand-x2-trio-preview');
+  const lignes = picks.map(x => `<strong>${escHtml(x.p.name)}</strong> — game #${x.num} : <span style="color:var(--text-muted)">${x.g.score}</span> → <span style="color:var(--gold)">${x.g.score * 2} pts</span>`).join('<br>');
+  const desc = `<strong>3 joueurs</strong> tirés au sort · <strong style="color:var(--green)">+${gain} pts</strong> au total<br><br>${lignes}`;
+  if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.9">${desc}</div>`;
+  showConfirm('Confirmer le × 2', desc,
+    () => {
+      picks.forEach(x => {
+        x.g.score = x.g.score * 2;
+        x.g.note = (x.g.note ? x.g.note + ' · ' : '') + '×2 aléatoire (roue commu)';
+      });
+      addLog(`Game aléatoire ×2 sur 3 joueurs : ${picks.map(x => `<strong>${x.p.name}</strong> (${x.g.score / 2} → ${x.g.score} pts)`).join(', ')}.`, 'gold', 'dice-three', true);
+      toast(`3 games doublées — +${gain} pts au total !`, 'gold');
+      _finishCommuAction();
+    }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
+  );
+}
+
 function doCommRandX2() {
   const eligible = state.players.filter(p => p.games.length > 0);
   if (!eligible.length) { toast('Aucun joueur avec des games.', 'error'); return; }
@@ -4998,7 +5063,6 @@ function openAction(type) {
     'perso-clone-game': 'Clone kill du meilleur killeur',
     'perso-joker': 'Joker',
     'perso-del-worst': 'Enlève une mauvaise game',
-    'perso-skip': 'Skip ta game',
     'perso-del-rand': 'Enlève une game aléatoire',
     'perso-extra-game': 'Game supplémentaire',
     'perso-top10pts': '+10 pts Top 10',
@@ -5018,6 +5082,8 @@ function openAction(type) {
     'folie-clone-bottom5': 'Meilleure game aux 5 derniers',
     'comm-freeze-best': '3 joueurs figent leur meilleure game',
     'comm-freeze-rand': '3 joueurs figent une game au hasard',
+    'comm-vol-score-2': 'Vol de score — 2 places au-dessus',
+    'comm-rand-x2-trio': 'Game aléatoire × 2 — 3 joueurs',
     'comm-echange-top10': 'Échange de games entre les 10 premiers',
     'comm-echange-flooozii': 'Échange avec FloooZii',
     'comm-clone-flooozii': 'Meilleure game de FloooZii clonée',
@@ -5165,11 +5231,6 @@ function buildActionBody(type) {
       <p style="color:var(--text-muted);font-size:12px;margin-top:4px">Choisissez n'importe quelle game, pas forcément la pire.</p>
       <button class="btn btn-solid-rust" style="width:100%;justify-content:center;margin-top:14px" onclick="execAction()"><i class="fa-solid fa-trash-can"></i> Supprimer cette game</button>`;
 
-    case 'perso-skip': return `
-      ${playerSelect('p1', 'Joueur')}
-      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">La prochaine game saisie pour ce joueur sera ignorée.</p>
-      <button class="btn btn-solid-rust" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Activer le skip</button>`;
-
     case 'perso-del-rand': return `
       ${playerSelect('p1', 'Joueur')}
       <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Une game tirée au sort sera supprimée — la meilleure et la pire sont protégées.</p>
@@ -5313,6 +5374,17 @@ function buildActionBody(type) {
       FloooZii garde sa game, elle est seulement copiée. Le nombre de games du joueur tiré ne change pas. Sa game remplacée ne peut pas être une game figée.</p>
       <div id="action-clone-flo-preview" style="margin-bottom:12px"></div>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCommCloneFlooozii()"><i class="fa-solid fa-star" style="margin-right:6px"></i>Tirer au sort & cloner</button>`;
+
+    case 'comm-vol-score-2': return `
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">Un joueur est tiré au sort, puis <strong style="color:var(--gold)">copie le score total</strong> du joueur situé <strong style="color:var(--gold)">2 places au-dessus de lui</strong> au classement.<br>
+      Celui du dessus <strong>garde son score</strong>, il ne perd rien. Les games et leur nombre restent <strong>identiques</strong> — seul le total change.</p>
+      <div id="action-vol-score-2-preview" style="margin-bottom:12px"></div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCommVolScore2()"><i class="fa-solid fa-angles-up" style="margin-right:6px"></i>Tirer au sort & cloner</button>`;
+
+    case 'comm-rand-x2-trio': return `
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px"><strong style="color:var(--gold)">3 joueurs sont tirés au sort</strong> parmi ceux ayant des games. Pour chacun, une game est tirée au hasard et voit son score <strong style="color:var(--gold)">multiplié par 2</strong>.</p>
+      <div id="action-rand-x2-trio-preview" style="margin-bottom:12px"></div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCommRandX2Trio()"><i class="fa-solid fa-dice-three" style="margin-right:6px"></i>Tirer au sort & × 2</button>`;
 
     default: return '<p>Action inconnue.</p>';
   }
@@ -5493,14 +5565,6 @@ function execAction() {
       p.games = p.games.filter(g => g.id !== gameId);
       addLog(`<strong>${p.name}</strong> — game (${game.score} pts) supprimée.`, 'rust', 'trash-can', true);
       toast(`Game supprimée pour ${p.name}.`, 'error');
-      break;
-    }
-    case 'perso-skip': {
-      const p = getP('p1');
-      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
-      p.skipNext = true;
-      addLog(`<strong>${p.name}</strong> — skip activé.`, 'rust', 'forward-step', true);
-      toast(`Skip activé pour ${p.name}.`, 'info');
       break;
     }
     case 'perso-del-rand': {
