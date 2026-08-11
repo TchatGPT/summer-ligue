@@ -1473,7 +1473,7 @@ main {
         <div class="ac-bg"><i class="fa-solid fa-bolt"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-bolt"></i></div>
         <div class="ac-title">Roue commu × 20 subs</div>
-        <div class="ac-desc">Active le mode 20 subs/roue pendant 24h (au lieu de 50)</div>
+        <div class="ac-desc">Active le mode 20 subs/roue pour 2 sessions (au lieu de 50) — retrait manuel</div>
       </div>
 
       <div class="action-card action-card-gold" onclick="openAction('comm-echange-rand3')">
@@ -1838,7 +1838,7 @@ main {
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shuffle"></i> Échange 2 games aléatoires</div><div style="font-size:11px;color:var(--text-muted)">Tire 2 joueurs au hasard et échange deux games aléatoires de chacun</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shuffle"></i> Échange 3 games aléatoires</div><div style="font-size:11px;color:var(--text-muted)">Tire 3 joueurs au hasard — leurs games tournent entre eux (A→B→C→A)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-rotate"></i> Top 10 inversé</div><div style="font-size:11px;color:var(--text-muted)">Top 10 de la ligue perdent 20 pts, les autres en gagnent 20</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-bolt"></i> Roue commu × 20 subs (24h)</div><div style="font-size:11px;color:var(--text-muted)">Active la roue toutes les 20 subs pendant 24h — chrono visible dans la bannière</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-bolt"></i> Roue commu × 20 subs (2 sessions)</div><div style="font-size:11px;color:var(--text-muted)">Active la roue toutes les 20 subs au lieu de 50, prévu pour 2 sessions. Il n'y a pas de décompte : le mode reste actif jusqu'à son retrait manuel, et la bannière indique depuis combien de temps il tourne. Il peut aussi être mis en pause.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-clone"></i> Clone meilleure → joueur aléatoire</div><div style="font-size:11px;color:var(--text-muted)">Tire un joueur au hasard et lui ajoute la meilleure game de toute la ligue (sans supprimer de game)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shuffle"></i> Clone meilleure → pire aléatoire</div><div style="font-size:11px;color:var(--text-muted)">Tire 2 joueurs au hasard — remplace la pire game de l'un par la meilleure game de l'autre</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-crown"></i> +5 pts par Top 1</div><div style="font-size:11px;color:var(--text-muted)">+5 pts de bonus par nouveau Top 1 depuis la dernière application (tous joueurs)</div></div></div>
@@ -2289,10 +2289,13 @@ let state = {
   jokerPlayerIds: new Set(), // LEGACY — ancien joker binaire, migré vers jokerCount au chargement
   subsCount: 0,       // subs vers la prochaine Roue Commu (0 → 49)
   maxGames: 20,       // limite globale de games par joueur
-  roueCommu20Until: 0,  // timestamp ms — mode 20 subs actif jusqu'à cette date (0 = inactif)
-  roueCommu20Start: 0,  // subsCount au moment d'activation du mode 20
-  roueCommu50Next: 0,   // prochain palier forcé après annulation du mode 20 (0 = pas de forçage)
-  roueCommu20Paused: 0 // ms restants quand le chrono est en pause (0 = pas en pause)
+  // Mode 20 subs : plus de décompte, il tourne jusqu'à ce qu'on l'enlève à la main
+  // (prévu pour 2 sessions). On mesure juste depuis combien de temps il tourne.
+  roueCommu20Since: 0,   // timestamp ms du (re)démarrage — 0 si inactif ou en pause
+  roueCommu20Elapsed: 0, // ms déjà écoulés sur les segments précédents (avant pauses)
+  roueCommu20Paused: 0,  // 1 = en pause, le compteur est figé
+  roueCommu20Start: 0,   // subsCount au moment d'activation du mode 20
+  roueCommu50Next: 0     // prochain palier forcé après annulation du mode 20 (0 = pas de forçage)
 };
 
 let currentTop = 0;
@@ -2384,14 +2387,22 @@ async function loadState() {
     try { const m = JSON.parse(rouePersoFlag?.value || '{}'); state.players.forEach(p => { p.rouePersoCount = m[p.id] || 0; }); } catch { state.players.forEach(p => { p.rouePersoCount = 0; }); }
     const lockedGamesFlag = (flags || []).find(f => f.key === 'lockedGames');
     try { const ids = new Set(JSON.parse(lockedGamesFlag?.value || '[]')); state.players.forEach(p => p.games.forEach(g => { g.locked = ids.has(g.id); })); } catch { state.players.forEach(p => p.games.forEach(g => { g.locked = false; })); }
-    const roue20Flag = (flags || []).find(f => f.key === 'roueCommu20Until');
-    state.roueCommu20Until = parseInt(roue20Flag?.value || '0') || 0;
+    const roue20SinceFlag = (flags || []).find(f => f.key === 'roueCommu20Since');
+    state.roueCommu20Since = parseInt(roue20SinceFlag?.value || '0') || 0;
+    const roue20ElapsedFlag = (flags || []).find(f => f.key === 'roueCommu20Elapsed');
+    state.roueCommu20Elapsed = parseInt(roue20ElapsedFlag?.value || '0') || 0;
     const roue20StartFlag = (flags || []).find(f => f.key === 'roueCommu20Start');
     state.roueCommu20Start = parseInt(roue20StartFlag?.value || '0') || 0;
     const roue50NextFlag = (flags || []).find(f => f.key === 'roueCommu50Next');
     state.roueCommu50Next = parseInt(roue50NextFlag?.value || '0') || 0;
     const roue20PausedFlag = (flags || []).find(f => f.key === 'roueCommu20Paused');
     state.roueCommu20Paused = parseInt(roue20PausedFlag?.value || '0') || 0;
+    // Migration : un mode 20 encore actif sous l'ancien systeme de 24h repart en mode
+    // manuel, sans decompte, plutot que de disparaitre au rechargement.
+    const ancienUntil = parseInt((flags || []).find(f => f.key === 'roueCommu20Until')?.value || '0') || 0;
+    if (!state.roueCommu20Since && !state.roueCommu20Paused && ancienUntil > Date.now()) {
+      state.roueCommu20Since = Date.now();
+    }
   } catch(e) {
     console.error('loadState error:', e);
   }
@@ -2466,7 +2477,9 @@ async function saveState() {
       { key: 'jokerCounts', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.jokerCount > 0).map(p => [p.id, p.jokerCount]))) },
       { key: 'lockedGames', value: JSON.stringify(state.players.flatMap(p => (p.games || []).filter(g => g.locked).map(g => g.id))) },
       { key: 'rouePersoCounts', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.rouePersoCount > 0).map(p => [p.id, p.rouePersoCount]))) },
-      { key: 'roueCommu20Until', value: String(state.roueCommu20Until || 0) },
+      { key: 'roueCommu20Since', value: String(state.roueCommu20Since || 0) },
+      { key: 'roueCommu20Elapsed', value: String(state.roueCommu20Elapsed || 0) },
+      { key: 'roueCommu20Until', value: '0' }, // LEGACY — vidé, l'ancien décompte 24h n'existe plus
       { key: 'roueCommu20Start', value: String(state.roueCommu20Start || 0) },
       { key: 'roueCommu50Next', value: String(state.roueCommu50Next || 0) },
       { key: 'roueCommu20Paused', value: String(state.roueCommu20Paused || 0) }
@@ -4880,7 +4893,7 @@ function openAction(type) {
     'comm-echange-rand': 'Échange 2 games aléatoires',
     'comm-echange-rand3': 'Échange 3 games aléatoires',
     'folie-echange-all': 'Échange général',
-    'comm-roue-20subs': 'Roue commu × 20 subs (24h)',
+    'comm-roue-20subs': 'Roue commu × 20 subs (2 sessions)',
     'comm-top10-inverse': 'Top 10 inversé',
     'comm-low-kills-bonus': '+5 pts games < 5 kills',
     'comm-vol-score': 'Vol de score',
@@ -5068,13 +5081,15 @@ function buildActionBody(type) {
 
     case 'comm-roue-20subs': {
       const active = _isMode20Active();
-      const paused = state.roueCommu20Paused > 0 && state.roueCommu20Until === 0;
-      const ms20 = _mode20Remaining();
-      const h20 = Math.floor(ms20 / 3600000), m20 = Math.floor((ms20 % 3600000) / 60000);
+      const paused = state.roueCommu20Paused > 0;
       return `<p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">
-        Active la roue toutes les <strong style="color:var(--gold)">20 subs</strong> pendant <strong style="color:var(--gold)">24h</strong> (au lieu de 50).${active ? `<br><span style="color:${paused ? 'var(--text-muted)' : 'var(--rust-light)'}">${paused ? '⏸ En pause' : '⚡ Mode actif'} — ${h20}h${String(m20).padStart(2,'0')}min restant</span>` : ''}
+        Active la roue toutes les <strong style="color:var(--gold)">20 subs</strong> au lieu de 50, <strong style="color:var(--gold)">pour 2 sessions</strong>.<br>
+        Il n'y a pas de décompte : le mode reste actif jusqu'à ce que tu l'enlèves depuis la page Modération, où tu peux aussi le mettre en pause.
+        ${active ? `<br><span style="color:${paused ? 'var(--text-muted)' : 'var(--rust-light)'};font-weight:700">${paused ? '⏸ En pause' : '⚡ Mode actif'} — tourne depuis ${_fmtDuree(_mode20Elapsed())}</span>` : ''}
       </p>
-      <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="execAction()"><i class="fa-solid fa-bolt" style="margin-right:6px"></i>${active ? 'Prolonger de 24h' : 'Activer pour 24h'}</button>`;
+      ${active
+        ? `<button class="btn" style="width:100%;justify-content:center;opacity:0.5;cursor:not-allowed" disabled><i class="fa-solid fa-bolt" style="margin-right:6px"></i>Déjà actif — gestion en Modération</button>`
+        : `<button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="execAction()"><i class="fa-solid fa-bolt" style="margin-right:6px"></i>Activer le mode 20 subs</button>`}`;
     }
     case 'comm-echange-rand3': return `
       <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">Trois joueurs sont tirés au sort, puis une game de chacun tourne entre eux (A→B, B→C, C→A).</p>
@@ -5411,10 +5426,13 @@ function execAction() {
       break;
     }
     case 'comm-roue-20subs': {
-      state.roueCommu20Until = Date.now() + 24 * 60 * 60 * 1000;
+      // Pas de décompte : le mode tourne jusqu'à ce qu'il soit enlevé à la main
+      state.roueCommu20Since = Date.now();
+      state.roueCommu20Elapsed = 0;
+      state.roueCommu20Paused = 0;
       state.roueCommu20Start = state.subsCount || 0;
-      addLog('Mode <strong>Roue × 20 subs</strong> activé pour 24h.', 'gold', 'bolt', true);
-      toast('Mode 20 subs/roue activé pendant 24h !', 'gold');
+      addLog('Mode <strong>Roue × 20 subs</strong> activé — prévu pour 2 sessions.', 'gold', 'bolt', true);
+      toast('Mode 20 subs/roue activé !', 'gold');
       renderSubsBanner();
       break;
     }
@@ -5579,7 +5597,7 @@ function addLog(msg, color, icon, pub = false) {
 function renderSubsBanner() {
   const count = state.subsCount || 0;
   const mode20 = _isMode20Active();
-  const paused20 = state.roueCommu20Paused > 0 && state.roueCommu20Until === 0;
+  const paused20 = state.roueCommu20Paused > 0;
   const start20 = mode20 && state.roueCommu20Start > 0 ? state.roueCommu20Start : 0;
 
   // Build milestone list & compute next milestone
@@ -5605,12 +5623,7 @@ function renderSubsBanner() {
   }
   const rouesTotal = allReached.length;
 
-  const fmtCountdown = () => {
-    const ms = _mode20Remaining();
-    if (ms <= 0) return '';
-    const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000), s = Math.floor((ms % 60000) / 1000);
-    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-  };
+  const fmtCountdown = () => _fmtDuree(_mode20Elapsed());
 
   // Banner above classement
   const banner = document.getElementById('subs-banner');
@@ -5620,7 +5633,7 @@ function renderSubsBanner() {
     const subText = remaining > 0
       ? `Prochain palier : ${nextMilestone} — encore ${remaining} sub${remaining > 1 ? 's' : ''}`
       : 'Roue Communautaire débloquée !';
-    document.getElementById('subs-banner-text').innerHTML = subText + (mode20 ? ` <span style="color:${paused20 ? 'var(--text-muted)' : 'var(--rust-light)'};font-weight:700">${paused20 ? '⏸' : '⚡'} Mode 20 subs${paused20 ? ' (pause)' : ''} — ${fmtCountdown()}</span>` : '');
+    document.getElementById('subs-banner-text').innerHTML = subText + (mode20 ? ` <span style="color:${paused20 ? 'var(--text-muted)' : 'var(--rust-light)'};font-weight:700">${paused20 ? '⏸' : '⚡'} Mode 20 subs${paused20 ? ' (pause)' : ''} — depuis ${fmtCountdown()}</span>` : '');
     document.getElementById('subs-banner-bar').style.width = pct + '%';
     const bm = document.getElementById('subs-banner-milestones');
     if (bm) {
@@ -5662,13 +5675,13 @@ function renderSubsBanner() {
       ? `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
           <div style="display:inline-flex;align-items:center;gap:8px;background:${paused20 ? 'rgba(100,100,100,0.12)' : 'rgba(180,50,50,0.15)'};border:1px solid ${paused20 ? 'var(--border)' : 'var(--rust)'};border-radius:4px;padding:6px 12px;font-size:13px;font-weight:700;color:${paused20 ? 'var(--text-muted)' : 'var(--rust-light)'}">
             <i class="fa-solid ${paused20 ? 'fa-pause' : 'fa-bolt'}"></i>
-            Mode 20 subs ${paused20 ? 'en pause' : 'actif'} — ${fmtCountdown()} restant
+            Mode 20 subs ${paused20 ? 'en pause' : 'actif'} — tourne depuis ${fmtCountdown()}
           </div>
           ${paused20
             ? `<button onclick="resumeMode20Subs()" style="padding:5px 12px;border:1px solid var(--gold);background:rgba(212,175,55,0.1);color:var(--gold);border-radius:4px;font-size:12px;cursor:pointer"><i class="fa-solid fa-play" style="margin-right:4px"></i>Reprendre</button>`
             : `<button onclick="pauseMode20Subs()" style="padding:5px 12px;border:1px solid var(--border);background:var(--bg2);color:var(--text-muted);border-radius:4px;font-size:12px;cursor:pointer"><i class="fa-solid fa-pause" style="margin-right:4px"></i>Pause</button>`
           }
-          <button onclick="cancelMode20Subs()" style="padding:5px 12px;border:1px solid var(--border);background:var(--bg2);color:var(--text-muted);border-radius:4px;font-size:12px;cursor:pointer">Annuler le mode</button>
+          <button onclick="cancelMode20Subs()" style="padding:5px 12px;border:1px solid var(--rust);background:rgba(180,60,40,0.1);color:var(--rust-light);border-radius:4px;font-size:12px;cursor:pointer"><i class="fa-solid fa-xmark" style="margin-right:4px"></i>Enlever le mode</button>
         </div>`
       : '';
   }
@@ -5721,12 +5734,25 @@ function addSubsCustom() {
   _applySubsAdd(val);
 }
 
-function _isMode20Active() {
-  return state.roueCommu20Until > Date.now() || state.roueCommu20Paused > 0;
+// Durée lisible : « 3h24 », « 12min », « 2j 5h »
+function _fmtDuree(ms) {
+  const min = Math.floor(ms / 60000);
+  if (min < 1) return 'moins d\'une minute';
+  if (min < 60) return `${min}min`;
+  const h = Math.floor(min / 60), m = min % 60;
+  if (h < 24) return `${h}h${String(m).padStart(2, '0')}`;
+  return `${Math.floor(h / 24)}j ${h % 24}h`;
 }
-function _mode20Remaining() {
-  if (state.roueCommu20Until > Date.now()) return state.roueCommu20Until - Date.now();
-  return state.roueCommu20Paused || 0;
+
+// Le mode tourne tant qu'il n'est pas retiré à la main : actif s'il a un départ
+// en cours, ou s'il est en pause (le retirer est la seule façon de l'arrêter).
+function _isMode20Active() {
+  return state.roueCommu20Since > 0 || state.roueCommu20Paused > 0;
+}
+// Temps total pendant lequel le mode a réellement tourné, pauses déduites.
+function _mode20Elapsed() {
+  const enCours = state.roueCommu20Since > 0 ? Date.now() - state.roueCommu20Since : 0;
+  return (state.roueCommu20Elapsed || 0) + Math.max(0, enCours);
 }
 
 function _subsNextMilestone(count) {
@@ -5791,33 +5817,43 @@ function _applySubsAdd(n) {
   }
 }
 
+// Pause : on solde le segment en cours dans le cumul, le compteur se fige.
 function pauseMode20Subs() {
-  state.roueCommu20Paused = Math.max(0, state.roueCommu20Until - Date.now());
-  state.roueCommu20Until = 0;
+  if (state.roueCommu20Since <= 0) return;
+  state.roueCommu20Elapsed = _mode20Elapsed();
+  state.roueCommu20Since = 0;
+  state.roueCommu20Paused = 1;
   saveState();
   renderSubsBanner();
+  renderModerationPage();
   toast('Mode 20 subs mis en pause.', 'info');
 }
 
 function resumeMode20Subs() {
-  state.roueCommu20Until = Date.now() + state.roueCommu20Paused;
+  if (!state.roueCommu20Paused) return;
+  state.roueCommu20Since = Date.now();
   state.roueCommu20Paused = 0;
   saveState();
   renderSubsBanner();
+  renderModerationPage();
   toast('Mode 20 subs repris.', 'info');
 }
 
 function cancelMode20Subs() {
-  showConfirm('Annuler le mode 20 subs', 'Désactiver le mode 20 subs et revenir aux paliers de 50 ?', () => {
-    const _nextBase = (Math.floor(state.subsCount / 50) + 1) * 50;
-    state.roueCommu50Next = (_nextBase - state.subsCount < 20) ? _nextBase + 50 : _nextBase;
-    state.roueCommu20Until = 0;
-    state.roueCommu20Start = 0;
-    state.roueCommu20Paused = 0;
-    saveState();
-    renderSubsBanner();
-    toast('Mode 20 subs désactivé.', 'info');
-  }, true, 'Désactiver');
+  showConfirm('Enlever le mode 20 subs',
+    `Le mode a tourné <strong>${_fmtDuree(_mode20Elapsed())}</strong>. Le retirer et revenir aux paliers de 50 ?`,
+    () => {
+      const _nextBase = (Math.floor(state.subsCount / 50) + 1) * 50;
+      state.roueCommu50Next = (_nextBase - state.subsCount < 20) ? _nextBase + 50 : _nextBase;
+      state.roueCommu20Since = 0;
+      state.roueCommu20Elapsed = 0;
+      state.roueCommu20Start = 0;
+      state.roueCommu20Paused = 0;
+      saveState();
+      renderSubsBanner();
+      renderModerationPage();
+      toast('Mode 20 subs enlevé.', 'info');
+    }, true, 'Enlever');
 }
 
 function resetSubs() {
@@ -6445,20 +6481,11 @@ async function autoRefresh() {
 }
 
 function setupAutoRefresh() {
-  // Countdown 1s pour le mode 20 subs
+  // Le mode 20 subs n'expire plus tout seul : on rafraîchit juste le compteur
+  // « tourne depuis … » tant qu'il est en cours. Une minute suffit largement.
   setInterval(() => {
-    if (state.roueCommu20Until > 0 || state.roueCommu20Paused > 0) {
-      if (state.roueCommu20Until > 0 && Date.now() > state.roueCommu20Until) {
-        const _nextBase = (Math.floor(state.subsCount / 50) + 1) * 50;
-        state.roueCommu50Next = (_nextBase - state.subsCount < 20) ? _nextBase + 50 : _nextBase;
-        state.roueCommu20Until = 0;
-        state.roueCommu20Start = 0;
-        state.roueCommu20Paused = 0;
-        saveState();
-      }
-      renderSubsBanner();
-    }
-  }, 1000);
+    if (state.roueCommu20Since > 0) renderSubsBanner();
+  }, 60000);
   // Polling toutes les 20 secondes
   setInterval(autoRefresh, 20000);
 
