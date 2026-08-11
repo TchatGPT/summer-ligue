@@ -2410,9 +2410,69 @@ async function loadState() {
     if (!state.roueCommu20Since && !state.roueCommu20Paused && ancienUntil > Date.now()) {
       state.roueCommu20Since = Date.now();
     }
+    // Ce qui vient d'être lu EST ce qu'il y a en base : on prend l'empreinte pour que
+    // la prochaine sauvegarde n'écrive que les différences réelles.
+    _snapshotSaved();
   } catch(e) {
     console.error('loadState error:', e);
   }
+}
+
+// ============================================================
+// SAUVEGARDE DIFFÉRENTIELLE
+// ============================================================
+// Avant, chaque saveState réécrivait TOUTES les lignes de players, games et logs.
+// Chaque ligne réécrite déclenchait un message Realtime par client connecté, d'où
+// des millions de messages pour une poignée d'utilisateurs. On ne pousse désormais
+// que les lignes réellement modifiées, ajoutées ou supprimées.
+let _saved = { players: new Map(), games: new Map(), logs: new Map(), flags: new Map() };
+
+const _rowsPlayers = () => state.players.map(p => ({
+  id: p.id, name: p.name,
+  bonus_points: p.bonusPoints || 0,
+  skip_next: !!p.skipNext,
+  freeze_kills: p.freezeKills || 0,
+  pending_mult: p.pendingMult || 0,
+  pending_bonus: p.pendingBonus || 0,
+  extra_games: p.extraGames || 0
+}));
+
+const _rowsGames = () => state.players.flatMap(p => (p.games || []).map(g => ({
+  id: g.id, player_id: p.id,
+  kills: g.kills || 0, top_rank: g.top || 0,
+  mult: g.mult || 1, score: g.score || 0,
+  note: g.note || '', game_date: g.date || ''
+})));
+
+const _rowsLogs = () => state.log.map(l => ({
+  id: l.id, msg: l.msg, color: l.color, icon: l.icon, time: l.time, pub: !!l.pub
+}));
+
+// Compare les lignes courantes à la dernière empreinte connue.
+function _diffRows(rows, memo) {
+  const vus = new Set();
+  const aEcrire = [];
+  for (const r of rows) {
+    vus.add(r.id);
+    if (memo.get(r.id) !== JSON.stringify(r)) aEcrire.push(r);
+  }
+  const aSupprimer = [...memo.keys()].filter(id => !vus.has(id));
+  return { aEcrire, aSupprimer };
+}
+
+function _commitRows(rows, memo) {
+  memo.clear();
+  for (const r of rows) memo.set(r.id, JSON.stringify(r));
+}
+
+// Après un chargement, la mémoire reflète la base : on aligne l'empreinte.
+// Les flags ne sont pas mémorisés ici — ils sont peu nombreux et leur valeur
+// recalculée peut différer de la chaîne stockée, on les laisse se resynchroniser
+// à la première sauvegarde.
+function _snapshotSaved() {
+  _commitRows(_rowsPlayers(), _saved.players);
+  _commitRows(_rowsGames(), _saved.games);
+  _commitRows(_rowsLogs(), _saved.logs);
 }
 
 async function saveState() {
@@ -2428,52 +2488,34 @@ async function saveState() {
 
   // Players
   try {
-    const playerRows = state.players.map(p => ({
-      id: p.id, name: p.name,
-      bonus_points: p.bonusPoints || 0,
-      skip_next: !!p.skipNext,
-      freeze_kills: p.freezeKills || 0,
-      pending_mult: p.pendingMult || 0,
-      pending_bonus: p.pendingBonus || 0,
-      extra_games: p.extraGames || 0
-    }));
-    if (playerRows.length > 0) await _sb.from('players').upsert(playerRows);
-    const { data: dbP } = await _sb.from('players').select('id');
-    const keepP = new Set(playerRows.map(p => p.id));
-    const delP = (dbP || []).filter(p => !keepP.has(p.id)).map(p => p.id);
-    if (delP.length) await _sb.from('players').delete().in('id', delP);
+    const playerRows = _rowsPlayers();
+    const d = _diffRows(playerRows, _saved.players);
+    if (d.aEcrire.length) await _sb.from('players').upsert(d.aEcrire);
+    if (d.aSupprimer.length) await _sb.from('players').delete().in('id', d.aSupprimer);
+    _commitRows(playerRows, _saved.players);
   } catch(e) { console.error('saveState players:', e); }
 
   // Games
   try {
-    const gameRows = state.players.flatMap(p => (p.games || []).map(g => ({
-      id: g.id, player_id: p.id,
-      kills: g.kills || 0, top_rank: g.top || 0,
-      mult: g.mult || 1, score: g.score || 0,
-      note: g.note || '', game_date: g.date || ''
-    })));
-    if (gameRows.length > 0) await _sb.from('games').upsert(gameRows);
-    const { data: dbG } = await _sb.from('games').select('id');
-    const keepG = new Set(gameRows.map(g => g.id));
-    const delG = (dbG || []).filter(g => !keepG.has(g.id)).map(g => g.id);
-    if (delG.length) await _sb.from('games').delete().in('id', delG);
+    const gameRows = _rowsGames();
+    const d = _diffRows(gameRows, _saved.games);
+    if (d.aEcrire.length) await _sb.from('games').upsert(d.aEcrire);
+    if (d.aSupprimer.length) await _sb.from('games').delete().in('id', d.aSupprimer);
+    _commitRows(gameRows, _saved.games);
   } catch(e) { console.error('saveState games:', e); }
 
   // Logs (sans seq — ordre par created_at)
   try {
-    const logRows = state.log.map(l => ({
-      id: l.id, msg: l.msg, color: l.color, icon: l.icon, time: l.time, pub: !!l.pub
-    }));
-    if (logRows.length > 0) await _sb.from('logs').upsert(logRows);
-    const { data: dbL } = await _sb.from('logs').select('id');
-    const keepL = new Set(logRows.map(l => l.id));
-    const delL = (dbL || []).filter(l => !keepL.has(l.id)).map(l => l.id);
-    if (delL.length) await _sb.from('logs').delete().in('id', delL);
+    const logRows = _rowsLogs();
+    const d = _diffRows(logRows, _saved.logs);
+    if (d.aEcrire.length) await _sb.from('logs').upsert(d.aEcrire);
+    if (d.aSupprimer.length) await _sb.from('logs').delete().in('id', d.aSupprimer);
+    _commitRows(logRows, _saved.logs);
   } catch(e) { console.error('saveState logs:', e); }
 
   // Flags
   try {
-    await _sb.from('app_flags').upsert([
+    const flagRows = [
       { key: 'top1BonusCounts',   value: JSON.stringify(state.top1BonusCounts || {}) },
       { key: 'jokerPlayers',      value: JSON.stringify([...(state.jokerPlayerIds || [])]) },
       { key: 'subsCount',         value: String(state.subsCount || 0) },
@@ -2492,7 +2534,10 @@ async function saveState() {
       { key: 'roueCommu20Start', value: String(state.roueCommu20Start || 0) },
       { key: 'roueCommu50Next', value: String(state.roueCommu50Next || 0) },
       { key: 'roueCommu20Paused', value: String(state.roueCommu20Paused || 0) }
-    ]);
+    ];
+    const aEcrire = flagRows.filter(f => _saved.flags.get(f.key) !== f.value);
+    if (aEcrire.length) await _sb.from('app_flags').upsert(aEcrire);
+    flagRows.forEach(f => _saved.flags.set(f.key, f.value));
   } catch(e) { console.error('saveState flags:', e); }
   _savePending = false;
 }
@@ -6595,15 +6640,11 @@ function setupAutoRefresh() {
   // Refresh quand la connexion réseau revient (mobile qui perd le réseau)
   window.addEventListener('online', () => autoRefresh());
 
-  // Supabase Realtime — instantané si la réplication est activée sur les tables
-  try {
-    _sb.channel('public-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'players' }, () => autoRefresh())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'games' },   () => autoRefresh())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'logs' },    () => autoRefresh())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'app_flags'},() => autoRefresh())
-      .subscribe();
-  } catch(e) { /* Realtime non dispo, le polling prend le relais */ }
+  // Pas de souscription Supabase Realtime : elle écoutait event '*' sur players,
+  // games, logs et app_flags, donc chaque ligne écrite générait un message par
+  // client connecté — plusieurs millions par mois pour une dizaine d'utilisateurs.
+  // Le polling 20 s ci-dessus, plus les refresh au retour d'onglet et de réseau,
+  // couvrent le besoin : les évènements restent bien récupérés et affichés.
 }
 
 // ============================================================
