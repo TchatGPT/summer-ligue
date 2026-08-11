@@ -1560,6 +1560,20 @@ main {
         <div class="ac-desc">Le top 10 échange une game en chaîne — ni la meilleure ni la pire de chacun</div>
       </div>
 
+      <div class="action-card action-card-gold" onclick="openAction('comm-echange-flooozii')">
+        <div class="ac-bg"><i class="fa-solid fa-right-left"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-right-left"></i></div>
+        <div class="ac-title">Échange avec FloooZii</div>
+        <div class="ac-desc">Un joueur tiré au sort échange une de ses games au hasard contre une game au hasard de FloooZii</div>
+      </div>
+
+      <div class="action-card action-card-gold" onclick="openAction('comm-clone-flooozii')">
+        <div class="ac-bg"><i class="fa-solid fa-star"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-star"></i></div>
+        <div class="ac-title">Meilleure game de FloooZii clonée</div>
+        <div class="ac-desc">Un joueur tiré au sort voit une de ses games au hasard remplacée par un clone de la meilleure game de FloooZii</div>
+      </div>
+
     </div>
   </div>
 
@@ -1834,6 +1848,8 @@ main {
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-lock"></i> 3 joueurs figent leur meilleure game</div><div style="font-size:11px;color:var(--text-muted)">3 joueurs sont tirés au sort et leur meilleure game est figée : elle ne peut plus être supprimée, échangée ni piquée par aucune action de roue. Elle reste clonable — un autre joueur peut en recevoir une copie. Le gel est indiqué dans le détail des games du joueur.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-dice"></i> 3 joueurs figent une game au hasard</div><div style="font-size:11px;color:var(--text-muted)">3 joueurs sont tirés au sort et une de leurs games est figée au hasard, ni la meilleure ni la pire — uniquement une game intermédiaire. Un joueur avec 2 games ou moins n'est pas concerné.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-ranking-star"></i> Échange de games entre les 10 premiers</div><div style="font-size:11px;color:var(--text-muted)">Les 10 premiers du classement échangent une game en chaîne entre eux, dans un ordre tiré au sort. La game échangée n'est ni la meilleure ni la pire de son propriétaire. Chacun donne une game et en reçoit une : le nombre de games ne change pas et aucun point n'est créé ni perdu.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-right-left"></i> Échange avec FloooZii</div><div style="font-size:11px;color:var(--text-muted)">Un joueur est tiré au sort et échange une de ses games au hasard contre une game au hasard de FloooZii. Chacun donne une game et en reçoit une : le nombre de games ne change pas et aucun point n'est créé ni perdu.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-star"></i> Meilleure game de FloooZii clonée</div><div style="font-size:11px;color:var(--text-muted)">Un joueur est tiré au sort : une de ses games au hasard est remplacée par un clone de la meilleure game de FloooZii. FloooZii garde sa game, elle est seulement copiée, et le nombre de games du joueur tiré ne change pas.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-bolt-lightning"></i> +5 pts petites games</div><div style="font-size:11px;color:var(--text-muted)">Ajoute +5 pts à toutes les games de moins de 5 kills pour chaque joueur</div></div></div>
     </div>
   </div>
@@ -4564,6 +4580,73 @@ function doCommFreezeBest() {
   );
 }
 
+// ---- Actions ciblant FloooZii ----
+// Le joueur est retrouvé par son pseudo, insensible à la casse et aux accents,
+// pour que l'action continue de marcher s'il est renommé « flooozii » ou « FLOOOZII ».
+const FLOOOZII_NAME = 'FloooZii';
+
+function getFlooozii() {
+  const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
+  const cible = norm(FLOOOZII_NAME);
+  return state.players.find(p => norm(p.name) === cible) || null;
+}
+
+function doCommEchangeFlooozii() {
+  const flo = getFlooozii();
+  if (!flo) { toast(`Aucun joueur nommé ${FLOOOZII_NAME} dans la ligue.`, 'error'); return; }
+  if (!movableGames(flo).length) { toast(`${flo.name} n'a aucune game échangeable (aucune game ou toutes figées).`, 'error'); return; }
+  const pool = state.players.filter(p => p.id !== flo.id && movableGames(p).length > 0);
+  if (!pool.length) { toast('Aucun autre joueur avec une game échangeable.', 'error'); return; }
+  const autre = pool[Math.floor(Math.random() * pool.length)];
+  const mvA = movableGames(autre), mvF = movableGames(flo);
+  const gA = mvA[Math.floor(Math.random() * mvA.length)];
+  const gF = mvF[Math.floor(Math.random() * mvF.length)];
+  const el = document.getElementById('action-echange-flo-preview');
+  const desc = `<strong>${escHtml(autre.name)}</strong> est tiré au sort<br>` +
+    `<strong>${escHtml(autre.name)}</strong> donne <span style="color:var(--gold)">${gA.score} pts</span> → <strong>${escHtml(flo.name)}</strong><br>` +
+    `<strong>${escHtml(flo.name)}</strong> donne <span style="color:var(--gold)">${gF.score} pts</span> → <strong>${escHtml(autre.name)}</strong>`;
+  if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.8">${desc}</div>`;
+  showConfirm('Confirmer l\'échange', desc,
+    () => {
+      autre.games = autre.games.filter(g => g.id !== gA.id);
+      flo.games = flo.games.filter(g => g.id !== gF.id);
+      autre.games.push({ ...gF, id: uid(), locked: false, note: (gF.note ? gF.note + ' · ' : '') + `échange avec ${flo.name}` });
+      flo.games.push({ ...gA, id: uid(), locked: false, note: (gA.note ? gA.note + ' · ' : '') + `échange avec ${autre.name}` });
+      addLog(`Échange avec <strong>${flo.name}</strong> : <strong>${autre.name}</strong> (${gA.score} pts) ↔ <strong>${flo.name}</strong> (${gF.score} pts).`, 'gold', 'right-left', true);
+      toast(`${autre.name} ↔ ${flo.name} : échange effectué !`, 'gold');
+      saveState(); closeModal('modal-action'); renderAll();
+    }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
+  );
+}
+
+function doCommCloneFlooozii() {
+  const flo = getFlooozii();
+  if (!flo) { toast(`Aucun joueur nommé ${FLOOOZII_NAME} dans la ligue.`, 'error'); return; }
+  const best = getBestGame(flo); // seulement clonée : une game figée peut l'être
+  if (!best) { toast(`${flo.name} n'a aucune game à cloner.`, 'error'); return; }
+  const pool = state.players.filter(p => p.id !== flo.id && movableGames(p).length > 0);
+  if (!pool.length) { toast('Aucun autre joueur avec une game remplaçable.', 'error'); return; }
+  const autre = pool[Math.floor(Math.random() * pool.length)];
+  const mv = movableGames(autre);
+  const cible = mv[Math.floor(Math.random() * mv.length)];
+  const el = document.getElementById('action-clone-flo-preview');
+  const delta = best.score - cible.score;
+  const desc = `<strong>${escHtml(autre.name)}</strong> est tiré au sort<br>` +
+    `Sa game de <span style="color:var(--text-muted)">${cible.score} pts</span> devient la meilleure game de <strong>${escHtml(flo.name)}</strong> : <span style="color:var(--gold)">${best.score} pts</span> ` +
+    `<span style="color:${delta >= 0 ? 'var(--green)' : 'var(--rust-light)'}">(${delta >= 0 ? '+' : ''}${delta})</span><br>` +
+    `<span style="color:var(--text-muted)">${escHtml(flo.name)} garde sa game, elle est seulement copiée.</span>`;
+  if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.8">${desc}</div>`;
+  showConfirm('Confirmer le clone', desc,
+    () => {
+      autre.games = autre.games.filter(g => g.id !== cible.id);
+      autre.games.push({ ...best, id: uid(), locked: false, note: (best.note ? best.note + ' · ' : '') + `clone de la meilleure game de ${flo.name}` });
+      addLog(`<strong>${autre.name}</strong> — game de ${cible.score} pts remplacée par un clone de la meilleure game de <strong>${flo.name}</strong> (${best.score} pts).`, 'gold', 'star', true);
+      toast(`${autre.name} reçoit la meilleure game de ${flo.name} (${best.score} pts) !`, 'gold');
+      saveState(); closeModal('modal-action'); renderAll();
+    }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
+  );
+}
+
 function doCommFreezeRand() {
   const eligible = state.players.filter(p => middleGames(p).length > 0);
   if (!eligible.length) { toast('Aucun joueur n\'a de game intermédiaire libre à figer.', 'error'); return; }
@@ -4808,6 +4891,8 @@ function openAction(type) {
     'comm-freeze-best': '3 joueurs figent leur meilleure game',
     'comm-freeze-rand': '3 joueurs figent une game au hasard',
     'comm-echange-top10': 'Échange de games entre les 10 premiers',
+    'comm-echange-flooozii': 'Échange avec FloooZii',
+    'comm-clone-flooozii': 'Meilleure game de FloooZii clonée',
     'folie-freeze-all': 'Chacun fige une game au hasard',
     'folie-half-rand': 'Une game au hasard ÷ 2'
   };
@@ -5076,6 +5161,18 @@ function buildActionBody(type) {
       La game n'est pas supprimée : <strong>le nombre de games ne change pas</strong>. Les games figées sont protégées et ne peuvent pas être tirées.</p>
       <div id="action-half-rand-preview" style="margin-bottom:12px"></div>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center;background:var(--rust);border-color:var(--rust)" onclick="doFolieHalfRand()"><i class="fa-solid fa-divide" style="margin-right:6px"></i>Diviser une game par 2 pour chacun</button>`;
+
+    case 'comm-echange-flooozii': return `
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">Un joueur est <strong style="color:var(--gold)">tiré au sort</strong> et échange une de ses games au hasard contre une game au hasard de <strong style="color:var(--gold)">FloooZii</strong>.<br>
+      Chacun donne une game et en reçoit une : le nombre de games ne change pas et aucun point n'est créé ni perdu. Les games figées ne peuvent pas être échangées.</p>
+      <div id="action-echange-flo-preview" style="margin-bottom:12px"></div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCommEchangeFlooozii()"><i class="fa-solid fa-right-left" style="margin-right:6px"></i>Tirer au sort & échanger</button>`;
+
+    case 'comm-clone-flooozii': return `
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">Un joueur est <strong style="color:var(--gold)">tiré au sort</strong> : une de ses games au hasard est remplacée par un <strong style="color:var(--gold)">clone de la meilleure game de FloooZii</strong>.<br>
+      FloooZii garde sa game, elle est seulement copiée. Le nombre de games du joueur tiré ne change pas. Sa game remplacée ne peut pas être une game figée.</p>
+      <div id="action-clone-flo-preview" style="margin-bottom:12px"></div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCommCloneFlooozii()"><i class="fa-solid fa-star" style="margin-right:6px"></i>Tirer au sort & cloner</button>`;
 
     default: return '<p>Action inconnue.</p>';
   }
