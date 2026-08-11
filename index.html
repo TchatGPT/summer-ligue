@@ -5574,8 +5574,14 @@ function openModal(id) {
 }
 function closeModal(id) {
   document.getElementById(id).classList.remove('open');
-  currentAction = null;
-  selectedMult = null;
+  // Ne remettre à zéro que si c'est bien la modale d'action qu'on ferme.
+  // Sinon fermer la popup de confirmation effaçait currentAction AVANT que le
+  // callback ne s'exécute, et les actions passant par showConfirm ne posaient
+  // jamais leur cooldown.
+  if (id === 'modal-action') {
+    currentAction = null;
+    selectedMult = null;
+  }
 }
 
 // ============================================================
