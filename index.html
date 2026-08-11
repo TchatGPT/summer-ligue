@@ -1410,6 +1410,13 @@ main {
         <div class="ac-desc">Toute la ligue — une game tirée au sort par joueur devient intouchable (clonage toujours possible)</div>
       </div>
 
+      <div class="action-card action-card-rust" onclick="openAction('folie-half-rand')">
+        <div class="ac-bg"><i class="fa-solid fa-divide"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-divide"></i></div>
+        <div class="ac-title">Une game au hasard ÷ 2</div>
+        <div class="ac-desc">Toute la ligue — une game tirée au sort par joueur voit son score divisé par 2</div>
+      </div>
+
     </div>
   </div>
 
@@ -1871,6 +1878,7 @@ main {
       <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-wand-magic-sparkles"></i> 3 Jokers pour tout le monde</div><div style="font-size:11px;color:var(--text-muted)">Chaque joueur de la ligue reçoit 3 jokers, qui s'ajoutent à ceux qu'il possède déjà. Un joker permet de ne pas compter une game. Le compteur est visible dans le classement et se décrémente à chaque utilisation (3 → 2 → 1 → 0) ; à 0 le badge disparaît.</div></div></div>
       <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-life-ring"></i> Meilleure game aux 5 derniers</div><div style="font-size:11px;color:var(--text-muted)">Les 5 derniers du classement voient leur pire game remplacée par un clone de la meilleure game de toute la ligue. La meilleure game est copiée et non déplacée : son propriétaire la garde. Le nombre de games de chacun ne change pas.</div></div></div>
       <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-lock"></i> Chacun fige une game au hasard</div><div style="font-size:11px;color:var(--text-muted)">Chaque joueur de la ligue voit une de ses games tirée au hasard passer en figée : plus supprimable, plus échangeable, plus piquable. Elle reste clonable. Les games déjà figées ne sont pas retirées au sort une seconde fois.</div></div></div>
+      <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-divide"></i> Une game au hasard ÷ 2</div><div style="font-size:11px;color:var(--text-muted)">Pour chaque joueur, une game est tirée au hasard et son score est divisé par 2 (arrondi au supérieur). La game n'est pas supprimée, le nombre de games ne change pas. Les games figées sont protégées et ne peuvent pas être tirées.</div></div></div>
     </div>
   </div>
 </div>
@@ -4606,6 +4614,32 @@ function doCommEchangeTop10() {
   );
 }
 
+function doFolieHalfRand() {
+  // Les games figées sont protégées : diviser leur score reviendrait à les amputer
+  const eligible = state.players.filter(p => movableGames(p).some(g => g.score > 0));
+  if (!eligible.length) { toast('Aucune game divisible (toutes à 0 ou figées).', 'error'); return; }
+  const picks = eligible.map(p => {
+    const pool = movableGames(p).filter(g => g.score > 0);
+    return { p, g: pool[Math.floor(Math.random() * pool.length)] };
+  });
+  const totalPerdu = picks.reduce((s, x) => s + (x.g.score - Math.ceil(x.g.score / 2)), 0);
+  const el = document.getElementById('action-half-rand-preview');
+  const lignes = picks.map(x => `<strong>${escHtml(x.p.name)}</strong> — game <span style="color:var(--text-muted)">${x.g.score}</span> → <span style="color:var(--rust-light)">${Math.ceil(x.g.score / 2)} pts</span>`).join('<br>');
+  const desc = `<strong>${picks.length} joueur${picks.length > 1 ? 's' : ''}</strong> touché${picks.length > 1 ? 's' : ''} · <strong style="color:var(--rust-light)">−${totalPerdu} pts</strong> au total<br><br>${lignes}`;
+  if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.9;max-height:280px;overflow-y:auto">${desc}</div>`;
+  showConfirm('Confirmer la division', desc,
+    () => {
+      picks.forEach(x => {
+        x.g.score = Math.ceil(x.g.score / 2);
+        x.g.note = (x.g.note ? x.g.note + ' · ' : '') + '÷ 2 aléatoire (roue de folie)';
+      });
+      addLog(`Une game ÷ 2 : ${picks.length} joueur${picks.length > 1 ? 's' : ''} touché${picks.length > 1 ? 's' : ''}, ${totalPerdu} pts retirés au total.`, 'rust', 'divide', true);
+      toast(`Une game divisée par 2 pour ${picks.length} joueur${picks.length > 1 ? 's' : ''} — ${totalPerdu} pts retirés.`, 'error');
+      saveState(); closeModal('modal-action'); renderAll();
+    }, true, 'Diviser', () => { if (el) el.innerHTML = ''; }
+  );
+}
+
 function doFolieFreezeAll() {
   // Une game déjà figée ne peut pas être re-tirée : chacun fige une game encore libre
   const eligible = state.players.filter(p => movableGames(p).length > 0);
@@ -4774,7 +4808,8 @@ function openAction(type) {
     'comm-freeze-best': '3 joueurs figent leur meilleure game',
     'comm-freeze-rand': '3 joueurs figent une game au hasard',
     'comm-echange-top10': 'Échange de games entre les 10 premiers',
-    'folie-freeze-all': 'Chacun fige une game au hasard'
+    'folie-freeze-all': 'Chacun fige une game au hasard',
+    'folie-half-rand': 'Une game au hasard ÷ 2'
   };
   document.getElementById('modal-action-title').textContent = titles[type] || type;
   document.getElementById('modal-action-body').innerHTML = buildActionBody(type);
@@ -5035,6 +5070,12 @@ function buildActionBody(type) {
       La game échangée n'est <strong>ni la meilleure ni la pire</strong> de son propriétaire, uniquement une game intermédiaire. Chacun donne une game et en reçoit une : <strong>le nombre de games ne change pas</strong> et aucun point n'est créé ni perdu.</p>
       <div id="action-echange-top10-preview" style="margin-bottom:12px"></div>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCommEchangeTop10()"><i class="fa-solid fa-ranking-star" style="margin-right:6px"></i>Échanger dans le top 10</button>`;
+
+    case 'folie-half-rand': return `
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">Pour <strong style="color:var(--rust-light)">chaque joueur</strong> de la ligue, une game est tirée au hasard et son score est <strong style="color:var(--rust-light)">divisé par 2</strong> (arrondi au supérieur).<br>
+      La game n'est pas supprimée : <strong>le nombre de games ne change pas</strong>. Les games figées sont protégées et ne peuvent pas être tirées.</p>
+      <div id="action-half-rand-preview" style="margin-bottom:12px"></div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;background:var(--rust);border-color:var(--rust)" onclick="doFolieHalfRand()"><i class="fa-solid fa-divide" style="margin-right:6px"></i>Diviser une game par 2 pour chacun</button>`;
 
     default: return '<p>Action inconnue.</p>';
   }
