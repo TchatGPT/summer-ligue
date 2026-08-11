@@ -1427,11 +1427,12 @@ main {
     </div>
     <div class="action-grid">
 
-      <div class="action-card action-card-gold" onclick="openAction('best-x15')">
+      <div class="action-card action-card-gold" id="action-card-best-x15" onclick="openAction('best-x15')">
         <div class="ac-bg"><i class="fa-solid fa-star"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-star"></i></div>
         <div class="ac-title">Meilleure game × 1.5</div>
-        <div class="ac-desc">Multiplie le score de la meilleure game de chaque joueur par 1.5</div>
+        <div class="ac-desc">Multiplie le score de la meilleure game de chaque joueur par 1.5 — une fois toutes les 12h</div>
+        <div class="ac-cooldown" style="display:none;font-size:10px;color:var(--text-muted);margin-top:4px"></div>
       </div>
 
       <div class="action-card action-card-gold" onclick="openAction('add-bonus-game')">
@@ -1830,7 +1831,7 @@ main {
       </div>
     </div>
     <div class="action-list-compact">
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-star"></i> Meilleure game × 1.5</div><div style="font-size:11px;color:var(--text-muted)">Multiplie le score de la meilleure game de chaque joueur par 1.5</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-star"></i> Meilleure game × 1.5</div><div style="font-size:11px;color:var(--text-muted)">Multiplie le score de la meilleure game de chaque joueur par 1.5. Utilisable une fois toutes les 12h : une fois déclenchée, l'action est bloquée et la carte affiche le temps restant.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-circle-plus"></i> Ajout d'une game sup</div><div style="font-size:11px;color:var(--text-muted)">Accorde une game bonus hors limite à tous les joueurs (compteur +1 pour chacun)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-trash-can"></i> Suppression de la pire game</div><div style="font-size:11px;color:var(--text-muted)">Supprime la game avec le score le plus bas de chaque joueur</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-wand-magic-sparkles"></i> 1 Joker pour tous les participants</div><div style="font-size:11px;color:var(--text-muted)">Chaque joueur de la ligue reçoit 1 Joker, qui permet de ne pas compter une game. Les jokers se cumulent avec ceux obtenus via la Roue Perso ou la Roue de Folie : le compteur est visible dans le classement et se décrémente à chaque utilisation.</div></div></div>
@@ -2295,7 +2296,8 @@ let state = {
   roueCommu20Elapsed: 0, // ms déjà écoulés sur les segments précédents (avant pauses)
   roueCommu20Paused: 0,  // 1 = en pause, le compteur est figé
   roueCommu20Start: 0,   // subsCount au moment d'activation du mode 20
-  roueCommu50Next: 0     // prochain palier forcé après annulation du mode 20 (0 = pas de forçage)
+  roueCommu50Next: 0,    // prochain palier forcé après annulation du mode 20 (0 = pas de forçage)
+  bestX15Until: 0        // timestamp ms — cooldown 12h de Meilleure game × 1.5
 };
 
 let currentTop = 0;
@@ -2387,6 +2389,8 @@ async function loadState() {
     try { const m = JSON.parse(rouePersoFlag?.value || '{}'); state.players.forEach(p => { p.rouePersoCount = m[p.id] || 0; }); } catch { state.players.forEach(p => { p.rouePersoCount = 0; }); }
     const lockedGamesFlag = (flags || []).find(f => f.key === 'lockedGames');
     try { const ids = new Set(JSON.parse(lockedGamesFlag?.value || '[]')); state.players.forEach(p => p.games.forEach(g => { g.locked = ids.has(g.id); })); } catch { state.players.forEach(p => p.games.forEach(g => { g.locked = false; })); }
+    const bestX15Flag = (flags || []).find(f => f.key === 'bestX15Until');
+    state.bestX15Until = parseInt(bestX15Flag?.value || '0') || 0;
     const roue20SinceFlag = (flags || []).find(f => f.key === 'roueCommu20Since');
     state.roueCommu20Since = parseInt(roue20SinceFlag?.value || '0') || 0;
     const roue20ElapsedFlag = (flags || []).find(f => f.key === 'roueCommu20Elapsed');
@@ -2477,6 +2481,7 @@ async function saveState() {
       { key: 'jokerCounts', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.jokerCount > 0).map(p => [p.id, p.jokerCount]))) },
       { key: 'lockedGames', value: JSON.stringify(state.players.flatMap(p => (p.games || []).filter(g => g.locked).map(g => g.id))) },
       { key: 'rouePersoCounts', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.rouePersoCount > 0).map(p => [p.id, p.rouePersoCount]))) },
+      { key: 'bestX15Until', value: String(state.bestX15Until || 0) },
       { key: 'roueCommu20Since', value: String(state.roueCommu20Since || 0) },
       { key: 'roueCommu20Elapsed', value: String(state.roueCommu20Elapsed || 0) },
       { key: 'roueCommu20Until', value: '0' }, // LEGACY — vidé, l'ancien décompte 24h n'existe plus
@@ -2558,6 +2563,21 @@ function renderAll() {
   renderStats();
   renderModerationPage();
   renderStatsChart();
+  renderCooldowns();
+}
+
+// Grise les cartes d'action encore en cooldown et affiche le temps restant.
+function renderCooldowns() {
+  const el = document.getElementById('action-card-best-x15');
+  if (!el) return;
+  const restant = (state.bestX15Until || 0) - Date.now();
+  el.style.opacity = restant > 0 ? '0.4' : '';
+  el.style.pointerEvents = restant > 0 ? 'none' : '';
+  const cd = el.querySelector('.ac-cooldown');
+  if (cd) {
+    cd.textContent = restant > 0 ? `⏳ ${_fmtDuree(restant)}` : '';
+    cd.style.display = restant > 0 ? '' : 'none';
+  }
 }
 
 function renderStats() {
@@ -4939,9 +4959,17 @@ function buildActionBody(type) {
     </div>`;
 
   switch(type) {
-    case 'best-x15': return `
-      <p style="color:var(--text-muted);margin-bottom:16px;font-size:13px">La meilleure game de <strong>chaque joueur</strong> aura son score multiplié par 1.5.</p>
+    case 'best-x15': {
+      const restant = (state.bestX15Until || 0) - Date.now();
+      if (restant > 0) {
+        return `<p style="color:var(--text-muted);margin-bottom:16px;font-size:13px">La meilleure game de <strong>chaque joueur</strong> aura son score multiplié par 1.5.
+          <br><span style="color:var(--rust-light);margin-top:8px;display:block"><i class="fa-solid fa-clock"></i> Action bloquée — prochaine utilisation dans <strong>${_fmtDuree(restant)}</strong></span></p>
+        <button class="btn" style="width:100%;justify-content:center;opacity:0.4;cursor:not-allowed" disabled><i class="fa-solid fa-star" style="margin-right:6px"></i>Indisponible — cooldown 12h</button>`;
+      }
+      return `<p style="color:var(--text-muted);margin-bottom:16px;font-size:13px">La meilleure game de <strong>chaque joueur</strong> aura son score multiplié par 1.5.
+        <br><span style="color:var(--text-muted)">Utilisable <strong>une fois toutes les 12h</strong> : une fois déclenchée, l'action est bloquée pendant 12h.</span></p>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="execAction()">Appliquer à tous</button>`;
+    }
 
     case 'remove-worst': return `
       <p style="color:var(--text-muted);margin-bottom:16px;font-size:13px">Supprime la game avec le score le plus bas de <strong>chaque joueur</strong>.</p>
@@ -5216,6 +5244,9 @@ function execAction() {
 
   switch(type) {
     case 'best-x15': {
+      // Blocage 12h après chaque utilisation — revérifié ici, pas seulement dans la modale
+      const restant = (state.bestX15Until || 0) - Date.now();
+      if (restant > 0) { toast(`Action bloquée — encore ${_fmtDuree(restant)} avant la prochaine utilisation.`, 'error'); return; }
       let count = 0;
       state.players.forEach(p => {
         const best = getBestGame(p);
@@ -5225,8 +5256,9 @@ function execAction() {
           count++;
         }
       });
-      addLog(`Meilleure game ×1.5 appliquée à ${count} joueur(s).`, 'gold', 'star', true);
-      toast(`×1.5 sur ${count} meilleures games !`, 'gold');
+      state.bestX15Until = Date.now() + 12 * 60 * 60 * 1000;
+      addLog(`Meilleure game ×1.5 appliquée à ${count} joueur(s) — action bloquée 12h.`, 'gold', 'star', true);
+      toast(`×1.5 sur ${count} meilleures games — bloquée 12h.`, 'gold');
       break;
     }
     case 'remove-worst': {
@@ -6485,6 +6517,7 @@ function setupAutoRefresh() {
   // « tourne depuis … » tant qu'il est en cours. Une minute suffit largement.
   setInterval(() => {
     if (state.roueCommu20Since > 0) renderSubsBanner();
+    if (state.bestX15Until > 0) renderCooldowns();
   }, 60000);
   // Polling toutes les 20 secondes
   setInterval(autoRefresh, 20000);
