@@ -650,6 +650,29 @@ main {
   .rr-cylinder.spinning, .rr-wrap.shaking, .rr-chamber.hit, .rr-bang { animation: none; }
 }
 
+/* ---- Éclipse : jauge soleil/lune ---- */
+/* La lune recouvre le soleil proportionnellement aux subs accumulés :
+   c'est la barre de progression, en plus lisible. */
+/* Le disque est découpé en cercle : la lune qui déborde est rognée au bord du
+   soleil, ce qui donne le croissant d'une éclipse partielle au lieu d'une lune
+   qui bave sur le reste du bandeau. Le halo reste, car une ombre portée n'est
+   pas rognée par l'overflow de l'élément qui la porte. */
+.ecl-jauge {
+  position: relative; flex-shrink: 0;
+  border-radius: 50%; overflow: hidden;
+  box-shadow: 0 0 14px 3px rgba(255,180,70,0.4);
+}
+.ecl-jauge-sun {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: radial-gradient(circle at 36% 32%, #fff8d8 0%, #ffd166 42%, #f59e2c 72%, #e2681a 100%);
+}
+.ecl-jauge-moon {
+  position: absolute; inset: -2px; border-radius: 50%;
+  background: radial-gradient(circle at 62% 38%, #23262f 0%, #14161c 45%, #0a0b0f 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.07);
+  transition: transform .6s cubic-bezier(.35,.02,.3,1);
+}
+
 /* ---- Éclipse ---- */
 .ecl-scene {
   position: relative; height: 220px; margin: 4px auto 14px;
@@ -672,13 +695,17 @@ main {
 }
 /* La lune est un vrai corps, un peu plus large que le soleil pour le combler
    entièrement à la totalité, avec un liseré qui la rend visible sur le fond noir. */
+/* Transition et non animation : la position de départ reste garantie même si
+   l'utilisateur a désactivé les animations système, où une animation serait
+   neutralisée et la lune se retrouverait d'emblée devant le soleil. */
 .ecl-moon {
   position: absolute; inset: -5px; border-radius: 50%;
   background: radial-gradient(circle at 62% 38%, #23262f 0%, #14161c 45%, #0a0b0f 100%);
   box-shadow: inset 7px 5px 16px rgba(255,255,255,0.07), 0 0 0 1px rgba(255,255,255,0.06);
   transform: translateX(-230px);
+  transition: transform 3.4s cubic-bezier(.35,.02,.3,1);
 }
-.ecl-moon.avance { animation: eclMoon 3.4s cubic-bezier(.35,.02,.3,1) forwards; }
+.ecl-moon.avance { transform: translateX(0); }
 /* Éclat du diamant : le dernier point de soleil juste avant l'occultation totale */
 .ecl-diamant {
   position: absolute; top: 50%; left: 4px; width: 12px; height: 12px;
@@ -702,7 +729,6 @@ main {
 .ecl-lune   { background: rgba(90,100,130,0.12); border: 1px solid #5a6482; color: #aab4d0; }
 .ecl-soleil { background: rgba(255,180,70,0.12); border: 1px solid var(--gold); color: var(--gold-light); animation-delay: .18s; }
 .ecl-carte strong { color: var(--text); }
-@keyframes eclMoon     { from { transform: translateX(-230px); } to { transform: translateX(0); } }
 @keyframes eclNuit {
   0%   { background: radial-gradient(ellipse at 50% 55%, #191c26 0%, #07080c 78%); }
   60%  { background: radial-gradient(ellipse at 50% 55%, #12141c 0%, #05060a 78%); }
@@ -715,9 +741,11 @@ main {
 @keyframes eclTexte    { from { opacity: 0; letter-spacing: 8px; } to { opacity: 1; letter-spacing: 2px; } }
 @keyframes eclApparait { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) {
-  .ecl-moon.avance, .ecl-corona, .ecl-disc.totale .ecl-corona, .ecl-carte,
+  .ecl-corona, .ecl-disc.totale .ecl-corona, .ecl-carte,
   .ecl-legende.totale, .ecl-scene.transit, .ecl-scene.transit .ecl-diamant { animation: none; }
-  .ecl-moon.avance { transform: translateX(0); }
+  /* Le transit reste visible mais raccourci : sans lui, on ne comprendrait plus
+     que la lune passe devant le soleil. */
+  .ecl-moon { transition-duration: .8s; }
 }
 
 /* SCORE PREVIEW */
@@ -1172,6 +1200,24 @@ main {
       <div id="folie-banner-bar" style="height:100%;background:var(--rust-light);border-radius:2px;width:0%;transition:width 0.4s"></div>
     </div>
     <div id="folie-banner-milestones" style="display:flex;gap:5px;flex-wrap:wrap"></div>
+  </div>
+
+  <div id="eclipse-banner" style="display:none;margin-bottom:16px;background:radial-gradient(ellipse at 6% 0%, rgba(255,180,70,0.07) 0%, transparent 65%),var(--bg3);border:1px solid rgba(255,180,70,0.45);border-radius:6px;padding:12px 16px">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:10px">
+      <div class="ecl-jauge" style="width:46px;height:46px" id="eclipse-banner-jauge">
+        <div class="ecl-jauge-sun"></div>
+        <div class="ecl-jauge-moon"></div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;color:var(--gold-light);letter-spacing:1px;text-transform:uppercase">Éclipse</div>
+        <div style="font-size:12px;color:var(--text-muted)" id="eclipse-banner-text">— subs</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:24px;color:var(--gold-light);line-height:1" id="eclipse-banner-count">0 / 50</div>
+        <div style="font-size:10px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px">avant l'éclipse</div>
+      </div>
+    </div>
+    <div id="eclipse-banner-milestones" style="display:flex;gap:5px;flex-wrap:wrap"></div>
   </div>
 
   <div class="stats-row" id="stats-overview"></div>
@@ -2030,11 +2076,13 @@ main {
           <div id="mod-eclipse-total" style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:52px;color:var(--gold-light);line-height:1">0</div>
           <div style="font-size:11px;color:var(--text-muted);margin-top:2px">subs éclipse</div>
         </div>
+        <div class="ecl-jauge" style="width:72px;height:72px" id="mod-eclipse-jauge">
+          <div class="ecl-jauge-sun"></div>
+          <div class="ecl-jauge-moon"></div>
+        </div>
         <div style="flex:1;min-width:180px">
-          <div style="width:100%;height:12px;background:var(--bg2);border-radius:6px;overflow:hidden;margin-bottom:8px">
-            <div id="mod-eclipse-bar" style="height:100%;background:linear-gradient(90deg,#5a6482,var(--gold-light));border-radius:6px;width:0%;transition:width 0.4s"></div>
-          </div>
-          <div style="font-size:12px;color:var(--text-muted)" id="mod-eclipse-info">—</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:22px;color:var(--gold-light);line-height:1" id="mod-eclipse-frac">0 / 50</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:4px" id="mod-eclipse-info">—</div>
         </div>
       </div>
       <label class="form-label">Ajouter des subs à l'Éclipse</label>
@@ -5114,13 +5162,47 @@ function resetEclipseSubs() {
   }, true, 'Réinitialiser');
 }
 
+// Positionne la lune sur une jauge : entièrement à gauche à 0 %, pile devant le
+// soleil à 100 %. Le décalage est proportionnel à la taille de la jauge.
+function _majJauge(id, pct) {
+  const j = document.getElementById(id);
+  const moon = j?.querySelector('.ecl-jauge-moon');
+  if (!moon) return;
+  const largeur = j.offsetWidth || parseInt(j.style.width) || 46;
+  moon.style.transform = `translateX(${-Math.round((1 - pct / 100) * (largeur + 6))}px)`;
+}
+
 function renderEclipsePanel() {
   const e = _eclipseEtat();
+  const dansPalier = e.subs % ECLIPSE_PALIER;
+
+  // Bandeau du classement
+  const eb = document.getElementById('eclipse-banner');
+  if (eb) {
+    eb.style.display = 'block';
+    document.getElementById('eclipse-banner-count').textContent = `${dansPalier} / ${ECLIPSE_PALIER}`;
+    document.getElementById('eclipse-banner-text').innerHTML =
+      `Prochaine éclipse au palier <strong style="color:var(--gold-light)">${e.prochain}</strong> — encore ${e.restant} sub${e.restant > 1 ? 's' : ''}` +
+      (e.paliers > 0 ? ` · ${e.paliers} déjà franchi${e.paliers > 1 ? 's' : ''}` : '');
+    _majJauge('eclipse-banner-jauge', e.pct);
+    const em = document.getElementById('eclipse-banner-milestones');
+    if (em) {
+      const pill = (label, on) => `<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:3px;line-height:1.6;${on ? 'background:rgba(255,180,70,0.15);color:var(--gold-light);border:1px solid rgba(255,180,70,0.5)' : 'background:var(--bg2);color:var(--text-muted);border:1px dashed var(--border)'}">${label}</span>`;
+      // Au-delà de 8 paliers franchis, on ne montre que les derniers pour ne pas noyer la ligne
+      const franchis = Array.from({ length: e.paliers }, (_, i) => (i + 1) * ECLIPSE_PALIER);
+      const affiches = franchis.length > 8 ? franchis.slice(-8) : franchis;
+      em.innerHTML = (franchis.length > 8 ? `<span style="font-size:11px;color:var(--text-muted);padding:2px 4px">+${franchis.length - 8}</span>` : '')
+        + affiches.map(m => pill(`✓ ${m}`, true)).join('') + pill(`→ ${e.prochain}`, false);
+    }
+  }
+
+  // Cadre de la page Modération
   const total = document.getElementById('mod-eclipse-total');
+  const frac = document.getElementById('mod-eclipse-frac');
   const info = document.getElementById('mod-eclipse-info');
-  const bar = document.getElementById('mod-eclipse-bar');
   if (total) total.textContent = e.subs;
-  if (bar) bar.style.width = e.pct + '%';
+  if (frac) frac.textContent = `${dansPalier} / ${ECLIPSE_PALIER}`;
+  _majJauge('mod-eclipse-jauge', e.pct);
   if (info) info.innerHTML = `Prochaine éclipse dans <strong style="color:var(--gold-light)">${e.restant} sub${e.restant > 1 ? 's' : ''}</strong> — au palier ${e.prochain}` +
     (e.paliers > 0 ? ` · ${e.paliers} palier${e.paliers > 1 ? 's' : ''} franchi${e.paliers > 1 ? 's' : ''}` : '');
 }
@@ -5138,20 +5220,18 @@ function doEclipse() {
   const num = [...lune.games].sort((a, b) => b.score - a.score).findIndex(g => g.id === game.id) + 1;
   _eclipse = { lune, soleil, game, num, gen: ++_eclipseGen };
 
-  const desc = `🌑 <strong>${escHtml(lune.name)}</strong> perd sa game #${num} (<strong>${game.score} pts</strong>)<br>` +
-    `☀️ <strong>${escHtml(soleil.name)}</strong> reçoit <strong>+${game.score} pts</strong> de bonus`;
+  // Aucun nom dans la confirmation : le tirage ne doit se révéler qu'à la totalité.
   showConfirm('Lancer l\'éclipse',
-    `${desc}<br><br>La game de la Lune est <strong>définitivement supprimée</strong>. Irréversible.`,
+    'Deux joueurs vont être tirés au sort. La <strong>Lune</strong> perdra <strong>définitivement</strong> une de ses games, et le <strong>Soleil</strong> en récupérera les points.<br><br>Le résultat se révèle à la totalité. Irréversible.',
     () => {
       const gen = _eclipse.gen;
       const actions = document.getElementById('ecl-actions');
       if (actions) actions.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:12px;padding:8px">La Lune avance devant le Soleil…</div>';
-      renderEclipseScene();
-      setTimeout(() => { if (_eclipse && _eclipse.gen === gen) eclipseTotalite(); }, 3400);
+      renderEclipseScene(() => { if (_eclipse && _eclipse.gen === gen) eclipseTotalite(); });
     }, true, 'Lancer');
 }
 
-function renderEclipseScene() {
+function renderEclipseScene(onTotalite) {
   const el = document.getElementById('ecl-stage');
   if (!el || !_eclipse) return;
   el.innerHTML = `
@@ -5159,12 +5239,23 @@ function renderEclipseScene() {
       <div class="ecl-disc" id="ecl-disc">
         <div class="ecl-corona"></div>
         <div class="ecl-sun"></div>
-        <div class="ecl-moon avance" id="ecl-moon"></div>
+        <div class="ecl-moon" id="ecl-moon"></div>
         <div class="ecl-diamant"></div>
       </div>
       <div class="ecl-legende" id="ecl-legende">La Lune passe devant le Soleil…</div>
     </div>
     <div id="ecl-resultat"></div>`;
+  // La lune part hors cadre, puis on déclenche le transit à la frame suivante :
+  // sans ce délai, le navigateur applique directement l'état final sans transition.
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const moon = document.getElementById('ecl-moon');
+    if (!moon) return;
+    moon.classList.add('avance');
+    // La totalité suit la durée réelle du transit, qui est raccourcie si
+    // l'utilisateur a désactivé les animations système.
+    const duree = parseFloat(getComputedStyle(moon).transitionDuration) || 3.4;
+    if (onTotalite) setTimeout(onTotalite, duree * 1000 + 300);
+  }));
 }
 
 function eclipseTotalite() {
