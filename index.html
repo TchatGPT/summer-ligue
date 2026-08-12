@@ -652,34 +652,43 @@ main {
 
 /* ---- Éclipse ---- */
 .ecl-scene {
-  position: relative; height: 200px; margin: 4px auto 14px;
+  position: relative; height: 220px; margin: 4px auto 14px;
   display: flex; align-items: center; justify-content: center;
   border-radius: 8px; overflow: hidden;
-  background: radial-gradient(ellipse at 50% 60%, #14161f 0%, #06070b 75%);
-  transition: background 1s;
+  background: radial-gradient(ellipse at 50% 55%, #191c26 0%, #07080c 78%);
 }
-.ecl-scene.totale { background: radial-gradient(ellipse at 50% 55%, #1c1608 0%, #000 80%); }
-.ecl-disc { position: relative; width: 104px; height: 104px; }
+/* Le fond s'assombrit au fur et à mesure que la lune recouvre le soleil */
+.ecl-scene.transit { animation: eclNuit 3.4s ease-in forwards; }
+.ecl-disc { position: relative; width: 112px; height: 112px; }
 .ecl-corona {
-  position: absolute; inset: -26px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,196,92,0.55) 38%, rgba(255,140,40,0.22) 55%, transparent 72%);
+  position: absolute; inset: -30px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,196,92,0.5) 40%, rgba(255,140,40,0.2) 56%, transparent 72%);
   animation: eclCorona 3.2s ease-in-out infinite;
 }
 .ecl-sun {
   position: absolute; inset: 0; border-radius: 50%;
-  background: radial-gradient(circle at 38% 34%, #fff3c4 0%, #ffd166 38%, #f59e2c 68%, #e2681a 100%);
-  box-shadow: 0 0 34px 8px rgba(255,180,70,0.45);
+  background: radial-gradient(circle at 38% 34%, #fff8d8 0%, #ffd166 40%, #f59e2c 70%, #e2681a 100%);
+  box-shadow: 0 0 40px 10px rgba(255,180,70,0.5);
 }
+/* La lune est un vrai corps, un peu plus large que le soleil pour le combler
+   entièrement à la totalité, avec un liseré qui la rend visible sur le fond noir. */
 .ecl-moon {
-  position: absolute; inset: 0; border-radius: 50%;
-  background: #05060a;
-  box-shadow: inset -6px -4px 14px rgba(255,255,255,0.05);
-  transform: translateX(-190px);
+  position: absolute; inset: -5px; border-radius: 50%;
+  background: radial-gradient(circle at 62% 38%, #23262f 0%, #14161c 45%, #0a0b0f 100%);
+  box-shadow: inset 7px 5px 16px rgba(255,255,255,0.07), 0 0 0 1px rgba(255,255,255,0.06);
+  transform: translateX(-230px);
 }
-.ecl-moon.avance { animation: eclMoon 2.6s cubic-bezier(.4,.05,.35,1) forwards; }
-.ecl-disc.totale .ecl-corona { animation: eclCoronaTot 1.1s ease-out forwards; }
+.ecl-moon.avance { animation: eclMoon 3.4s cubic-bezier(.35,.02,.3,1) forwards; }
+/* Éclat du diamant : le dernier point de soleil juste avant l'occultation totale */
+.ecl-diamant {
+  position: absolute; top: 50%; left: 4px; width: 12px; height: 12px;
+  margin-top: -6px; border-radius: 50%; opacity: 0;
+  background: #fff8d8; box-shadow: 0 0 18px 7px rgba(255,235,170,0.9);
+}
+.ecl-scene.transit .ecl-diamant { animation: eclDiamant 3.4s ease-out forwards; }
+.ecl-disc.totale .ecl-corona { animation: eclCoronaTot 1.2s ease-out forwards; }
 .ecl-legende {
-  position: absolute; bottom: 8px; left: 0; right: 0; text-align: center;
+  position: absolute; bottom: 10px; left: 0; right: 0; text-align: center;
   font-family: 'Barlow Condensed', sans-serif; font-weight: 700; letter-spacing: 2px;
   font-size: 12px; color: var(--text-muted); text-transform: uppercase;
 }
@@ -693,13 +702,21 @@ main {
 .ecl-lune   { background: rgba(90,100,130,0.12); border: 1px solid #5a6482; color: #aab4d0; }
 .ecl-soleil { background: rgba(255,180,70,0.12); border: 1px solid var(--gold); color: var(--gold-light); animation-delay: .18s; }
 .ecl-carte strong { color: var(--text); }
-@keyframes eclMoon     { from { transform: translateX(-190px); } to { transform: translateX(0); } }
+@keyframes eclMoon     { from { transform: translateX(-230px); } to { transform: translateX(0); } }
+@keyframes eclNuit {
+  0%   { background: radial-gradient(ellipse at 50% 55%, #191c26 0%, #07080c 78%); }
+  60%  { background: radial-gradient(ellipse at 50% 55%, #12141c 0%, #05060a 78%); }
+  100% { background: radial-gradient(ellipse at 50% 52%, #1d1607 0%, #000 82%); }
+}
+/* L'éclat n'apparaît qu'au tout dernier instant, quand il ne reste qu'un point de soleil */
+@keyframes eclDiamant  { 0%, 84% { opacity: 0; transform: scale(.4); } 92% { opacity: 1; transform: scale(1.15); } 100% { opacity: 0; transform: scale(.5); } }
 @keyframes eclCorona   { 0%,100% { opacity: .5; transform: scale(1); } 50% { opacity: .78; transform: scale(1.05); } }
-@keyframes eclCoronaTot{ from { opacity: .5; transform: scale(1); } to { opacity: 1; transform: scale(1.3); } }
+@keyframes eclCoronaTot{ from { opacity: .5; transform: scale(1); } to { opacity: 1; transform: scale(1.34); } }
 @keyframes eclTexte    { from { opacity: 0; letter-spacing: 8px; } to { opacity: 1; letter-spacing: 2px; } }
 @keyframes eclApparait { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) {
-  .ecl-moon.avance, .ecl-corona, .ecl-disc.totale .ecl-corona, .ecl-carte, .ecl-legende.totale { animation: none; }
+  .ecl-moon.avance, .ecl-corona, .ecl-disc.totale .ecl-corona, .ecl-carte,
+  .ecl-legende.totale, .ecl-scene.transit, .ecl-scene.transit .ecl-diamant { animation: none; }
   .ecl-moon.avance { transform: translateX(0); }
 }
 
@@ -1416,7 +1433,7 @@ main {
     <div class="roue-header" style="border-bottom-color:rgba(255,180,70,0.25)">
       <div>
         <div class="roue-title" style="color:var(--gold-light)"><i class="fa-solid fa-moon" style="font-size:13px;margin-right:4px"></i><i class="fa-solid fa-sun" style="font-size:13px;margin-right:8px"></i>Éclipse <span style="font-size:13px;color:var(--text-muted);font-weight:400">(tous les 50 subs)</span></div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Déclenchée depuis la page Modération — le compteur y indique quand elle est due</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Le compteur de subs de l'Éclipse se suit depuis la page Modération</div>
       </div>
     </div>
     <div style="padding:6px 0 2px">
@@ -1443,6 +1460,7 @@ main {
         <i class="fa-solid fa-circle-info" style="color:var(--gold)"></i>
         Aucun point n'est créé ni perdu pour la ligue : ce que la Lune perd, le Soleil le gagne. Seul le nombre de games de la Lune diminue de 1.
       </div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:14px" onclick="openAction('eclipse')"><i class="fa-solid fa-moon" style="margin-right:6px"></i>Déclencher l'éclipse</button>
     </div>
   </div>
 
@@ -2001,6 +2019,37 @@ main {
 <div id="page-moderation" class="page">
   <h1 class="section-title" style="margin-bottom:24px">Modération <span>Admin</span></h1>
 
+  <!-- COMPTEUR SUBS ÉCLIPSE -->
+  <div class="roue-section" style="margin-bottom:20px;border-color:rgba(255,180,70,0.35);background:radial-gradient(ellipse at 6% 0%, rgba(255,180,70,0.07) 0%, transparent 65%)">
+    <div class="roue-header" style="border-bottom-color:rgba(255,180,70,0.25)">
+      <div class="roue-title" style="color:var(--gold-light)"><i class="fa-solid fa-moon" style="font-size:13px;margin-right:4px"></i><i class="fa-solid fa-sun" style="font-size:13px;margin-right:8px"></i>Compteur Éclipse <span style="font-size:13px;color:var(--text-muted);font-weight:400">(une éclipse tous les 50 subs)</span></div>
+    </div>
+    <div style="padding:8px 0">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap">
+        <div style="text-align:center">
+          <div id="mod-eclipse-total" style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:52px;color:var(--gold-light);line-height:1">0</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px">subs éclipse</div>
+        </div>
+        <div style="flex:1;min-width:180px">
+          <div style="width:100%;height:12px;background:var(--bg2);border-radius:6px;overflow:hidden;margin-bottom:8px">
+            <div id="mod-eclipse-bar" style="height:100%;background:linear-gradient(90deg,#5a6482,var(--gold-light));border-radius:6px;width:0%;transition:width 0.4s"></div>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted)" id="mod-eclipse-info">—</div>
+        </div>
+      </div>
+      <label class="form-label">Ajouter des subs à l'Éclipse</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button class="btn btn-gold btn-sm" onclick="addEclipseSubs(1)">+1</button>
+        <button class="btn btn-gold btn-sm" onclick="addEclipseSubs(5)">+5</button>
+        <button class="btn btn-gold btn-sm" onclick="addEclipseSubs(10)">+10</button>
+        <button class="btn btn-gold btn-sm" onclick="addEclipseSubs(25)">+25</button>
+        <button class="btn btn-gold btn-sm" onclick="addEclipseSubs(50)">+50</button>
+        <button class="btn btn-sm" style="color:var(--text-muted)" onclick="addEclipseSubs(-1)">−1</button>
+        <button class="btn btn-sm" style="color:var(--rust-light);border-color:var(--rust)" onclick="resetEclipseSubs()">Réinitialiser</button>
+      </div>
+    </div>
+  </div>
+
   <!-- COMPTEUR SUBS ROUE COMMU -->
   <div class="roue-section" style="margin-bottom:20px">
     <div class="roue-header">
@@ -2021,19 +2070,6 @@ main {
       </div>
       <div id="mod-subs-milestones" style="margin-bottom:16px"></div>
 
-      <!-- ÉCLIPSE — suivi et déclenchement -->
-      <div id="mod-eclipse" style="margin-bottom:16px;padding:12px 14px;border-radius:6px;border:1px solid rgba(255,180,70,0.35);background:radial-gradient(ellipse at 6% 0%, rgba(255,180,70,0.08) 0%, transparent 65%)">
-        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-          <div style="flex:1;min-width:200px">
-            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--gold-light)">
-              <i class="fa-solid fa-moon" style="font-size:11px"></i><i class="fa-solid fa-sun" style="font-size:11px;margin-right:4px"></i> Éclipse — tous les 50 subs
-            </div>
-            <div id="mod-eclipse-info" style="font-size:12px;color:var(--text-muted);margin-top:3px">—</div>
-          </div>
-          <div id="mod-eclipse-badge" style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:26px;line-height:1;color:var(--text-muted)">0</div>
-          <button id="mod-eclipse-btn" onclick="openAction('eclipse')" class="btn btn-solid-gold btn-sm" style="white-space:nowrap"><i class="fa-solid fa-moon" style="margin-right:5px"></i>Déclencher</button>
-        </div>
-      </div>
 
       <div style="margin-bottom:12px">
         <label class="form-label">Ajouter des subs manuellement</label>
@@ -2409,7 +2445,7 @@ let state = {
   roueCommu20Start: 0,   // subsCount au moment d'activation du mode 20
   roueCommu50Next: 0,    // prochain palier forcé après annulation du mode 20 (0 = pas de forçage)
   actionCooldowns: {},   // { cléAction: timestamp ms } — blocage 12h après usage (Roue Commu)
-  eclipseDone: 0         // nombre d'éclipses déjà déclenchées (1 due tous les 50 subs)
+  eclipseSubs: 0         // compteur de subs dédié à l'Éclipse — une éclipse tous les 50
 };
 
 let currentTop = 0;
@@ -2501,8 +2537,8 @@ async function loadState() {
     try { const m = JSON.parse(rouePersoFlag?.value || '{}'); state.players.forEach(p => { p.rouePersoCount = m[p.id] || 0; }); } catch { state.players.forEach(p => { p.rouePersoCount = 0; }); }
     const lockedGamesFlag = (flags || []).find(f => f.key === 'lockedGames');
     try { const ids = new Set(JSON.parse(lockedGamesFlag?.value || '[]')); state.players.forEach(p => p.games.forEach(g => { g.locked = ids.has(g.id); })); } catch { state.players.forEach(p => p.games.forEach(g => { g.locked = false; })); }
-    const eclipseFlag = (flags || []).find(f => f.key === 'eclipseDone');
-    state.eclipseDone = parseInt(eclipseFlag?.value || '0') || 0;
+    const eclipseFlag = (flags || []).find(f => f.key === 'eclipseSubs');
+    state.eclipseSubs = parseInt(eclipseFlag?.value || '0') || 0;
     const cooldownsFlag = (flags || []).find(f => f.key === 'actionCooldowns');
     try { state.actionCooldowns = JSON.parse(cooldownsFlag?.value || '{}') || {}; } catch { state.actionCooldowns = {}; }
     // Migration de l'ancien cooldown unique de Meilleure game × 1.5
@@ -2641,7 +2677,7 @@ async function saveState() {
       { key: 'lockedGames', value: JSON.stringify(state.players.flatMap(p => (p.games || []).filter(g => g.locked).map(g => g.id))) },
       { key: 'rouePersoCounts', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.rouePersoCount > 0).map(p => [p.id, p.rouePersoCount]))) },
       { key: 'actionCooldowns', value: JSON.stringify(Object.fromEntries(Object.entries(state.actionCooldowns || {}).filter(([, t]) => t > Date.now()))) },
-      { key: 'eclipseDone', value: String(state.eclipseDone || 0) },
+      { key: 'eclipseSubs', value: String(state.eclipseSubs || 0) },
       { key: 'bestX15Until', value: '0' }, // LEGACY — remplacé par actionCooldowns
       { key: 'roueCommu20Since', value: String(state.roueCommu20Since || 0) },
       { key: 'roueCommu20Elapsed', value: String(state.roueCommu20Elapsed || 0) },
@@ -5051,25 +5087,42 @@ function doFolieFreezeAll() {
 const ECLIPSE_PALIER = 50;
 let _eclipse = null, _eclipseGen = 0;
 
-// Combien d'éclipses sont dues, combien ont été faites, quand tombe la prochaine.
+// Compteur de subs dédié à l'Éclipse : une éclipse à chaque palier de 50.
 function _eclipseEtat() {
-  const subs = state.subsCount || 0;
-  const debloquees = Math.floor(subs / ECLIPSE_PALIER);
-  const faites = state.eclipseDone || 0;
-  const prochain = (debloquees + 1) * ECLIPSE_PALIER;
-  return { debloquees, faites, dues: Math.max(0, debloquees - faites), prochain, restant: prochain - subs };
+  const subs = state.eclipseSubs || 0;
+  const paliers = Math.floor(subs / ECLIPSE_PALIER);
+  const prochain = (paliers + 1) * ECLIPSE_PALIER;
+  return { subs, paliers, prochain, restant: prochain - subs, pct: Math.round((subs % ECLIPSE_PALIER) / ECLIPSE_PALIER * 100) };
+}
+
+function addEclipseSubs(n) {
+  state.eclipseSubs = Math.max(0, (state.eclipseSubs || 0) + n);
+  const e = _eclipseEtat();
+  saveState();
+  renderEclipsePanel();
+  toast(n > 0
+    ? `+${n} sub${n > 1 ? 's' : ''} — prochaine éclipse dans ${e.restant} sub${e.restant > 1 ? 's' : ''}.`
+    : `Compteur éclipse : ${e.subs} subs.`, 'gold');
+}
+
+function resetEclipseSubs() {
+  showConfirm('Réinitialiser le compteur', 'Remettre le compteur de subs de l\'Éclipse à 0 ?', () => {
+    state.eclipseSubs = 0;
+    saveState();
+    renderEclipsePanel();
+    toast('Compteur éclipse remis à 0.', 'info');
+  }, true, 'Réinitialiser');
 }
 
 function renderEclipsePanel() {
-  const info = document.getElementById('mod-eclipse-info');
-  const badge = document.getElementById('mod-eclipse-badge');
-  if (!info || !badge) return;
   const e = _eclipseEtat();
-  badge.textContent = e.dues;
-  badge.style.color = e.dues > 0 ? 'var(--gold-light)' : 'var(--text-muted)';
-  info.innerHTML = e.dues > 0
-    ? `<strong style="color:var(--gold-light)">${e.dues} éclipse${e.dues > 1 ? 's' : ''} à déclencher</strong> · ${e.faites} faite${e.faites > 1 ? 's' : ''} · prochaine au palier ${e.prochain}`
-    : `Prochaine au palier <strong>${e.prochain}</strong> subs — encore ${e.restant} sub${e.restant > 1 ? 's' : ''} · ${e.faites} déjà faite${e.faites > 1 ? 's' : ''}`;
+  const total = document.getElementById('mod-eclipse-total');
+  const info = document.getElementById('mod-eclipse-info');
+  const bar = document.getElementById('mod-eclipse-bar');
+  if (total) total.textContent = e.subs;
+  if (bar) bar.style.width = e.pct + '%';
+  if (info) info.innerHTML = `Prochaine éclipse dans <strong style="color:var(--gold-light)">${e.restant} sub${e.restant > 1 ? 's' : ''}</strong> — au palier ${e.prochain}` +
+    (e.paliers > 0 ? ` · ${e.paliers} palier${e.paliers > 1 ? 's' : ''} franchi${e.paliers > 1 ? 's' : ''}` : '');
 }
 
 function doEclipse() {
@@ -5092,9 +5145,9 @@ function doEclipse() {
     () => {
       const gen = _eclipse.gen;
       const actions = document.getElementById('ecl-actions');
-      if (actions) actions.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:12px;padding:8px">La Lune avance…</div>';
+      if (actions) actions.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:12px;padding:8px">La Lune avance devant le Soleil…</div>';
       renderEclipseScene();
-      setTimeout(() => { if (_eclipse && _eclipse.gen === gen) eclipseTotalite(); }, 2700);
+      setTimeout(() => { if (_eclipse && _eclipse.gen === gen) eclipseTotalite(); }, 3400);
     }, true, 'Lancer');
 }
 
@@ -5102,13 +5155,14 @@ function renderEclipseScene() {
   const el = document.getElementById('ecl-stage');
   if (!el || !_eclipse) return;
   el.innerHTML = `
-    <div class="ecl-scene" id="ecl-scene">
+    <div class="ecl-scene transit" id="ecl-scene">
       <div class="ecl-disc" id="ecl-disc">
         <div class="ecl-corona"></div>
         <div class="ecl-sun"></div>
         <div class="ecl-moon avance" id="ecl-moon"></div>
+        <div class="ecl-diamant"></div>
       </div>
-      <div class="ecl-legende" id="ecl-legende">Alignement en cours…</div>
+      <div class="ecl-legende" id="ecl-legende">La Lune passe devant le Soleil…</div>
     </div>
     <div id="ecl-resultat"></div>`;
 }
@@ -5124,7 +5178,6 @@ function eclipseTotalite() {
   const pts = game.score;
   lune.games = lune.games.filter(g => g.id !== game.id);
   soleil.bonusPoints = (soleil.bonusPoints || 0) + pts;
-  state.eclipseDone = (state.eclipseDone || 0) + 1;
 
   const res = document.getElementById('ecl-resultat');
   if (res) res.innerHTML = `
@@ -5599,9 +5652,7 @@ function buildActionBody(type) {
       ☀️ <strong style="color:var(--gold-light)">Le Soleil</strong> reçoit en points bonus le score exact de cette game.<br>
       <span style="color:var(--text-muted)">Aucun point n'est créé ni perdu pour la ligue. Les games figées sont protégées.</span></p>
       <div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:10px 12px;font-size:12px;color:var(--text-muted);margin-bottom:12px">
-        ${e.dues > 0
-          ? `<strong style="color:var(--gold)">${e.dues} éclipse${e.dues > 1 ? 's' : ''} due${e.dues > 1 ? 's' : ''}</strong> · ${e.faites} déjà déclenchée${e.faites > 1 ? 's' : ''}`
-          : `Aucune éclipse due pour l'instant — prochaine au palier <strong style="color:var(--gold)">${e.prochain}</strong> subs, dans ${e.restant} sub${e.restant > 1 ? 's' : ''}.`}
+        Compteur éclipse : <strong style="color:var(--gold-light)">${e.subs} subs</strong> · prochain palier à <strong>${e.prochain}</strong>, dans ${e.restant} sub${e.restant > 1 ? 's' : ''}
       </div>
       <div id="ecl-stage" style="margin-bottom:12px"></div>
       <div id="ecl-actions">
