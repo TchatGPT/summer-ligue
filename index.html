@@ -650,6 +650,59 @@ main {
   .rr-cylinder.spinning, .rr-wrap.shaking, .rr-chamber.hit, .rr-bang { animation: none; }
 }
 
+/* ---- Éclipse ---- */
+.ecl-scene {
+  position: relative; height: 200px; margin: 4px auto 14px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px; overflow: hidden;
+  background: radial-gradient(ellipse at 50% 60%, #14161f 0%, #06070b 75%);
+  transition: background 1s;
+}
+.ecl-scene.totale { background: radial-gradient(ellipse at 50% 55%, #1c1608 0%, #000 80%); }
+.ecl-disc { position: relative; width: 104px; height: 104px; }
+.ecl-corona {
+  position: absolute; inset: -26px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,196,92,0.55) 38%, rgba(255,140,40,0.22) 55%, transparent 72%);
+  animation: eclCorona 3.2s ease-in-out infinite;
+}
+.ecl-sun {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: radial-gradient(circle at 38% 34%, #fff3c4 0%, #ffd166 38%, #f59e2c 68%, #e2681a 100%);
+  box-shadow: 0 0 34px 8px rgba(255,180,70,0.45);
+}
+.ecl-moon {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: #05060a;
+  box-shadow: inset -6px -4px 14px rgba(255,255,255,0.05);
+  transform: translateX(-190px);
+}
+.ecl-moon.avance { animation: eclMoon 2.6s cubic-bezier(.4,.05,.35,1) forwards; }
+.ecl-disc.totale .ecl-corona { animation: eclCoronaTot 1.1s ease-out forwards; }
+.ecl-legende {
+  position: absolute; bottom: 8px; left: 0; right: 0; text-align: center;
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 700; letter-spacing: 2px;
+  font-size: 12px; color: var(--text-muted); text-transform: uppercase;
+}
+.ecl-legende.totale { color: var(--gold-light); animation: eclTexte .6s ease-out; }
+.ecl-resultat { display: flex; flex-direction: column; gap: 8px; }
+.ecl-carte {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  border-radius: 4px; font-size: 13px; animation: eclApparait .5s ease-out both;
+}
+.ecl-carte i { font-size: 17px; flex-shrink: 0; width: 22px; text-align: center; }
+.ecl-lune   { background: rgba(90,100,130,0.12); border: 1px solid #5a6482; color: #aab4d0; }
+.ecl-soleil { background: rgba(255,180,70,0.12); border: 1px solid var(--gold); color: var(--gold-light); animation-delay: .18s; }
+.ecl-carte strong { color: var(--text); }
+@keyframes eclMoon     { from { transform: translateX(-190px); } to { transform: translateX(0); } }
+@keyframes eclCorona   { 0%,100% { opacity: .5; transform: scale(1); } 50% { opacity: .78; transform: scale(1.05); } }
+@keyframes eclCoronaTot{ from { opacity: .5; transform: scale(1); } to { opacity: 1; transform: scale(1.3); } }
+@keyframes eclTexte    { from { opacity: 0; letter-spacing: 8px; } to { opacity: 1; letter-spacing: 2px; } }
+@keyframes eclApparait { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .ecl-moon.avance, .ecl-corona, .ecl-disc.totale .ecl-corona, .ecl-carte, .ecl-legende.totale { animation: none; }
+  .ecl-moon.avance { transform: translateX(0); }
+}
+
 /* SCORE PREVIEW */
 .score-preview {
   background: var(--bg3);
@@ -1358,6 +1411,41 @@ main {
 <div id="page-actions" class="page">
   <h1 class="section-title" style="margin-bottom:20px">Actions <span>Roues</span></h1>
 
+  <!-- ÉCLIPSE -->
+  <div class="roue-section" style="margin-bottom:20px;border-color:rgba(255,180,70,0.35);background:radial-gradient(ellipse at 8% 0%, rgba(255,180,70,0.07) 0%, transparent 60%)">
+    <div class="roue-header" style="border-bottom-color:rgba(255,180,70,0.25)">
+      <div>
+        <div class="roue-title" style="color:var(--gold-light)"><i class="fa-solid fa-moon" style="font-size:13px;margin-right:4px"></i><i class="fa-solid fa-sun" style="font-size:13px;margin-right:8px"></i>Éclipse <span style="font-size:13px;color:var(--text-muted);font-weight:400">(tous les 50 subs)</span></div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Déclenchée depuis la page Modération — le compteur y indique quand elle est due</div>
+      </div>
+    </div>
+    <div style="padding:6px 0 2px">
+      <div style="font-size:13px;color:var(--text-muted);line-height:1.8">
+        Tous les <strong style="color:var(--gold)">50 subs</strong>, deux joueurs sont tirés au sort, totalement au hasard :
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px">
+        <div style="flex:1;min-width:230px;display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:4px;background:rgba(90,100,130,0.10);border:1px solid #5a6482">
+          <i class="fa-solid fa-moon" style="color:#aab4d0;font-size:17px;margin-top:1px"></i>
+          <div>
+            <div style="font-weight:700;color:#aab4d0;font-size:13px">La Lune — passe dans l'ombre</div>
+            <div style="font-size:11px;color:var(--text-muted);line-height:1.6;margin-top:2px">Une de ses games, tirée au hasard, est <strong>définitivement supprimée</strong>. Les games figées sont protégées.</div>
+          </div>
+        </div>
+        <div style="flex:1;min-width:230px;display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:4px;background:rgba(255,180,70,0.10);border:1px solid var(--gold)">
+          <i class="fa-solid fa-sun" style="color:var(--gold-light);font-size:17px;margin-top:1px"></i>
+          <div>
+            <div style="font-weight:700;color:var(--gold-light);font-size:13px">Le Soleil — récupère la lumière</div>
+            <div style="font-size:11px;color:var(--text-muted);line-height:1.6;margin-top:2px">Il reçoit en <strong>points bonus</strong> le score exact de la game perdue par la Lune.</div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:12px;line-height:1.7">
+        <i class="fa-solid fa-circle-info" style="color:var(--gold)"></i>
+        Aucun point n'est créé ni perdu pour la ligue : ce que la Lune perd, le Soleil le gagne. Seul le nombre de games de la Lune diminue de 1.
+      </div>
+    </div>
+  </div>
+
   <!-- ROUE DE FOLIE -->
   <div class="roue-section" style="margin-bottom:20px;border-color:rgba(224,90,56,0.3);background:rgba(180,60,40,0.04)">
     <div class="roue-header" style="border-bottom-color:rgba(224,90,56,0.25)">
@@ -1837,6 +1925,7 @@ main {
       </div>
     </div>
     <div class="action-list-compact">
+      <div class="action-row" style="border-left:3px solid var(--gold-light)"><div><div class="action-row-name"><i class="fa-solid fa-moon" style="color:var(--gold-light)"></i> Éclipse — tous les 50 subs</div><div style="font-size:11px;color:var(--text-muted)">Deux joueurs sont tirés au sort, totalement au hasard. La Lune perd définitivement une de ses games, tirée au hasard elle aussi (les games figées sont protégées). Le Soleil reçoit en points bonus le score exact de cette game. Aucun point n'est créé ni perdu pour la ligue.</div></div></div>
       <div class="action-row" style="border-left:3px solid var(--gold)"><div><div class="action-row-name"><i class="fa-solid fa-clock" style="color:var(--gold)"></i> Blocage 12h après usage</div><div style="font-size:11px;color:var(--text-muted)">Chaque action de la Roue Communautaire est utilisable une fois toutes les 12h. Dès qu'elle est déclenchée, sa carte est grisée et affiche le temps restant avant sa prochaine disponibilité. Les cooldowns sont indépendants d'une action à l'autre, et ne concernent ni la Roue Perso ni la Roue de Folie.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-star"></i> Meilleure game × 1.5</div><div style="font-size:11px;color:var(--text-muted)">Multiplie le score de la meilleure game de chaque joueur par 1.5</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-circle-plus"></i> Ajout d'une game sup</div><div style="font-size:11px;color:var(--text-muted)">Accorde une game bonus hors limite à tous les joueurs (compteur +1 pour chacun)</div></div></div>
@@ -1931,6 +2020,20 @@ main {
         </div>
       </div>
       <div id="mod-subs-milestones" style="margin-bottom:16px"></div>
+
+      <!-- ÉCLIPSE — suivi et déclenchement -->
+      <div id="mod-eclipse" style="margin-bottom:16px;padding:12px 14px;border-radius:6px;border:1px solid rgba(255,180,70,0.35);background:radial-gradient(ellipse at 6% 0%, rgba(255,180,70,0.08) 0%, transparent 65%)">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--gold-light)">
+              <i class="fa-solid fa-moon" style="font-size:11px"></i><i class="fa-solid fa-sun" style="font-size:11px;margin-right:4px"></i> Éclipse — tous les 50 subs
+            </div>
+            <div id="mod-eclipse-info" style="font-size:12px;color:var(--text-muted);margin-top:3px">—</div>
+          </div>
+          <div id="mod-eclipse-badge" style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:26px;line-height:1;color:var(--text-muted)">0</div>
+          <button id="mod-eclipse-btn" onclick="openAction('eclipse')" class="btn btn-solid-gold btn-sm" style="white-space:nowrap"><i class="fa-solid fa-moon" style="margin-right:5px"></i>Déclencher</button>
+        </div>
+      </div>
 
       <div style="margin-bottom:12px">
         <label class="form-label">Ajouter des subs manuellement</label>
@@ -2305,7 +2408,8 @@ let state = {
   roueCommu20Paused: 0,  // 1 = en pause, le compteur est figé
   roueCommu20Start: 0,   // subsCount au moment d'activation du mode 20
   roueCommu50Next: 0,    // prochain palier forcé après annulation du mode 20 (0 = pas de forçage)
-  actionCooldowns: {}    // { cléAction: timestamp ms } — blocage 12h après usage (Roue Commu)
+  actionCooldowns: {},   // { cléAction: timestamp ms } — blocage 12h après usage (Roue Commu)
+  eclipseDone: 0         // nombre d'éclipses déjà déclenchées (1 due tous les 50 subs)
 };
 
 let currentTop = 0;
@@ -2397,6 +2501,8 @@ async function loadState() {
     try { const m = JSON.parse(rouePersoFlag?.value || '{}'); state.players.forEach(p => { p.rouePersoCount = m[p.id] || 0; }); } catch { state.players.forEach(p => { p.rouePersoCount = 0; }); }
     const lockedGamesFlag = (flags || []).find(f => f.key === 'lockedGames');
     try { const ids = new Set(JSON.parse(lockedGamesFlag?.value || '[]')); state.players.forEach(p => p.games.forEach(g => { g.locked = ids.has(g.id); })); } catch { state.players.forEach(p => p.games.forEach(g => { g.locked = false; })); }
+    const eclipseFlag = (flags || []).find(f => f.key === 'eclipseDone');
+    state.eclipseDone = parseInt(eclipseFlag?.value || '0') || 0;
     const cooldownsFlag = (flags || []).find(f => f.key === 'actionCooldowns');
     try { state.actionCooldowns = JSON.parse(cooldownsFlag?.value || '{}') || {}; } catch { state.actionCooldowns = {}; }
     // Migration de l'ancien cooldown unique de Meilleure game × 1.5
@@ -2535,6 +2641,7 @@ async function saveState() {
       { key: 'lockedGames', value: JSON.stringify(state.players.flatMap(p => (p.games || []).filter(g => g.locked).map(g => g.id))) },
       { key: 'rouePersoCounts', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.rouePersoCount > 0).map(p => [p.id, p.rouePersoCount]))) },
       { key: 'actionCooldowns', value: JSON.stringify(Object.fromEntries(Object.entries(state.actionCooldowns || {}).filter(([, t]) => t > Date.now()))) },
+      { key: 'eclipseDone', value: String(state.eclipseDone || 0) },
       { key: 'bestX15Until', value: '0' }, // LEGACY — remplacé par actionCooldowns
       { key: 'roueCommu20Since', value: String(state.roueCommu20Since || 0) },
       { key: 'roueCommu20Elapsed', value: String(state.roueCommu20Elapsed || 0) },
@@ -4939,6 +5046,103 @@ function doFolieFreezeAll() {
 }
 
 // ============================================================
+// ÉCLIPSE — une éclipse due tous les 50 subs
+// ============================================================
+const ECLIPSE_PALIER = 50;
+let _eclipse = null, _eclipseGen = 0;
+
+// Combien d'éclipses sont dues, combien ont été faites, quand tombe la prochaine.
+function _eclipseEtat() {
+  const subs = state.subsCount || 0;
+  const debloquees = Math.floor(subs / ECLIPSE_PALIER);
+  const faites = state.eclipseDone || 0;
+  const prochain = (debloquees + 1) * ECLIPSE_PALIER;
+  return { debloquees, faites, dues: Math.max(0, debloquees - faites), prochain, restant: prochain - subs };
+}
+
+function renderEclipsePanel() {
+  const info = document.getElementById('mod-eclipse-info');
+  const badge = document.getElementById('mod-eclipse-badge');
+  if (!info || !badge) return;
+  const e = _eclipseEtat();
+  badge.textContent = e.dues;
+  badge.style.color = e.dues > 0 ? 'var(--gold-light)' : 'var(--text-muted)';
+  info.innerHTML = e.dues > 0
+    ? `<strong style="color:var(--gold-light)">${e.dues} éclipse${e.dues > 1 ? 's' : ''} à déclencher</strong> · ${e.faites} faite${e.faites > 1 ? 's' : ''} · prochaine au palier ${e.prochain}`
+    : `Prochaine au palier <strong>${e.prochain}</strong> subs — encore ${e.restant} sub${e.restant > 1 ? 's' : ''} · ${e.faites} déjà faite${e.faites > 1 ? 's' : ''}`;
+}
+
+function doEclipse() {
+  // La Lune doit avoir une game cessible : une game figée ne peut pas être supprimée
+  const poolLune = state.players.filter(p => movableGames(p).length > 0);
+  if (!poolLune.length) { toast('Aucun joueur avec une game supprimable.', 'error'); return; }
+  if (state.players.length < 2) { toast('Il faut au moins 2 joueurs.', 'error'); return; }
+  const lune = poolLune[Math.floor(Math.random() * poolLune.length)];
+  const poolSoleil = state.players.filter(p => p.id !== lune.id);
+  const soleil = poolSoleil[Math.floor(Math.random() * poolSoleil.length)];
+  const mv = movableGames(lune);
+  const game = mv[Math.floor(Math.random() * mv.length)];
+  const num = [...lune.games].sort((a, b) => b.score - a.score).findIndex(g => g.id === game.id) + 1;
+  _eclipse = { lune, soleil, game, num, gen: ++_eclipseGen };
+
+  const desc = `🌑 <strong>${escHtml(lune.name)}</strong> perd sa game #${num} (<strong>${game.score} pts</strong>)<br>` +
+    `☀️ <strong>${escHtml(soleil.name)}</strong> reçoit <strong>+${game.score} pts</strong> de bonus`;
+  showConfirm('Lancer l\'éclipse',
+    `${desc}<br><br>La game de la Lune est <strong>définitivement supprimée</strong>. Irréversible.`,
+    () => {
+      const gen = _eclipse.gen;
+      const actions = document.getElementById('ecl-actions');
+      if (actions) actions.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:12px;padding:8px">La Lune avance…</div>';
+      renderEclipseScene();
+      setTimeout(() => { if (_eclipse && _eclipse.gen === gen) eclipseTotalite(); }, 2700);
+    }, true, 'Lancer');
+}
+
+function renderEclipseScene() {
+  const el = document.getElementById('ecl-stage');
+  if (!el || !_eclipse) return;
+  el.innerHTML = `
+    <div class="ecl-scene" id="ecl-scene">
+      <div class="ecl-disc" id="ecl-disc">
+        <div class="ecl-corona"></div>
+        <div class="ecl-sun"></div>
+        <div class="ecl-moon avance" id="ecl-moon"></div>
+      </div>
+      <div class="ecl-legende" id="ecl-legende">Alignement en cours…</div>
+    </div>
+    <div id="ecl-resultat"></div>`;
+}
+
+function eclipseTotalite() {
+  const { lune, soleil, game, num } = _eclipse;
+  document.getElementById('ecl-scene')?.classList.add('totale');
+  document.getElementById('ecl-disc')?.classList.add('totale');
+  const leg = document.getElementById('ecl-legende');
+  if (leg) { leg.textContent = 'Totalité'; leg.classList.add('totale'); }
+
+  // Application : la game disparaît, ses points partent en bonus chez le Soleil
+  const pts = game.score;
+  lune.games = lune.games.filter(g => g.id !== game.id);
+  soleil.bonusPoints = (soleil.bonusPoints || 0) + pts;
+  state.eclipseDone = (state.eclipseDone || 0) + 1;
+
+  const res = document.getElementById('ecl-resultat');
+  if (res) res.innerHTML = `
+    <div class="ecl-resultat">
+      <div class="ecl-carte ecl-lune"><i class="fa-solid fa-moon"></i><div><strong>${escHtml(lune.name)}</strong> — game #${num} supprimée<br><span style="opacity:.8">−${pts} pts · ${lune.games.length} game${lune.games.length > 1 ? 's' : ''} restante${lune.games.length > 1 ? 's' : ''}</span></div></div>
+      <div class="ecl-carte ecl-soleil"><i class="fa-solid fa-sun"></i><div><strong>${escHtml(soleil.name)}</strong> — la lumière lui revient<br><span style="opacity:.8">+${pts} pts de bonus</span></div></div>
+    </div>`;
+
+  addLog(`Éclipse : <strong>${lune.name}</strong> perd sa game de ${pts} pts, <strong>${soleil.name}</strong> récupère ${pts} pts de bonus.`, 'gold', 'moon', true);
+  toast(`Éclipse — ${pts} pts transférés de ${lune.name} à ${soleil.name} !`, 'gold');
+  saveState();
+  renderAll();
+  renderEclipsePanel();
+  const actions = document.getElementById('ecl-actions');
+  if (actions) actions.innerHTML = `<button class="btn" style="width:100%;justify-content:center" onclick="closeModal('modal-action')">Fermer</button>`;
+}
+
+// ============================================================
 // ROUE DE FOLIE — Roulette russe
 // ============================================================
 let _roulette = null;   // { picks: [joueur x6], balle: index du chargeur, tire: bool, gen }
@@ -5084,6 +5288,7 @@ function openAction(type) {
     'comm-freeze-rand': '3 joueurs figent une game au hasard',
     'comm-vol-score-2': 'Vol de score — 2 places au-dessus',
     'comm-rand-x2-trio': 'Game aléatoire × 2 — 3 joueurs',
+    'eclipse': 'Éclipse',
     'comm-echange-top10': 'Échange de games entre les 10 premiers',
     'comm-echange-flooozii': 'Échange avec FloooZii',
     'comm-clone-flooozii': 'Meilleure game de FloooZii clonée',
@@ -5385,6 +5590,24 @@ function buildActionBody(type) {
       <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px"><strong style="color:var(--gold)">3 joueurs sont tirés au sort</strong> parmi ceux ayant des games. Pour chacun, une game est tirée au hasard et voit son score <strong style="color:var(--gold)">multiplié par 2</strong>.</p>
       <div id="action-rand-x2-trio-preview" style="margin-bottom:12px"></div>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCommRandX2Trio()"><i class="fa-solid fa-dice-three" style="margin-right:6px"></i>Tirer au sort & × 2</button>`;
+
+    case 'eclipse': {
+      const e = _eclipseEtat();
+      return `
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">Deux joueurs sont tirés au sort, <strong>totalement au hasard</strong>.<br>
+      🌑 <strong style="color:#aab4d0">La Lune</strong> perd définitivement une de ses games, tirée au hasard.<br>
+      ☀️ <strong style="color:var(--gold-light)">Le Soleil</strong> reçoit en points bonus le score exact de cette game.<br>
+      <span style="color:var(--text-muted)">Aucun point n'est créé ni perdu pour la ligue. Les games figées sont protégées.</span></p>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:10px 12px;font-size:12px;color:var(--text-muted);margin-bottom:12px">
+        ${e.dues > 0
+          ? `<strong style="color:var(--gold)">${e.dues} éclipse${e.dues > 1 ? 's' : ''} due${e.dues > 1 ? 's' : ''}</strong> · ${e.faites} déjà déclenchée${e.faites > 1 ? 's' : ''}`
+          : `Aucune éclipse due pour l'instant — prochaine au palier <strong style="color:var(--gold)">${e.prochain}</strong> subs, dans ${e.restant} sub${e.restant > 1 ? 's' : ''}.`}
+      </div>
+      <div id="ecl-stage" style="margin-bottom:12px"></div>
+      <div id="ecl-actions">
+        <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doEclipse()"><i class="fa-solid fa-moon" style="margin-right:6px"></i>Déclencher l'éclipse</button>
+      </div>`;
+    }
 
     default: return '<p>Action inconnue.</p>';
   }
@@ -5889,6 +6112,8 @@ function renderSubsBanner() {
         </div>`
       : '';
   }
+
+  renderEclipsePanel();
 
   // Milestones recap in modération
   const milestonesEl = document.getElementById('mod-subs-milestones');
