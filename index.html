@@ -681,7 +681,7 @@ main {
   background: radial-gradient(ellipse at 50% 55%, #191c26 0%, #07080c 78%);
 }
 /* Le fond s'assombrit au fur et à mesure que la lune recouvre le soleil */
-.ecl-scene.transit { animation: eclNuit 3.4s ease-in forwards; }
+.ecl-scene.transit { animation: eclNuit 5s ease-in forwards; }
 .ecl-disc { position: relative; width: 112px; height: 112px; }
 .ecl-corona {
   position: absolute; inset: -30px; border-radius: 50%;
@@ -703,7 +703,7 @@ main {
   background: radial-gradient(circle at 62% 38%, #23262f 0%, #14161c 45%, #0a0b0f 100%);
   box-shadow: inset 7px 5px 16px rgba(255,255,255,0.07), 0 0 0 1px rgba(255,255,255,0.06);
   transform: translateX(-230px);
-  transition: transform 3.4s cubic-bezier(.35,.02,.3,1);
+  transition: transform 5s cubic-bezier(.45,.05,.35,1);
 }
 .ecl-moon.avance { transform: translateX(0); }
 /* Éclat du diamant : le dernier point de soleil juste avant l'occultation totale */
@@ -712,7 +712,7 @@ main {
   margin-top: -6px; border-radius: 50%; opacity: 0;
   background: #fff8d8; box-shadow: 0 0 18px 7px rgba(255,235,170,0.9);
 }
-.ecl-scene.transit .ecl-diamant { animation: eclDiamant 3.4s ease-out forwards; }
+.ecl-scene.transit .ecl-diamant { animation: eclDiamant 5s ease-out forwards; }
 .ecl-disc.totale .ecl-corona { animation: eclCoronaTot 1.2s ease-out forwards; }
 .ecl-legende {
   position: absolute; bottom: 10px; left: 0; right: 0; text-align: center;
@@ -741,11 +741,12 @@ main {
 @keyframes eclTexte    { from { opacity: 0; letter-spacing: 8px; } to { opacity: 1; letter-spacing: 2px; } }
 @keyframes eclApparait { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) {
+  /* On ne coupe que le décoratif : pulsation de la couronne, éclat du diamant,
+     assombrissement du fond. Le transit de la lune, lui, EST le contenu de
+     l'animation — le raccourcir reviendrait à supprimer ce qu'on veut montrer,
+     donc il garde sa durée. */
   .ecl-corona, .ecl-disc.totale .ecl-corona, .ecl-carte,
-  .ecl-legende.totale, .ecl-scene.transit, .ecl-scene.transit .ecl-diamant { animation: none; }
-  /* Le transit reste visible mais raccourci : sans lui, on ne comprendrait plus
-     que la lune passe devant le soleil. */
-  .ecl-moon { transition-duration: .8s; }
+  .ecl-legende.totale, .ecl-scene.transit .ecl-diamant { animation: none; }
 }
 
 /* SCORE PREVIEW */
@@ -5162,6 +5163,18 @@ function resetEclipseSubs() {
   }, true, 'Réinitialiser');
 }
 
+// Pastilles de paliers : on n'affiche que les 3 derniers franchis, sinon la ligne
+// devient illisible (à 1460 subs la Roue Commu en alignait 29). Les précédents sont
+// résumés par un « +N ».
+const PALIERS_AFFICHES = 3;
+function _pastillesPaliers(franchis, prochain, pill) {
+  const caches = Math.max(0, franchis.length - PALIERS_AFFICHES);
+  const visibles = caches ? franchis.slice(-PALIERS_AFFICHES) : franchis;
+  return (caches ? `<span style="font-size:11px;font-weight:700;color:var(--text-muted);padding:2px 6px;line-height:1.6">+${caches}</span>` : '')
+    + visibles.map(m => pill(`✓ ${m}`, true)).join('')
+    + pill(`→ ${prochain}`, false);
+}
+
 // Positionne la lune sur une jauge : entièrement à gauche à 0 %, pile devant le
 // soleil à 100 %. Le décalage est proportionnel à la taille de la jauge.
 function _majJauge(id, pct) {
@@ -5188,11 +5201,8 @@ function renderEclipsePanel() {
     const em = document.getElementById('eclipse-banner-milestones');
     if (em) {
       const pill = (label, on) => `<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:3px;line-height:1.6;${on ? 'background:rgba(255,180,70,0.15);color:var(--gold-light);border:1px solid rgba(255,180,70,0.5)' : 'background:var(--bg2);color:var(--text-muted);border:1px dashed var(--border)'}">${label}</span>`;
-      // Au-delà de 8 paliers franchis, on ne montre que les derniers pour ne pas noyer la ligne
       const franchis = Array.from({ length: e.paliers }, (_, i) => (i + 1) * ECLIPSE_PALIER);
-      const affiches = franchis.length > 8 ? franchis.slice(-8) : franchis;
-      em.innerHTML = (franchis.length > 8 ? `<span style="font-size:11px;color:var(--text-muted);padding:2px 4px">+${franchis.length - 8}</span>` : '')
-        + affiches.map(m => pill(`✓ ${m}`, true)).join('') + pill(`→ ${e.prochain}`, false);
+      em.innerHTML = _pastillesPaliers(franchis, e.prochain, pill);
     }
   }
 
@@ -5253,8 +5263,8 @@ function renderEclipseScene(onTotalite) {
     moon.classList.add('avance');
     // La totalité suit la durée réelle du transit, qui est raccourcie si
     // l'utilisateur a désactivé les animations système.
-    const duree = parseFloat(getComputedStyle(moon).transitionDuration) || 3.4;
-    if (onTotalite) setTimeout(onTotalite, duree * 1000 + 300);
+    const duree = parseFloat(getComputedStyle(moon).transitionDuration) || 5;
+    if (onTotalite) setTimeout(onTotalite, duree * 1000 + 700);
   }));
 }
 
@@ -6207,7 +6217,7 @@ function renderSubsBanner() {
     const bm = document.getElementById('subs-banner-milestones');
     if (bm) {
       const pill = (label, gold) => `<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:3px;line-height:1.6;${gold ? 'background:rgba(212,175,55,0.15);color:var(--gold);border:1px solid rgba(212,175,55,0.5)' : 'background:var(--bg2);color:var(--text-muted);border:1px dashed var(--border)'}">${label}</span>`;
-      bm.innerHTML = allReached.map(m => pill(`✓ ${m}`, true)).join('') + pill(`→ ${nextMilestone}`, false);
+      bm.innerHTML = _pastillesPaliers(allReached, nextMilestone, pill);
     }
   }
 
@@ -6224,7 +6234,7 @@ function renderSubsBanner() {
     const fm = document.getElementById('folie-banner-milestones');
     if (fm) {
       const fpill = (label, on) => `<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:3px;line-height:1.6;${on ? 'background:rgba(224,90,56,0.15);color:var(--rust-light);border:1px solid rgba(224,90,56,0.5)' : 'background:var(--bg2);color:var(--text-muted);border:1px dashed var(--border)'}">${label}</span>`;
-      fm.innerHTML = f.reached.map(m => fpill(`✓ ${m}`, true)).join('') + fpill(`→ ${f.next}`, false);
+      fm.innerHTML = _pastillesPaliers(f.reached, f.next, fpill);
     }
   }
 
@@ -6266,7 +6276,10 @@ function renderSubsBanner() {
     const future = m => `<span style="display:inline-flex;align-items:center;gap:3px;background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:3px 8px;font-size:11px;color:var(--text-muted)">${m}</span>`;
     const extra20cur = mode20 && start20 > 0 ? Math.max(0, Math.floor((count - start20) / 20)) : 0;
     const future2 = mode20 && start20 > 0 ? start20 + (extra20cur + 2) * 20 : nextMilestone + 50;
-    const items = allReached.map(m => reached(m));
+    // Mêmes 3 derniers paliers qu'ailleurs, pour ne pas dérouler toute l'historique
+    const caches = Math.max(0, allReached.length - PALIERS_AFFICHES);
+    const items = caches ? [`<span style="display:inline-flex;align-items:center;padding:3px 8px;font-size:11px;font-weight:700;color:var(--text-muted)">+${caches}</span>`] : [];
+    (caches ? allReached.slice(-PALIERS_AFFICHES) : allReached).forEach(m => items.push(reached(m)));
     items.push(next(nextMilestone));
     items.push(future(future2));
     milestonesEl.innerHTML = `<div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;font-weight:700"><i class="fa-solid fa-flag-checkered" style="margin-right:4px"></i>Paliers — ${rouesTotal} roue${rouesTotal !== 1 ? 's' : ''} déclenchée${rouesTotal !== 1 ? 's' : ''}</div><div style="display:flex;flex-wrap:wrap;gap:6px">${items.join('')}</div>`;
