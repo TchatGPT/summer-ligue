@@ -1524,13 +1524,6 @@ main {
         <div class="ac-desc">Double le score de la pire game de chaque joueur</div>
       </div>
 
-      <div class="action-card action-card-gold" onclick="openAction('comm-rand-x2')">
-        <div class="ac-bg"><i class="fa-solid fa-dice"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-dice"></i></div>
-        <div class="ac-title">Game aléatoire × 2</div>
-        <div class="ac-desc">Joueur tiré au sort — une de ses games au hasard voit son score doublé</div>
-      </div>
-
       <div class="action-card action-card-gold" onclick="openAction('comm-rand-x2-trio')">
         <div class="ac-bg"><i class="fa-solid fa-dice-three"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-dice-three"></i></div>
@@ -1808,8 +1801,8 @@ main {
     </div>
     <div style="padding:4px 0">
       <div class="action-row">
-        <div><div class="action-row-name"><i class="fa-solid fa-gamepad"></i> Nombre de games</div><div style="font-size:11px;color:var(--text-muted)">Chaque joueur joue jusqu'à 35 games, toutes comptabilisées</div></div>
-        <span style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--gold)">35 max</span>
+        <div><div class="action-row-name"><i class="fa-solid fa-gamepad"></i> Nombre de games</div><div style="font-size:11px;color:var(--text-muted)">Chaque joueur joue jusqu'à <span id="regle-maxgames-texte">—</span> games, hors games bonus. Seules les meilleures sont comptabilisées si la limite est dépassée.</div></div>
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--gold)" id="regle-maxgames-badge">—</span>
       </div>
       <div class="action-row">
         <div><div class="action-row-name"><i class="fa-solid fa-circle-plus"></i> Game supplémentaire</div><div style="font-size:11px;color:var(--text-muted)">Via la Roue : une game bonus s'ajoute hors limite — la limite personnelle du joueur augmente d'une game à chaque fois</div></div>
@@ -1850,7 +1843,6 @@ main {
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shuffle"></i> Clone meilleure → pire aléatoire</div><div style="font-size:11px;color:var(--text-muted)">Tire 2 joueurs au hasard — remplace la pire game de l'un par la meilleure game de l'autre</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-crown"></i> +5 pts par Top 1</div><div style="font-size:11px;color:var(--text-muted)">+5 pts de bonus par nouveau Top 1 depuis la dernière application (tous joueurs)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-angles-up"></i> Pire game × 2</div><div style="font-size:11px;color:var(--text-muted)">Double le score de la pire game de chaque joueur</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-dice"></i> Game aléatoire × 2</div><div style="font-size:11px;color:var(--text-muted)">Un joueur est tiré au sort, puis une de ses games au hasard voit son score doublé</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-user-secret"></i> Vol de score</div><div style="font-size:11px;color:var(--text-muted)">Un joueur tiré au sort copie le score total du joueur juste au-dessus de lui au classement. Celui du dessus garde son score, il ne perd rien. Les games et leur nombre ne changent pas</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-angles-up"></i> Vol de score — 2 places au-dessus</div><div style="font-size:11px;color:var(--text-muted)">Même principe, mais le joueur tiré au sort copie le score du joueur situé 2 places au-dessus de lui au lieu d'une seule. Celui-ci garde son score, les games ne changent pas.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-dice-three"></i> Game aléatoire × 2 — 3 joueurs</div><div style="font-size:11px;color:var(--text-muted)">3 joueurs sont tirés au sort et, pour chacun, une game au hasard voit son score doublé.</div></div></div>
@@ -2620,6 +2612,17 @@ function renderAll() {
   renderModerationPage();
   renderStatsChart();
   renderCooldowns();
+  renderRegles();
+}
+
+// La page Règles affiche des valeurs qui se règlent ailleurs. Les écrire en dur
+// les condamne à devenir fausses : elles sont donc rendues depuis l'état réel.
+function renderRegles() {
+  const mg = state.maxGames || 20;
+  const t = document.getElementById('regle-maxgames-texte');
+  const b = document.getElementById('regle-maxgames-badge');
+  if (t) t.textContent = mg;
+  if (b) b.textContent = `${mg} max`;
 }
 
 // ---- Cooldown des actions de la Roue Commu ----
@@ -4677,28 +4680,6 @@ function doCommRandX2Trio() {
   );
 }
 
-function doCommRandX2() {
-  const eligible = state.players.filter(p => p.games.length > 0);
-  if (!eligible.length) { toast('Aucun joueur avec des games.', 'error'); return; }
-  const p = eligible[Math.floor(Math.random() * eligible.length)];
-  const game = p.games[Math.floor(Math.random() * p.games.length)];
-  const num = [...p.games].sort((a, b) => b.score - a.score).findIndex(g => g.id === game.id) + 1;
-  const el = document.getElementById('action-rand-x2-preview');
-  const desc = `<strong>${escHtml(p.name)}</strong> est tiré au sort<br>` +
-    `Sa game #${num} passe de <span style="color:var(--text-muted)">${game.score}</span> à <span style="color:var(--gold)">${game.score * 2} pts</span>`;
-  if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.8">${desc}</div>`;
-  showConfirm('Confirmer le × 2', desc,
-    () => {
-      const oldScore = game.score;
-      game.score = oldScore * 2;
-      game.note = (game.note ? game.note + ' · ' : '') + '×2 aléatoire (roue commu)';
-      addLog(`Game aléatoire ×2 : <strong>${p.name}</strong> — game #${num}, ${oldScore} → ${game.score} pts.`, 'gold', 'dice', true);
-      toast(`${p.name} — game ×2 : ${oldScore} → ${game.score} pts !`, 'gold');
-      _finishCommuAction();
-    }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
-  );
-}
-
 function doFolieWorstZero() {
   const eligible = state.players.filter(p => p.games.length > 0);
   if (!eligible.length) { toast('Aucun joueur avec des games.', 'error'); return; }
@@ -5091,7 +5072,6 @@ function openAction(type) {
     'perso-extra-game': 'Game supplémentaire',
     'perso-top10pts': '+10 pts Top 10',
     'comm-worst-x2': 'Pire game × 2',
-    'comm-rand-x2': 'Game aléatoire × 2',
     'comm-echange-best-worst': 'Échange meilleure ↔ pire (aléatoire)',
     'comm-echange-rand': 'Échange 2 games aléatoires',
     'comm-echange-rand3': 'Échange 3 games aléatoires',
@@ -5275,11 +5255,6 @@ function buildActionBody(type) {
     case 'comm-worst-x2': return `
       <p style="color:var(--text-muted);font-size:12px;margin-top:8px">La pire game de <strong style="color:var(--text)">chaque joueur</strong> sera multipliée par 2.</p>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Appliquer × 2 à tous</button>`;
-
-    case 'comm-rand-x2': return `
-      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">Un <strong style="color:var(--gold)">joueur est tiré au sort</strong> parmi ceux ayant des games, puis une de ses games est tirée au hasard et voit son score <strong style="color:var(--gold)">multiplié par 2</strong>.</p>
-      <div id="action-rand-x2-preview" style="margin-bottom:12px"></div>
-      <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCommRandX2()"><i class="fa-solid fa-dice" style="margin-right:6px"></i>Tirer au sort & × 2</button>`;
 
     case 'comm-echange-best-worst': return `
       <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">Deux joueurs sont tirés au sort. La <strong style="color:var(--text)">meilleure game</strong> de l'un est échangée contre la <strong style="color:var(--text)">pire game</strong> de l'autre.</p>
@@ -5641,7 +5616,6 @@ function execAction() {
       toast(`Pire game ×2 appliquée à ${totalApplied} joueur${totalApplied > 1 ? 's' : ''} !`, 'gold');
       break;
     }
-    case 'comm-rand-x2': doCommRandX2(); return;
     case 'folie-jokers3': {
       if (!state.players.length) { toast('Aucun joueur dans la ligue.', 'error'); return; }
       let totalDonnes = 0, plafonnes = 0;
