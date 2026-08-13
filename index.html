@@ -1413,7 +1413,7 @@ main {
         <div class="ac-bg"><i class="fa-solid fa-divide"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-divide"></i></div>
         <div class="ac-title">Une game au hasard ÷ 2</div>
-        <div class="ac-desc">Toute la ligue — une game tirée au sort par joueur voit son score divisé par 2</div>
+        <div class="ac-desc">Toute la ligue — une game tirée au sort par joueur voit son score divisé par 2, parmi les games encore vierges de toute roue</div>
       </div>
 
     </div>
@@ -1507,7 +1507,7 @@ main {
         <div class="ac-bg"><i class="fa-solid fa-angles-up"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-angles-up"></i></div>
         <div class="ac-title">Pire game × 2</div>
-        <div class="ac-desc">Double le score de la pire game de chaque joueur</div>
+        <div class="ac-desc">Double le score de la pire game de chaque joueur — une seule fois par game, sinon ça remonte sur la 2ᵉ pire</div>
       </div>
 
       <div class="action-card action-card-gold" onclick="openAction('comm-rand-x2-trio')">
@@ -1802,7 +1802,7 @@ main {
     </div>
     <div class="action-list-compact">
       <div class="action-row" style="border-left:3px solid var(--gold)"><div><div class="action-row-name"><i class="fa-solid fa-clock" style="color:var(--gold)"></i> Blocage 12h après usage</div><div style="font-size:11px;color:var(--text-muted)">Chaque action de la Roue Communautaire est utilisable une fois toutes les 12h. Dès qu'elle est déclenchée, sa carte est grisée et affiche le temps restant avant sa prochaine disponibilité. Les cooldowns sont indépendants d'une action à l'autre, et ne concernent ni la Roue Perso ni la Roue de Folie.</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-star"></i> Meilleure game × 1.5</div><div style="font-size:11px;color:var(--text-muted)">Multiplie le score de la meilleure game de chaque joueur par 1.5. Une game ne peut recevoir ce bonus qu'une seule fois : si la meilleure game d'un joueur l'a déjà reçu, le bonus descend sur sa 2ᵉ meilleure, puis la 3ᵉ, et ainsi de suite jusqu'à en trouver une non multipliée.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-star"></i> Meilleure game × 1.5</div><div style="font-size:11px;color:var(--text-muted)">Multiplie le score de la meilleure game de chaque joueur par 1.5. Une game ne peut être transformée qu'une seule fois par une roue : si la meilleure game d'un joueur l'a déjà été, le bonus descend sur sa 2ᵉ meilleure, puis la 3ᵉ, et ainsi de suite jusqu'à en trouver une encore vierge.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-circle-plus"></i> Ajout d'une game sup</div><div style="font-size:11px;color:var(--text-muted)">Accorde une game bonus hors limite à tous les joueurs (compteur +1 pour chacun)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-trash-can"></i> Suppression de la pire game</div><div style="font-size:11px;color:var(--text-muted)">Supprime la game avec le score le plus bas de chaque joueur</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-arrow-right-arrow-left"></i> Échange meilleure ↔ pire (aléatoire)</div><div style="font-size:11px;color:var(--text-muted)">Tire 2 joueurs au hasard — échange la meilleure game de l'un contre la pire de l'autre</div></div></div>
@@ -1812,7 +1812,7 @@ main {
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-clone"></i> Clone meilleure → joueur aléatoire</div><div style="font-size:11px;color:var(--text-muted)">Tire un joueur au hasard et lui ajoute la meilleure game de toute la ligue (sans supprimer de game)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shuffle"></i> Clone meilleure → pire aléatoire</div><div style="font-size:11px;color:var(--text-muted)">Tire 2 joueurs au hasard — remplace la pire game de l'un par la meilleure game de l'autre</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-crown"></i> +5 pts par Top 1</div><div style="font-size:11px;color:var(--text-muted)">+5 pts de bonus par nouveau Top 1 depuis la dernière application (tous joueurs)</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-angles-up"></i> Pire game × 2</div><div style="font-size:11px;color:var(--text-muted)">Double le score de la pire game de chaque joueur</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-angles-up"></i> Pire game × 2</div><div style="font-size:11px;color:var(--text-muted)">Double le score de la pire game de chaque joueur. Une game ne peut être transformée qu'une seule fois par une roue : si la pire game d'un joueur l'a déjà été, le bonus remonte sur sa 2ᵉ pire, puis la 3ᵉ, et ainsi de suite. Les games figées sont protégées.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-user-secret"></i> Vol de score</div><div style="font-size:11px;color:var(--text-muted)">Un joueur tiré au sort copie le score total du joueur juste au-dessus de lui au classement. Celui du dessus garde son score, il ne perd rien. Les games et leur nombre ne changent pas</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-angles-up"></i> Vol de score — 2 places au-dessus</div><div style="font-size:11px;color:var(--text-muted)">Même principe, mais le joueur tiré au sort copie le score du joueur situé 2 places au-dessus de lui au lieu d'une seule. Celui-ci garde son score, les games ne changent pas.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-dice-three"></i> Game aléatoire × 2 — 3 joueurs</div><div style="font-size:11px;color:var(--text-muted)">3 joueurs sont tirés au sort et, pour chacun, une game au hasard voit son score doublé.</div></div></div>
@@ -1862,7 +1862,7 @@ main {
       <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-wand-magic-sparkles"></i> 3 Jokers pour tout le monde</div><div style="font-size:11px;color:var(--text-muted)">Chaque joueur de la ligue reçoit 3 jokers, qui s'ajoutent à ceux qu'il possède déjà, dans la limite de 6 jokers par joueur. Un joker permet de ne pas compter une game. Le compteur est visible dans le classement et se décrémente à chaque utilisation (3 → 2 → 1 → 0) ; à 0 le badge disparaît.</div></div></div>
       <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-life-ring"></i> Meilleure game aux 5 derniers</div><div style="font-size:11px;color:var(--text-muted)">Les 5 derniers du classement voient leur pire game remplacée par un clone de la meilleure game de toute la ligue. La meilleure game est copiée et non déplacée : son propriétaire la garde. Le nombre de games de chacun ne change pas.</div></div></div>
       <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-lock"></i> Chacun fige une game au hasard</div><div style="font-size:11px;color:var(--text-muted)">Chaque joueur de la ligue voit une de ses games tirée au hasard passer en figée : plus supprimable, plus échangeable, plus piquable. Elle reste clonable. Les games déjà figées ne sont pas retirées au sort une seconde fois.</div></div></div>
-      <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-divide"></i> Une game au hasard ÷ 2</div><div style="font-size:11px;color:var(--text-muted)">Pour chaque joueur, une game est tirée au hasard et son score est divisé par 2 (arrondi au supérieur). La game n'est pas supprimée, le nombre de games ne change pas. Les games figées sont protégées et ne peuvent pas être tirées.</div></div></div>
+      <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-divide"></i> Une game au hasard ÷ 2</div><div style="font-size:11px;color:var(--text-muted)">Pour chaque joueur, une game est tirée au hasard et son score est divisé par 2 (arrondi au supérieur). La game n'est pas supprimée, le nombre de games ne change pas. Le tirage ne porte que sur les games encore vierges de toute roue : une game déjà ×1.5, ×2 ou ÷2 ne peut pas être retouchée. Les games figées sont protégées et ne peuvent pas être tirées.</div></div></div>
     </div>
   </div>
 </div>
@@ -2561,19 +2561,33 @@ function getWorstMovable(player) {
   return l.length ? l.reduce((w, g) => g.score < w.score ? g : w, l[0]) : null;
 }
 
-// Une game ne peut recevoir le ×1.5 de la Roue Commu qu'une fois. La note fait foi :
-// elle est stockée en base, donc les games déjà multipliées avant cette règle sont
-// reconnues elles aussi. Le drapeau x15 n'est qu'un raccourci en mémoire.
-function _dejaX15(g) {
-  return !!g.x15 || (g.note || '').includes('x1.5 (roue comm)');
+// Une game ne peut subir qu'UNE SEULE transformation de roue : ×1.5 sur la meilleure et
+// ×2 sur la pire (Roue Commu), ÷2 aléatoire (Roue de Folie). Jamais deux fois la même,
+// jamais deux différentes. Les multiplicateurs de la Roue Perso ne comptent pas : une
+// game déjà ×1.4 par la Roue Perso reste éligible.
+// La note fait foi car elle est stockée en base : les games transformées avant cette
+// règle sont donc reconnues elles aussi. Les drapeaux ne sont qu'un raccourci en mémoire.
+const NOTES_MULT_ROUE = ['x1.5 (roue comm)', '×2 pire game (roue commu)', '÷ 2 aléatoire (roue de folie)'];
+function _dejaMultRoue(g) {
+  if (g.x15 || g.x2commu || g.div2folie) return true;
+  const note = g.note || '';
+  return NOTES_MULT_ROUE.some(n => note.includes(n));
 }
 
-// Cible du ×1.5 : la meilleure game du joueur qui n'a pas encore reçu le bonus.
-// Si sa meilleure est déjà multipliée, on descend sur la 2e, puis la 3e, etc.
-// Renvoie null si toutes ses games ont déjà été multipliées.
+// Cible du ×1.5 : la meilleure game du joueur qui n'a pas encore été transformée par une
+// roue. Si sa meilleure l'a déjà été, on descend sur la 2e, puis la 3e, et ainsi de suite.
+// Renvoie null si toutes ses games sont déjà transformées.
 function _cibleX15(player) {
   const tri = [...(player.games || [])].sort((a, b) => b.score - a.score);
-  const i = tri.findIndex(g => !_dejaX15(g));
+  const i = tri.findIndex(g => !_dejaMultRoue(g));
+  return i < 0 ? null : { g: tri[i], rang: i + 1 };
+}
+
+// Cible du ×2 : symétrique du ×1.5, mais en partant de la pire game et en remontant sur
+// la 2e pire, la 3e, etc. Les games figées sont exclues, comme dans getWorstGame().
+function _cibleX2(player) {
+  const tri = movableGames(player).sort((a, b) => a.score - b.score);
+  const i = tri.findIndex(g => !_dejaMultRoue(g));
   return i < 0 ? null : { g: tri[i], rang: i + 1 };
 }
 
@@ -4850,23 +4864,30 @@ function doCommEchangeTop10() {
   );
 }
 
+// Le tirage ne porte que sur les games encore vierges de toute roue : une game déjà
+// ×1.5, ×2 ou ÷2 ne peut pas être retouchée. Les games figées restent protégées.
+function _poolDivisible(p) {
+  return movableGames(p).filter(g => g.score > 0 && !_dejaMultRoue(g));
+}
+
 function doFolieHalfRand() {
-  // Les games figées sont protégées : diviser leur score reviendrait à les amputer
-  const eligible = state.players.filter(p => movableGames(p).some(g => g.score > 0));
-  if (!eligible.length) { toast('Aucune game divisible (toutes à 0 ou figées).', 'error'); return; }
+  const eligible = state.players.filter(p => _poolDivisible(p).length);
+  if (!eligible.length) { toast('Aucune game divisible : toutes sont à 0, figées ou déjà transformées par une roue.', 'error'); return; }
   const picks = eligible.map(p => {
-    const pool = movableGames(p).filter(g => g.score > 0);
+    const pool = _poolDivisible(p);
     return { p, g: pool[Math.floor(Math.random() * pool.length)] };
   });
+  const intouchables = state.players.filter(p => p.games.length && !_poolDivisible(p).length).length;
   const totalPerdu = picks.reduce((s, x) => s + (x.g.score - Math.ceil(x.g.score / 2)), 0);
   const el = document.getElementById('action-half-rand-preview');
   const lignes = picks.map(x => `<strong>${escHtml(x.p.name)}</strong> — game <span style="color:var(--text-muted)">${x.g.score}</span> → <span style="color:var(--rust-light)">${Math.ceil(x.g.score / 2)} pts</span>`).join('<br>');
-  const desc = `<strong>${picks.length} joueur${picks.length > 1 ? 's' : ''}</strong> touché${picks.length > 1 ? 's' : ''} · <strong style="color:var(--rust-light)">−${totalPerdu} pts</strong> au total<br><br>${lignes}`;
+  const desc = `<strong>${picks.length} joueur${picks.length > 1 ? 's' : ''}</strong> touché${picks.length > 1 ? 's' : ''} · <strong style="color:var(--rust-light)">−${totalPerdu} pts</strong> au total<br><br>${lignes}${intouchables ? `<br><br><span style="color:var(--text-muted)">${intouchables} joueur${intouchables > 1 ? 's épargnés' : ' épargné'} — plus aucune game vierge de roue</span>` : ''}`;
   if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.9;max-height:280px;overflow-y:auto">${desc}</div>`;
   showConfirm('Confirmer la division', desc,
     () => {
       picks.forEach(x => {
         x.g.score = Math.ceil(x.g.score / 2);
+        x.g.div2folie = true;
         x.g.note = (x.g.note ? x.g.note + ' · ' : '') + '÷ 2 aléatoire (roue de folie)';
       });
       addLog(`Une game ÷ 2 : ${picks.length} joueur${picks.length > 1 ? 's' : ''} touché${picks.length > 1 ? 's' : ''}, ${totalPerdu} pts retirés au total.`, 'rust', 'divide', true);
@@ -5216,9 +5237,23 @@ function buildActionBody(type) {
       <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Si le joueur finit dans le <strong>top 10 Warzone</strong>, +10 pts s'appliquent sur sa prochaine game.</p>
       <button class="btn btn-purple" style="width:100%;justify-content:center;margin-top:16px;border-width:1px" onclick="execAction()">Appliquer</button>`;
 
-    case 'comm-worst-x2': return `
-      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">La pire game de <strong style="color:var(--text)">chaque joueur</strong> sera multipliée par 2.</p>
-      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Appliquer × 2 à tous</button>`;
+    case 'comm-worst-x2': {
+      const avecGames = state.players.filter(p => movableGames(p).length);
+      const cibles = avecGames.map(p => ({ p, c: _cibleX2(p) })).filter(x => x.c);
+      const satures = avecGames.length - cibles.length;
+      const reportes = cibles.filter(x => x.c.rang > 1);
+      const lignes = reportes.slice(0, 10).map(x =>
+        `<strong>${escHtml(x.p.name)}</strong> — sa ${x.c.rang}<sup>e</sup> pire game (<span style="color:var(--gold)">${x.c.g.score} pts</span>)`).join('<br>');
+      return `
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:16px">La pire game de <strong style="color:var(--text)">chaque joueur</strong> sera multipliée par 2.<br>
+      Une game ne peut être transformée qu'<strong>une seule fois</strong> par une roue : si la pire l'a déjà été, le bonus <strong>remonte sur la 2<sup>e</sup> pire</strong>, puis la 3<sup>e</sup>, et ainsi de suite.</p>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.8;margin-bottom:14px">
+        <strong>${cibles.length} game${cibles.length > 1 ? 's' : ''}</strong> seront multipliée${cibles.length > 1 ? 's' : ''}
+        ${reportes.length ? `<br><span style="color:var(--text-muted)">dont <strong>${reportes.length}</strong> reporté${reportes.length > 1 ? 's' : ''} sur une game suivante :</span><br>${lignes}${reportes.length > 10 ? `<br><span style="color:var(--text-muted)">… et ${reportes.length - 10} autre${reportes.length - 10 > 1 ? 's' : ''}</span>` : ''}` : ''}
+        ${satures ? `<br><span style="color:var(--rust-light)">${satures} joueur${satures > 1 ? 's ont' : ' a'} toutes leurs games déjà transformées</span>` : ''}
+      </div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="execAction()">Appliquer × 2 à tous</button>`;
+    }
 
     case 'comm-echange-best-worst': return `
       <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">Deux joueurs sont tirés au sort. La <strong style="color:var(--text)">meilleure game</strong> de l'un est échangée contre la <strong style="color:var(--text)">pire game</strong> de l'autre.</p>
@@ -5539,18 +5574,23 @@ function execAction() {
       break;
     }
     case 'comm-worst-x2': {
-      let totalApplied = 0;
+      let count = 0, satures = 0, reportes = 0;
       state.players.forEach(p => {
-        const worst = getWorstGame(p);
-        if (!worst) return;
-        const oldScore = worst.score;
-        worst.score = Math.round(worst.score * 2);
-        worst.note = (worst.note ? worst.note + ' · ' : '') + `×2 pire game (roue commu)`;
-        addLog(`<strong>${p.name}</strong> — pire game ×2 : ${oldScore} → ${worst.score} pts.`, 'gold', 'angles-up', true);
-        totalApplied++;
+        if (!movableGames(p).length) return;
+        // Si la pire game a déjà été transformée par une roue, on remonte sur la suivante
+        const cible = _cibleX2(p);
+        if (!cible) { satures++; return; }
+        if (cible.rang > 1) reportes++;
+        const avant = cible.g.score;
+        cible.g.score = Math.round(cible.g.score * 2);
+        cible.g.x2commu = true;
+        cible.g.note = (cible.g.note ? cible.g.note + ' · ' : '') + `×2 pire game (roue commu)`;
+        addLog(`<strong>${p.name}</strong> — ${cible.rang > 1 ? `${cible.rang}e pire game` : 'pire game'} ×2 : ${avant} → ${cible.g.score} pts.`, 'gold', 'angles-up', true);
+        count++;
       });
-      if (totalApplied === 0) { toast('Aucun joueur avec des games.', 'error'); return; }
-      toast(`Pire game ×2 appliquée à ${totalApplied} joueur${totalApplied > 1 ? 's' : ''} !`, 'gold');
+      if (!count) { toast('Toutes les games éligibles ont déjà été multipliées ou divisées par une roue.', 'error'); return; }
+      addLog(`Pire game ×2 appliquée à ${count} joueur${count > 1 ? 's' : ''}${reportes ? ` (dont ${reportes} reporté${reportes > 1 ? 's' : ''} sur une game suivante)` : ''}${satures ? `, ${satures} sans game éligible` : ''}.`, 'gold', 'angles-up', true);
+      toast(`×2 sur ${count} game${count > 1 ? 's' : ''}${reportes ? ` — ${reportes} reporté${reportes > 1 ? 's' : ''}` : ''} !`, 'gold');
       break;
     }
     case 'folie-jokers3': {
