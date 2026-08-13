@@ -650,105 +650,6 @@ main {
   .rr-cylinder.spinning, .rr-wrap.shaking, .rr-chamber.hit, .rr-bang { animation: none; }
 }
 
-/* ---- Éclipse : jauge soleil/lune ---- */
-/* La lune recouvre le soleil proportionnellement aux subs accumulés :
-   c'est la barre de progression, en plus lisible. */
-/* Le disque est découpé en cercle : la lune qui déborde est rognée au bord du
-   soleil, ce qui donne le croissant d'une éclipse partielle au lieu d'une lune
-   qui bave sur le reste du bandeau. Le halo reste, car une ombre portée n'est
-   pas rognée par l'overflow de l'élément qui la porte. */
-.ecl-jauge {
-  position: relative; flex-shrink: 0;
-  border-radius: 50%; overflow: hidden;
-  box-shadow: 0 0 14px 3px rgba(255,180,70,0.4);
-}
-.ecl-jauge-sun {
-  position: absolute; inset: 0; border-radius: 50%;
-  background: radial-gradient(circle at 36% 32%, #fff8d8 0%, #ffd166 42%, #f59e2c 72%, #e2681a 100%);
-}
-.ecl-jauge-moon {
-  position: absolute; inset: -2px; border-radius: 50%;
-  background: radial-gradient(circle at 62% 38%, #23262f 0%, #14161c 45%, #0a0b0f 100%);
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.07);
-  transition: transform .6s cubic-bezier(.35,.02,.3,1);
-}
-
-/* ---- Éclipse ---- */
-.ecl-scene {
-  position: relative; height: 220px; margin: 4px auto 14px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 8px; overflow: hidden;
-  background: radial-gradient(ellipse at 50% 55%, #191c26 0%, #07080c 78%);
-}
-/* Le fond s'assombrit au fur et à mesure que la lune recouvre le soleil */
-.ecl-scene.transit { animation: eclNuit 5s ease-in forwards; }
-.ecl-disc { position: relative; width: 112px; height: 112px; }
-.ecl-corona {
-  position: absolute; inset: -30px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,196,92,0.5) 40%, rgba(255,140,40,0.2) 56%, transparent 72%);
-  animation: eclCorona 3.2s ease-in-out infinite;
-}
-.ecl-sun {
-  position: absolute; inset: 0; border-radius: 50%;
-  background: radial-gradient(circle at 38% 34%, #fff8d8 0%, #ffd166 40%, #f59e2c 70%, #e2681a 100%);
-  box-shadow: 0 0 40px 10px rgba(255,180,70,0.5);
-}
-/* La lune est un vrai corps, un peu plus large que le soleil pour le combler
-   entièrement à la totalité, avec un liseré qui la rend visible sur le fond noir. */
-/* Transition et non animation : la position de départ reste garantie même si
-   l'utilisateur a désactivé les animations système, où une animation serait
-   neutralisée et la lune se retrouverait d'emblée devant le soleil. */
-.ecl-moon {
-  position: absolute; inset: -5px; border-radius: 50%;
-  background: radial-gradient(circle at 62% 38%, #23262f 0%, #14161c 45%, #0a0b0f 100%);
-  box-shadow: inset 7px 5px 16px rgba(255,255,255,0.07), 0 0 0 1px rgba(255,255,255,0.06);
-  transform: translateX(-230px);
-  transition: transform 5s cubic-bezier(.45,.05,.35,1);
-}
-.ecl-moon.avance { transform: translateX(0); }
-/* Éclat du diamant : le dernier point de soleil juste avant l'occultation totale */
-.ecl-diamant {
-  position: absolute; top: 50%; left: 4px; width: 12px; height: 12px;
-  margin-top: -6px; border-radius: 50%; opacity: 0;
-  background: #fff8d8; box-shadow: 0 0 18px 7px rgba(255,235,170,0.9);
-}
-.ecl-scene.transit .ecl-diamant { animation: eclDiamant 5s ease-out forwards; }
-.ecl-disc.totale .ecl-corona { animation: eclCoronaTot 1.2s ease-out forwards; }
-.ecl-legende {
-  position: absolute; bottom: 10px; left: 0; right: 0; text-align: center;
-  font-family: 'Barlow Condensed', sans-serif; font-weight: 700; letter-spacing: 2px;
-  font-size: 12px; color: var(--text-muted); text-transform: uppercase;
-}
-.ecl-legende.totale { color: var(--gold-light); animation: eclTexte .6s ease-out; }
-.ecl-resultat { display: flex; flex-direction: column; gap: 8px; }
-.ecl-carte {
-  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
-  border-radius: 4px; font-size: 13px; animation: eclApparait .5s ease-out both;
-}
-.ecl-carte i { font-size: 17px; flex-shrink: 0; width: 22px; text-align: center; }
-.ecl-lune   { background: rgba(90,100,130,0.12); border: 1px solid #5a6482; color: #aab4d0; }
-.ecl-soleil { background: rgba(255,180,70,0.12); border: 1px solid var(--gold); color: var(--gold-light); animation-delay: .18s; }
-.ecl-carte strong { color: var(--text); }
-@keyframes eclNuit {
-  0%   { background: radial-gradient(ellipse at 50% 55%, #191c26 0%, #07080c 78%); }
-  60%  { background: radial-gradient(ellipse at 50% 55%, #12141c 0%, #05060a 78%); }
-  100% { background: radial-gradient(ellipse at 50% 52%, #1d1607 0%, #000 82%); }
-}
-/* L'éclat n'apparaît qu'au tout dernier instant, quand il ne reste qu'un point de soleil */
-@keyframes eclDiamant  { 0%, 84% { opacity: 0; transform: scale(.4); } 92% { opacity: 1; transform: scale(1.15); } 100% { opacity: 0; transform: scale(.5); } }
-@keyframes eclCorona   { 0%,100% { opacity: .5; transform: scale(1); } 50% { opacity: .78; transform: scale(1.05); } }
-@keyframes eclCoronaTot{ from { opacity: .5; transform: scale(1); } to { opacity: 1; transform: scale(1.34); } }
-@keyframes eclTexte    { from { opacity: 0; letter-spacing: 8px; } to { opacity: 1; letter-spacing: 2px; } }
-@keyframes eclApparait { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) {
-  /* On ne coupe que le décoratif : pulsation de la couronne, éclat du diamant,
-     assombrissement du fond. Le transit de la lune, lui, EST le contenu de
-     l'animation — le raccourcir reviendrait à supprimer ce qu'on veut montrer,
-     donc il garde sa durée. */
-  .ecl-corona, .ecl-disc.totale .ecl-corona, .ecl-carte,
-  .ecl-legende.totale, .ecl-scene.transit .ecl-diamant { animation: none; }
-}
-
 /* SCORE PREVIEW */
 .score-preview {
   background: var(--bg3);
@@ -1203,24 +1104,6 @@ main {
     <div id="folie-banner-milestones" style="display:flex;gap:5px;flex-wrap:wrap"></div>
   </div>
 
-  <div id="eclipse-banner" style="display:none;margin-bottom:16px;background:radial-gradient(ellipse at 6% 0%, rgba(255,180,70,0.07) 0%, transparent 65%),var(--bg3);border:1px solid rgba(255,180,70,0.45);border-radius:6px;padding:12px 16px">
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:10px">
-      <div class="ecl-jauge" style="width:46px;height:46px" id="eclipse-banner-jauge">
-        <div class="ecl-jauge-sun"></div>
-        <div class="ecl-jauge-moon"></div>
-      </div>
-      <div style="flex:1;min-width:0">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;color:var(--gold-light);letter-spacing:1px;text-transform:uppercase">Éclipse</div>
-        <div style="font-size:12px;color:var(--text-muted)" id="eclipse-banner-text">— subs</div>
-      </div>
-      <div style="text-align:right;flex-shrink:0">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:24px;color:var(--gold-light);line-height:1" id="eclipse-banner-count">0 / 50</div>
-        <div style="font-size:10px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px">avant l'éclipse</div>
-      </div>
-    </div>
-    <div id="eclipse-banner-milestones" style="display:flex;gap:5px;flex-wrap:wrap"></div>
-  </div>
-
   <div class="stats-row" id="stats-overview"></div>
 
   <div class="actions-bar admin-only" style="display:none">
@@ -1474,44 +1357,7 @@ main {
 <!-- PAGE ACTIONS ROUES -->
 <div id="page-actions" class="page">
   <h1 class="section-title" style="margin-bottom:20px">Actions <span>Roues</span></h1>
-
-  <!-- ÉCLIPSE -->
-  <div class="roue-section" style="margin-bottom:20px;border-color:rgba(255,180,70,0.35);background:radial-gradient(ellipse at 8% 0%, rgba(255,180,70,0.07) 0%, transparent 60%)">
-    <div class="roue-header" style="border-bottom-color:rgba(255,180,70,0.25)">
-      <div>
-        <div class="roue-title" style="color:var(--gold-light)"><i class="fa-solid fa-moon" style="font-size:13px;margin-right:4px"></i><i class="fa-solid fa-sun" style="font-size:13px;margin-right:8px"></i>Éclipse <span style="font-size:13px;color:var(--text-muted);font-weight:400">(tous les 50 subs)</span></div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Le compteur de subs de l'Éclipse se suit depuis la page Modération</div>
-      </div>
-    </div>
-    <div style="padding:6px 0 2px">
-      <div style="font-size:13px;color:var(--text-muted);line-height:1.8">
-        Tous les <strong style="color:var(--gold)">50 subs</strong>, deux joueurs sont tirés au sort, totalement au hasard :
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px">
-        <div style="flex:1;min-width:230px;display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:4px;background:rgba(90,100,130,0.10);border:1px solid #5a6482">
-          <i class="fa-solid fa-moon" style="color:#aab4d0;font-size:17px;margin-top:1px"></i>
-          <div>
-            <div style="font-weight:700;color:#aab4d0;font-size:13px">La Lune — passe dans l'ombre</div>
-            <div style="font-size:11px;color:var(--text-muted);line-height:1.6;margin-top:2px">Une de ses games, tirée au hasard, est <strong>définitivement supprimée</strong>. Les games figées sont protégées.</div>
-          </div>
-        </div>
-        <div style="flex:1;min-width:230px;display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:4px;background:rgba(255,180,70,0.10);border:1px solid var(--gold)">
-          <i class="fa-solid fa-sun" style="color:var(--gold-light);font-size:17px;margin-top:1px"></i>
-          <div>
-            <div style="font-weight:700;color:var(--gold-light);font-size:13px">Le Soleil — récupère la lumière</div>
-            <div style="font-size:11px;color:var(--text-muted);line-height:1.6;margin-top:2px">Il reçoit en <strong>points bonus</strong> le score exact de la game perdue par la Lune.</div>
-          </div>
-        </div>
-      </div>
-      <div style="font-size:11px;color:var(--text-muted);margin-top:12px;line-height:1.7">
-        <i class="fa-solid fa-circle-info" style="color:var(--gold)"></i>
-        Aucun point n'est créé ni perdu pour la ligue : ce que la Lune perd, le Soleil le gagne. Seul le nombre de games de la Lune diminue de 1.
-      </div>
-      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:14px" onclick="openAction('eclipse')"><i class="fa-solid fa-moon" style="margin-right:6px"></i>Déclencher l'éclipse</button>
-    </div>
-  </div>
-
-  <!-- ROUE DE FOLIE -->
+<!-- ROUE DE FOLIE -->
   <div class="roue-section" style="margin-bottom:20px;border-color:rgba(224,90,56,0.3);background:rgba(180,60,40,0.04)">
     <div class="roue-header" style="border-bottom-color:rgba(224,90,56,0.25)">
       <div>
@@ -1990,12 +1836,11 @@ main {
       </div>
     </div>
     <div class="action-list-compact">
-      <div class="action-row" style="border-left:3px solid var(--gold-light)"><div><div class="action-row-name"><i class="fa-solid fa-moon" style="color:var(--gold-light)"></i> Éclipse — tous les 50 subs</div><div style="font-size:11px;color:var(--text-muted)">Deux joueurs sont tirés au sort, totalement au hasard. La Lune perd définitivement une de ses games, tirée au hasard elle aussi (les games figées sont protégées). Le Soleil reçoit en points bonus le score exact de cette game. Aucun point n'est créé ni perdu pour la ligue.</div></div></div>
       <div class="action-row" style="border-left:3px solid var(--gold)"><div><div class="action-row-name"><i class="fa-solid fa-clock" style="color:var(--gold)"></i> Blocage 12h après usage</div><div style="font-size:11px;color:var(--text-muted)">Chaque action de la Roue Communautaire est utilisable une fois toutes les 12h. Dès qu'elle est déclenchée, sa carte est grisée et affiche le temps restant avant sa prochaine disponibilité. Les cooldowns sont indépendants d'une action à l'autre, et ne concernent ni la Roue Perso ni la Roue de Folie.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-star"></i> Meilleure game × 1.5</div><div style="font-size:11px;color:var(--text-muted)">Multiplie le score de la meilleure game de chaque joueur par 1.5</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-circle-plus"></i> Ajout d'une game sup</div><div style="font-size:11px;color:var(--text-muted)">Accorde une game bonus hors limite à tous les joueurs (compteur +1 pour chacun)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-trash-can"></i> Suppression de la pire game</div><div style="font-size:11px;color:var(--text-muted)">Supprime la game avec le score le plus bas de chaque joueur</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-wand-magic-sparkles"></i> 1 Joker pour tous les participants</div><div style="font-size:11px;color:var(--text-muted)">Chaque joueur de la ligue reçoit 1 Joker, qui permet de ne pas compter une game. Les jokers se cumulent avec ceux obtenus via la Roue Perso ou la Roue de Folie : le compteur est visible dans le classement et se décrémente à chaque utilisation.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-wand-magic-sparkles"></i> 1 Joker pour tous les participants</div><div style="font-size:11px;color:var(--text-muted)">Chaque joueur de la ligue reçoit 1 Joker, qui permet de ne pas compter une game. Les jokers se cumulent avec ceux obtenus via la Roue Perso ou la Roue de Folie, dans la limite de <strong>6 jokers par joueur</strong> : le compteur est visible dans le classement et se décrémente à chaque utilisation.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-arrow-right-arrow-left"></i> Échange meilleure ↔ pire (aléatoire)</div><div style="font-size:11px;color:var(--text-muted)">Tire 2 joueurs au hasard — échange la meilleure game de l'un contre la pire de l'autre</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shuffle"></i> Échange 2 games aléatoires</div><div style="font-size:11px;color:var(--text-muted)">Tire 2 joueurs au hasard et échange deux games aléatoires de chacun</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shuffle"></i> Échange 3 games aléatoires</div><div style="font-size:11px;color:var(--text-muted)">Tire 3 joueurs au hasard — leurs games tournent entre eux (A→B→C→A)</div></div></div>
@@ -2034,7 +1879,7 @@ main {
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-arrow-trend-up"></i> +15 pts bonus</div><div style="font-size:11px;color:var(--text-muted)">Ajoute 15 points bonus au joueur de son choix</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-asterisk"></i> Multiplicateur game</div><div style="font-size:11px;color:var(--text-muted)">×1.3 à ×2 appliqué sur les kills de la prochaine game du joueur (les pts de classement ne sont pas multipliés)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-crosshairs"></i> Clone kill du meilleur</div><div style="font-size:11px;color:var(--text-muted)">Crée une nouvelle game avec les kills du meilleur killeur de la game (saisis manuellement), sans top et sans multiplicateur</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-wand-magic-sparkles"></i> Joker</div><div style="font-size:11px;color:var(--text-muted)">Accorde 1 Joker au joueur ciblé, qui s'ajoute à ceux qu'il possède déjà. Un joker permet de ne pas compter une game.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-wand-magic-sparkles"></i> Joker</div><div style="font-size:11px;color:var(--text-muted)">Accorde 1 Joker au joueur ciblé, qui s'ajoute à ceux qu'il possède déjà. Un joker permet de ne pas compter une game. Un joueur ne peut pas dépasser 6 jokers.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-trash-can"></i> Enlève une mauvaise game</div><div style="font-size:11px;color:var(--text-muted)">Retire une game au choix du joueur (pas forcément la pire)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-dice"></i> Enlève une game aléatoire</div><div style="font-size:11px;color:var(--text-muted)">Supprime une game au hasard (la meilleure et la pire sont protégées)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-plus"></i> Game supplémentaire</div><div style="font-size:11px;color:var(--text-muted)">Ajoute un slot de game bonus hors limite globale pour le joueur ciblé</div></div></div>
@@ -2054,7 +1899,7 @@ main {
       <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-gun"></i> Roulette russe</div><div style="font-size:11px;color:var(--text-muted)">6 joueurs sont tirés au sort et placés dans le barillet, une seule balle est chambrée. Le joueur touché perd définitivement sa meilleure game, les 5 autres sont épargnés.</div></div></div>
       <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-arrows-spin"></i> Échange général</div><div style="font-size:11px;color:var(--text-muted)">Tous les joueurs ayant au moins une game entrent dans une chaîne tirée au sort : chacun donne une game au hasard au suivant et en reçoit une du précédent. Le nombre de games de chacun ne change pas.</div></div></div>
       <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-ban"></i> Pire game à 0</div><div style="font-size:11px;color:var(--text-muted)">La pire game de chaque joueur voit son score ramené à 0 pt. La game n'est pas supprimée, elle reste dans le détail mais ne rapporte plus rien — le nombre de games est donc inchangé. Les joueurs dont la pire game vaut déjà 0 ne sont pas touchés.</div></div></div>
-      <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-wand-magic-sparkles"></i> 3 Jokers pour tout le monde</div><div style="font-size:11px;color:var(--text-muted)">Chaque joueur de la ligue reçoit 3 jokers, qui s'ajoutent à ceux qu'il possède déjà. Un joker permet de ne pas compter une game. Le compteur est visible dans le classement et se décrémente à chaque utilisation (3 → 2 → 1 → 0) ; à 0 le badge disparaît.</div></div></div>
+      <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-wand-magic-sparkles"></i> 3 Jokers pour tout le monde</div><div style="font-size:11px;color:var(--text-muted)">Chaque joueur de la ligue reçoit 3 jokers, qui s'ajoutent à ceux qu'il possède déjà, dans la limite de 6 jokers par joueur. Un joker permet de ne pas compter une game. Le compteur est visible dans le classement et se décrémente à chaque utilisation (3 → 2 → 1 → 0) ; à 0 le badge disparaît.</div></div></div>
       <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-life-ring"></i> Meilleure game aux 5 derniers</div><div style="font-size:11px;color:var(--text-muted)">Les 5 derniers du classement voient leur pire game remplacée par un clone de la meilleure game de toute la ligue. La meilleure game est copiée et non déplacée : son propriétaire la garde. Le nombre de games de chacun ne change pas.</div></div></div>
       <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-lock"></i> Chacun fige une game au hasard</div><div style="font-size:11px;color:var(--text-muted)">Chaque joueur de la ligue voit une de ses games tirée au hasard passer en figée : plus supprimable, plus échangeable, plus piquable. Elle reste clonable. Les games déjà figées ne sont pas retirées au sort une seconde fois.</div></div></div>
       <div class="action-row" style="border-left:3px solid var(--rust-light)"><div><div class="action-row-name"><i class="fa-solid fa-divide"></i> Une game au hasard ÷ 2</div><div style="font-size:11px;color:var(--text-muted)">Pour chaque joueur, une game est tirée au hasard et son score est divisé par 2 (arrondi au supérieur). La game n'est pas supprimée, le nombre de games ne change pas. Les games figées sont protégées et ne peuvent pas être tirées.</div></div></div>
@@ -2065,41 +1910,7 @@ main {
 <!-- PAGE MODÉRATION -->
 <div id="page-moderation" class="page">
   <h1 class="section-title" style="margin-bottom:24px">Modération <span>Admin</span></h1>
-
-  <!-- COMPTEUR SUBS ÉCLIPSE -->
-  <div class="roue-section" style="margin-bottom:20px;border-color:rgba(255,180,70,0.35);background:radial-gradient(ellipse at 6% 0%, rgba(255,180,70,0.07) 0%, transparent 65%)">
-    <div class="roue-header" style="border-bottom-color:rgba(255,180,70,0.25)">
-      <div class="roue-title" style="color:var(--gold-light)"><i class="fa-solid fa-moon" style="font-size:13px;margin-right:4px"></i><i class="fa-solid fa-sun" style="font-size:13px;margin-right:8px"></i>Compteur Éclipse <span style="font-size:13px;color:var(--text-muted);font-weight:400">(une éclipse tous les 50 subs)</span></div>
-    </div>
-    <div style="padding:8px 0">
-      <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap">
-        <div style="text-align:center">
-          <div id="mod-eclipse-total" style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:52px;color:var(--gold-light);line-height:1">0</div>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:2px">subs éclipse</div>
-        </div>
-        <div class="ecl-jauge" style="width:72px;height:72px" id="mod-eclipse-jauge">
-          <div class="ecl-jauge-sun"></div>
-          <div class="ecl-jauge-moon"></div>
-        </div>
-        <div style="flex:1;min-width:180px">
-          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:22px;color:var(--gold-light);line-height:1" id="mod-eclipse-frac">0 / 50</div>
-          <div style="font-size:12px;color:var(--text-muted);margin-top:4px" id="mod-eclipse-info">—</div>
-        </div>
-      </div>
-      <label class="form-label">Ajouter des subs à l'Éclipse</label>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <button class="btn btn-gold btn-sm" onclick="addEclipseSubs(1)">+1</button>
-        <button class="btn btn-gold btn-sm" onclick="addEclipseSubs(5)">+5</button>
-        <button class="btn btn-gold btn-sm" onclick="addEclipseSubs(10)">+10</button>
-        <button class="btn btn-gold btn-sm" onclick="addEclipseSubs(25)">+25</button>
-        <button class="btn btn-gold btn-sm" onclick="addEclipseSubs(50)">+50</button>
-        <button class="btn btn-sm" style="color:var(--text-muted)" onclick="addEclipseSubs(-1)">−1</button>
-        <button class="btn btn-sm" style="color:var(--rust-light);border-color:var(--rust)" onclick="resetEclipseSubs()">Réinitialiser</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- COMPTEUR SUBS ROUE COMMU -->
+<!-- COMPTEUR SUBS ROUE COMMU -->
   <div class="roue-section" style="margin-bottom:20px">
     <div class="roue-header">
       <div class="roue-title roue-comm-color"><i class="fa-solid fa-rotate" style="font-size:14px;margin-right:6px"></i>Compteur Roue Communautaire</div>
@@ -2493,8 +2304,7 @@ let state = {
   roueCommu20Paused: 0,  // 1 = en pause, le compteur est figé
   roueCommu20Start: 0,   // subsCount au moment d'activation du mode 20
   roueCommu50Next: 0,    // prochain palier forcé après annulation du mode 20 (0 = pas de forçage)
-  actionCooldowns: {},   // { cléAction: timestamp ms } — blocage 12h après usage (Roue Commu)
-  eclipseSubs: 0         // compteur de subs dédié à l'Éclipse — une éclipse tous les 50
+  actionCooldowns: {}   // { cléAction: timestamp ms } — blocage 12h après usage (Roue Commu)
 };
 
 let currentTop = 0;
@@ -2579,15 +2389,13 @@ async function loadState() {
     // Migration de l'ancien joker binaire : un joueur qui en avait un le retrouve dans son
     // compteur. Idempotent — la clé jokerPlayers est vidée à la prochaine sauvegarde.
     if (state.jokerPlayerIds?.size) {
-      state.players.forEach(p => { if (state.jokerPlayerIds.has(p.id)) p.jokerCount = (p.jokerCount || 0) + 1; });
+      state.players.forEach(p => { if (state.jokerPlayerIds.has(p.id)) p.jokerCount = Math.min(6, (p.jokerCount || 0) + 1); });
       state.jokerPlayerIds = new Set();
     }
     const rouePersoFlag = (flags || []).find(f => f.key === 'rouePersoCounts');
     try { const m = JSON.parse(rouePersoFlag?.value || '{}'); state.players.forEach(p => { p.rouePersoCount = m[p.id] || 0; }); } catch { state.players.forEach(p => { p.rouePersoCount = 0; }); }
     const lockedGamesFlag = (flags || []).find(f => f.key === 'lockedGames');
     try { const ids = new Set(JSON.parse(lockedGamesFlag?.value || '[]')); state.players.forEach(p => p.games.forEach(g => { g.locked = ids.has(g.id); })); } catch { state.players.forEach(p => p.games.forEach(g => { g.locked = false; })); }
-    const eclipseFlag = (flags || []).find(f => f.key === 'eclipseSubs');
-    state.eclipseSubs = parseInt(eclipseFlag?.value || '0') || 0;
     const cooldownsFlag = (flags || []).find(f => f.key === 'actionCooldowns');
     try { state.actionCooldowns = JSON.parse(cooldownsFlag?.value || '{}') || {}; } catch { state.actionCooldowns = {}; }
     // Migration de l'ancien cooldown unique de Meilleure game × 1.5
@@ -2726,7 +2534,6 @@ async function saveState() {
       { key: 'lockedGames', value: JSON.stringify(state.players.flatMap(p => (p.games || []).filter(g => g.locked).map(g => g.id))) },
       { key: 'rouePersoCounts', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.rouePersoCount > 0).map(p => [p.id, p.rouePersoCount]))) },
       { key: 'actionCooldowns', value: JSON.stringify(Object.fromEntries(Object.entries(state.actionCooldowns || {}).filter(([, t]) => t > Date.now()))) },
-      { key: 'eclipseSubs', value: String(state.eclipseSubs || 0) },
       { key: 'bestX15Until', value: '0' }, // LEGACY — remplacé par actionCooldowns
       { key: 'roueCommu20Since', value: String(state.roueCommu20Since || 0) },
       { key: 'roueCommu20Elapsed', value: String(state.roueCommu20Elapsed || 0) },
@@ -3551,6 +3358,17 @@ function cancelJoker(playerId) {
       renderAll();
     }
   );
+}
+
+// Plafond de jokers par joueur : au-delà, les attributions sont sans effet.
+const JOKERS_MAX = 6;
+
+// Accorde des jokers dans la limite du plafond.
+// Renvoie le nombre réellement accordé, qui peut être inférieur au demandé, ou 0.
+function _ajouteJokers(p, n) {
+  const avant = p.jokerCount || 0;
+  p.jokerCount = Math.min(JOKERS_MAX, avant + n);
+  return p.jokerCount - avant;
 }
 
 // Décrémente le compteur de jokers depuis le classement (3 → 2 → 1 → 0).
@@ -5130,38 +4948,6 @@ function doFolieFreezeAll() {
   );
 }
 
-// ============================================================
-// ÉCLIPSE — une éclipse due tous les 50 subs
-// ============================================================
-const ECLIPSE_PALIER = 50;
-let _eclipse = null, _eclipseGen = 0;
-
-// Compteur de subs dédié à l'Éclipse : une éclipse à chaque palier de 50.
-function _eclipseEtat() {
-  const subs = state.eclipseSubs || 0;
-  const paliers = Math.floor(subs / ECLIPSE_PALIER);
-  const prochain = (paliers + 1) * ECLIPSE_PALIER;
-  return { subs, paliers, prochain, restant: prochain - subs, pct: Math.round((subs % ECLIPSE_PALIER) / ECLIPSE_PALIER * 100) };
-}
-
-function addEclipseSubs(n) {
-  state.eclipseSubs = Math.max(0, (state.eclipseSubs || 0) + n);
-  const e = _eclipseEtat();
-  saveState();
-  renderEclipsePanel();
-  toast(n > 0
-    ? `+${n} sub${n > 1 ? 's' : ''} — prochaine éclipse dans ${e.restant} sub${e.restant > 1 ? 's' : ''}.`
-    : `Compteur éclipse : ${e.subs} subs.`, 'gold');
-}
-
-function resetEclipseSubs() {
-  showConfirm('Réinitialiser le compteur', 'Remettre le compteur de subs de l\'Éclipse à 0 ?', () => {
-    state.eclipseSubs = 0;
-    saveState();
-    renderEclipsePanel();
-    toast('Compteur éclipse remis à 0.', 'info');
-  }, true, 'Réinitialiser');
-}
 
 // Pastilles de paliers : on n'affiche que les 3 derniers franchis, sinon la ligne
 // devient illisible (à 1460 subs la Roue Commu en alignait 29). Les précédents sont
@@ -5175,126 +4961,6 @@ function _pastillesPaliers(franchis, prochain, pill) {
     + pill(`→ ${prochain}`, false);
 }
 
-// Positionne la lune sur une jauge : entièrement à gauche à 0 %, pile devant le
-// soleil à 100 %. Le décalage est proportionnel à la taille de la jauge.
-function _majJauge(id, pct) {
-  const j = document.getElementById(id);
-  const moon = j?.querySelector('.ecl-jauge-moon');
-  if (!moon) return;
-  const largeur = j.offsetWidth || parseInt(j.style.width) || 46;
-  moon.style.transform = `translateX(${-Math.round((1 - pct / 100) * (largeur + 6))}px)`;
-}
-
-function renderEclipsePanel() {
-  const e = _eclipseEtat();
-  const dansPalier = e.subs % ECLIPSE_PALIER;
-
-  // Bandeau du classement
-  const eb = document.getElementById('eclipse-banner');
-  if (eb) {
-    eb.style.display = 'block';
-    document.getElementById('eclipse-banner-count').textContent = `${dansPalier} / ${ECLIPSE_PALIER}`;
-    document.getElementById('eclipse-banner-text').innerHTML =
-      `Prochaine éclipse au palier <strong style="color:var(--gold-light)">${e.prochain}</strong> — encore ${e.restant} sub${e.restant > 1 ? 's' : ''}` +
-      (e.paliers > 0 ? ` · ${e.paliers} déjà franchi${e.paliers > 1 ? 's' : ''}` : '');
-    _majJauge('eclipse-banner-jauge', e.pct);
-    const em = document.getElementById('eclipse-banner-milestones');
-    if (em) {
-      const pill = (label, on) => `<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:3px;line-height:1.6;${on ? 'background:rgba(255,180,70,0.15);color:var(--gold-light);border:1px solid rgba(255,180,70,0.5)' : 'background:var(--bg2);color:var(--text-muted);border:1px dashed var(--border)'}">${label}</span>`;
-      const franchis = Array.from({ length: e.paliers }, (_, i) => (i + 1) * ECLIPSE_PALIER);
-      em.innerHTML = _pastillesPaliers(franchis, e.prochain, pill);
-    }
-  }
-
-  // Cadre de la page Modération
-  const total = document.getElementById('mod-eclipse-total');
-  const frac = document.getElementById('mod-eclipse-frac');
-  const info = document.getElementById('mod-eclipse-info');
-  if (total) total.textContent = e.subs;
-  if (frac) frac.textContent = `${dansPalier} / ${ECLIPSE_PALIER}`;
-  _majJauge('mod-eclipse-jauge', e.pct);
-  if (info) info.innerHTML = `Prochaine éclipse dans <strong style="color:var(--gold-light)">${e.restant} sub${e.restant > 1 ? 's' : ''}</strong> — au palier ${e.prochain}` +
-    (e.paliers > 0 ? ` · ${e.paliers} palier${e.paliers > 1 ? 's' : ''} franchi${e.paliers > 1 ? 's' : ''}` : '');
-}
-
-function doEclipse() {
-  // La Lune doit avoir une game cessible : une game figée ne peut pas être supprimée
-  const poolLune = state.players.filter(p => movableGames(p).length > 0);
-  if (!poolLune.length) { toast('Aucun joueur avec une game supprimable.', 'error'); return; }
-  if (state.players.length < 2) { toast('Il faut au moins 2 joueurs.', 'error'); return; }
-  const lune = poolLune[Math.floor(Math.random() * poolLune.length)];
-  const poolSoleil = state.players.filter(p => p.id !== lune.id);
-  const soleil = poolSoleil[Math.floor(Math.random() * poolSoleil.length)];
-  const mv = movableGames(lune);
-  const game = mv[Math.floor(Math.random() * mv.length)];
-  const num = [...lune.games].sort((a, b) => b.score - a.score).findIndex(g => g.id === game.id) + 1;
-  _eclipse = { lune, soleil, game, num, gen: ++_eclipseGen };
-
-  // Aucun nom dans la confirmation : le tirage ne doit se révéler qu'à la totalité.
-  showConfirm('Lancer l\'éclipse',
-    'Deux joueurs vont être tirés au sort. La <strong>Lune</strong> perdra <strong>définitivement</strong> une de ses games, et le <strong>Soleil</strong> en récupérera les points.<br><br>Le résultat se révèle à la totalité. Irréversible.',
-    () => {
-      const gen = _eclipse.gen;
-      const actions = document.getElementById('ecl-actions');
-      if (actions) actions.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:12px;padding:8px">La Lune avance devant le Soleil…</div>';
-      renderEclipseScene(() => { if (_eclipse && _eclipse.gen === gen) eclipseTotalite(); });
-    }, true, 'Lancer');
-}
-
-function renderEclipseScene(onTotalite) {
-  const el = document.getElementById('ecl-stage');
-  if (!el || !_eclipse) return;
-  el.innerHTML = `
-    <div class="ecl-scene transit" id="ecl-scene">
-      <div class="ecl-disc" id="ecl-disc">
-        <div class="ecl-corona"></div>
-        <div class="ecl-sun"></div>
-        <div class="ecl-moon" id="ecl-moon"></div>
-        <div class="ecl-diamant"></div>
-      </div>
-      <div class="ecl-legende" id="ecl-legende">La Lune passe devant le Soleil…</div>
-    </div>
-    <div id="ecl-resultat"></div>`;
-  // La lune part hors cadre, puis on déclenche le transit à la frame suivante :
-  // sans ce délai, le navigateur applique directement l'état final sans transition.
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    const moon = document.getElementById('ecl-moon');
-    if (!moon) return;
-    moon.classList.add('avance');
-    // La totalité suit la durée réelle du transit, qui est raccourcie si
-    // l'utilisateur a désactivé les animations système.
-    const duree = parseFloat(getComputedStyle(moon).transitionDuration) || 5;
-    if (onTotalite) setTimeout(onTotalite, duree * 1000 + 700);
-  }));
-}
-
-function eclipseTotalite() {
-  const { lune, soleil, game, num } = _eclipse;
-  document.getElementById('ecl-scene')?.classList.add('totale');
-  document.getElementById('ecl-disc')?.classList.add('totale');
-  const leg = document.getElementById('ecl-legende');
-  if (leg) { leg.textContent = 'Totalité'; leg.classList.add('totale'); }
-
-  // Application : la game disparaît, ses points partent en bonus chez le Soleil
-  const pts = game.score;
-  lune.games = lune.games.filter(g => g.id !== game.id);
-  soleil.bonusPoints = (soleil.bonusPoints || 0) + pts;
-
-  const res = document.getElementById('ecl-resultat');
-  if (res) res.innerHTML = `
-    <div class="ecl-resultat">
-      <div class="ecl-carte ecl-lune"><i class="fa-solid fa-moon"></i><div><strong>${escHtml(lune.name)}</strong> — game #${num} supprimée<br><span style="opacity:.8">−${pts} pts · ${lune.games.length} game${lune.games.length > 1 ? 's' : ''} restante${lune.games.length > 1 ? 's' : ''}</span></div></div>
-      <div class="ecl-carte ecl-soleil"><i class="fa-solid fa-sun"></i><div><strong>${escHtml(soleil.name)}</strong> — la lumière lui revient<br><span style="opacity:.8">+${pts} pts de bonus</span></div></div>
-    </div>`;
-
-  addLog(`Éclipse : <strong>${lune.name}</strong> perd sa game de ${pts} pts, <strong>${soleil.name}</strong> récupère ${pts} pts de bonus.`, 'gold', 'moon', true);
-  toast(`Éclipse — ${pts} pts transférés de ${lune.name} à ${soleil.name} !`, 'gold');
-  saveState();
-  renderAll();
-  renderEclipsePanel();
-  const actions = document.getElementById('ecl-actions');
-  if (actions) actions.innerHTML = `<button class="btn" style="width:100%;justify-content:center" onclick="closeModal('modal-action')">Fermer</button>`;
-}
 
 // ============================================================
 // ROUE DE FOLIE — Roulette russe
@@ -5442,7 +5108,6 @@ function openAction(type) {
     'comm-freeze-rand': '3 joueurs figent une game au hasard',
     'comm-vol-score-2': 'Vol de score — 2 places au-dessus',
     'comm-rand-x2-trio': 'Game aléatoire × 2 — 3 joueurs',
-    'eclipse': 'Éclipse',
     'comm-echange-top10': 'Échange de games entre les 10 premiers',
     'comm-echange-flooozii': 'Échange avec FloooZii',
     'comm-clone-flooozii': 'Meilleure game de FloooZii clonée',
@@ -5508,12 +5173,14 @@ function buildActionBody(type) {
     case 'joker-game': {
       const nb = state.players.length;
       const deja = state.players.filter(p => p.jokerCount > 0).length;
+      const auPlafond = state.players.filter(p => (p.jokerCount || 0) >= JOKERS_MAX).length;
       return `
       <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px"><strong style="color:var(--gold)">Chaque participant</strong> de la ligue reçoit <strong style="color:var(--gold)">1 Joker</strong>. Un joker permet de ne pas compter une game.<br>
-      Les jokers <strong>se cumulent</strong> : celui-ci s'ajoute à ceux déjà obtenus via la Roue Perso ou la Roue de Folie.</p>
+      Les jokers <strong>se cumulent</strong> : celui-ci s'ajoute à ceux déjà obtenus via la Roue Perso ou la Roue de Folie, dans la limite de <strong>${JOKERS_MAX} jokers</strong> par joueur.</p>
       <div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.8;margin-bottom:14px">
-        <strong>${nb} joueur${nb > 1 ? 's' : ''}</strong> recevront 1 Joker chacun
+        <strong>${nb - auPlafond} joueur${nb - auPlafond > 1 ? 's' : ''}</strong> recevront 1 Joker
         ${deja ? `<br><span style="color:var(--text-muted)">${deja} joueur${deja > 1 ? 's en ont' : ' en a'} déjà — le nouveau s'ajoute à leur compteur</span>` : ''}
+        ${auPlafond ? `<br><span style="color:var(--rust-light)">${auPlafond} joueur${auPlafond > 1 ? 's sont' : ' est'} au plafond de ${JOKERS_MAX} et ne recevr${auPlafond > 1 ? 'ont' : 'a'} rien</span>` : ''}
       </div>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="execAction()"><i class="fa-solid fa-wand-magic-sparkles" style="margin-right:6px"></i>Offrir 1 Joker à tout le monde</button>`;
     }
@@ -5677,9 +5344,10 @@ function buildActionBody(type) {
       const dejaAvecJokers = state.players.filter(p => p.jokerCount > 0).length;
       return `
       <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px"><strong style="color:var(--rust-light)">Chaque joueur</strong> de la ligue reçoit <strong style="color:var(--gold)">3 jokers</strong>. Un joker permet de <strong>ne pas compter une game</strong>.<br>
-      Le compteur s'affiche dans le classement et se décrémente d'un clic sur le <strong>−</strong> : 3 → 2 → 1 → 0. À 0, le badge disparaît.</p>
+      Le compteur s'affiche dans le classement et se décrémente d'un clic sur le <strong>−</strong> : 3 → 2 → 1 → 0. À 0, le badge disparaît.<br>
+      Un joueur ne peut pas dépasser <strong>${JOKERS_MAX} jokers</strong> : au-delà, le surplus est perdu.</p>
       <div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.8;margin-bottom:14px">
-        <strong>${nb} joueur${nb > 1 ? 's' : ''}</strong> recevront 3 jokers chacun
+        <strong>${state.players.reduce((s, p) => s + Math.min(3, JOKERS_MAX - (p.jokerCount || 0)), 0)} jokers</strong> seront réellement distribués sur ${nb * 3} possibles
         ${dejaAvecJokers ? `<br><span style="color:var(--text-muted)">${dejaAvecJokers} joueur${dejaAvecJokers > 1 ? 's ont' : ' a'} déjà des jokers — les 3 nouveaux s'ajoutent à leur compteur</span>` : ''}
       </div>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center;background:var(--rust);border-color:var(--rust)" onclick="execAction()"><i class="fa-solid fa-wand-magic-sparkles" style="margin-right:6px"></i>Donner 3 jokers à tout le monde</button>`;
@@ -5744,22 +5412,6 @@ function buildActionBody(type) {
       <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px"><strong style="color:var(--gold)">3 joueurs sont tirés au sort</strong> parmi ceux ayant des games. Pour chacun, une game est tirée au hasard et voit son score <strong style="color:var(--gold)">multiplié par 2</strong>.</p>
       <div id="action-rand-x2-trio-preview" style="margin-bottom:12px"></div>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCommRandX2Trio()"><i class="fa-solid fa-dice-three" style="margin-right:6px"></i>Tirer au sort & × 2</button>`;
-
-    case 'eclipse': {
-      const e = _eclipseEtat();
-      return `
-      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">Deux joueurs sont tirés au sort, <strong>totalement au hasard</strong>.<br>
-      🌑 <strong style="color:#aab4d0">La Lune</strong> perd définitivement une de ses games, tirée au hasard.<br>
-      ☀️ <strong style="color:var(--gold-light)">Le Soleil</strong> reçoit en points bonus le score exact de cette game.<br>
-      <span style="color:var(--text-muted)">Aucun point n'est créé ni perdu pour la ligue. Les games figées sont protégées.</span></p>
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:10px 12px;font-size:12px;color:var(--text-muted);margin-bottom:12px">
-        Compteur éclipse : <strong style="color:var(--gold-light)">${e.subs} subs</strong> · prochain palier à <strong>${e.prochain}</strong>, dans ${e.restant} sub${e.restant > 1 ? 's' : ''}
-      </div>
-      <div id="ecl-stage" style="margin-bottom:12px"></div>
-      <div id="ecl-actions">
-        <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doEclipse()"><i class="fa-solid fa-moon" style="margin-right:6px"></i>Déclencher l'éclipse</button>
-      </div>`;
-    }
 
     default: return '<p>Action inconnue.</p>';
   }
@@ -5846,9 +5498,11 @@ function execAction() {
     }
     case 'joker-game': {
       if (!state.players.length) { toast('Aucun joueur dans la ligue.', 'error'); return; }
-      state.players.forEach(p => { p.jokerCount = (p.jokerCount || 0) + 1; });
-      addLog(`Roue Commu — <strong>1 Joker</strong> offert à tous les participants (${state.players.length} joueurs).`, 'gold', 'wand-magic-sparkles', true);
-      toast(`1 Joker pour tout le monde — ${state.players.length} joueurs servis !`, 'gold');
+      let servis = 0, satures = 0;
+      state.players.forEach(p => { _ajouteJokers(p, 1) ? servis++ : satures++; });
+      if (!servis) { toast(`Tout le monde est déjà au plafond de ${JOKERS_MAX} jokers.`, 'error'); return; }
+      addLog(`Roue Commu — <strong>1 Joker</strong> offert à tous les participants (${servis} joueur${servis > 1 ? 's' : ''} servi${servis > 1 ? 's' : ''}${satures ? `, ${satures} déjà au plafond` : ''}).`, 'gold', 'wand-magic-sparkles', true);
+      toast(`1 Joker pour tout le monde — ${servis} joueur${servis > 1 ? 's' : ''} servi${servis > 1 ? 's' : ''}${satures ? `, ${satures} au plafond` : ''} !`, 'gold');
       break;
     }
     case 'clone-best-worst': doCloneBestWorst(); return;
@@ -5902,8 +5556,8 @@ function execAction() {
     case 'perso-joker': {
       const p = getP('p1');
       if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
-      // Les jokers se cumulent : celui-ci s'ajoute à ceux déjà obtenus ailleurs
-      p.jokerCount = (p.jokerCount || 0) + 1;
+      // Les jokers se cumulent, dans la limite du plafond
+      if (!_ajouteJokers(p, 1)) { toast(`${p.name} a déjà le maximum de ${JOKERS_MAX} jokers.`, 'error'); return; }
       addLog(`<strong>${p.name}</strong> — Joker accordé (${p.jokerCount} au total).`, 'gold', 'wand-magic-sparkles', true);
       toast(`Joker accordé à ${p.name} — il en a ${p.jokerCount} !`, 'gold');
       break;
@@ -5990,9 +5644,15 @@ function execAction() {
     case 'comm-rand-x2': doCommRandX2(); return;
     case 'folie-jokers3': {
       if (!state.players.length) { toast('Aucun joueur dans la ligue.', 'error'); return; }
-      state.players.forEach(p => { p.jokerCount = (p.jokerCount || 0) + 3; });
-      addLog(`Roue de Folie — <strong>3 jokers</strong> accordés à tous les joueurs (${state.players.length} joueurs).`, 'rust', 'wand-magic-sparkles', true);
-      toast(`3 jokers pour tout le monde — ${state.players.length} joueurs servis !`, 'gold');
+      let totalDonnes = 0, plafonnes = 0;
+      state.players.forEach(p => {
+        const donnes = _ajouteJokers(p, 3);
+        totalDonnes += donnes;
+        if (donnes < 3) plafonnes++;
+      });
+      if (!totalDonnes) { toast(`Tout le monde est déjà au plafond de ${JOKERS_MAX} jokers.`, 'error'); return; }
+      addLog(`Roue de Folie — <strong>${totalDonnes} jokers</strong> distribués${plafonnes ? ` (${plafonnes} joueur${plafonnes > 1 ? 's ont' : ' a'} atteint le plafond de ${JOKERS_MAX})` : ''}.`, 'rust', 'wand-magic-sparkles', true);
+      toast(`${totalDonnes} jokers distribués${plafonnes ? ` — ${plafonnes} au plafond` : ''} !`, 'gold');
       break;
     }
     case 'comm-roue-20subs': {
@@ -6265,7 +5925,6 @@ function renderSubsBanner() {
       : '';
   }
 
-  renderEclipsePanel();
 
   // Milestones recap in modération
   const milestonesEl = document.getElementById('mod-subs-milestones');
