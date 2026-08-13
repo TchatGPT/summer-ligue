@@ -1064,12 +1064,12 @@ main {
     <h1 class="section-title">Classement <span>Général</span></h1>
     <div class="badge" id="badge-games-count">0 joueurs</div>
     <div style="margin-left:auto;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:8px 16px;text-align:right;line-height:1.6">
-      <div style="font-size:11px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase">Finale</div>
+      <div style="font-size:11px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase">Ligue jusqu'au <span style="color:var(--gold)">30 septembre</span></div>
       <div style="font-size:14px;font-family:'Barlow Condensed',sans-serif;font-weight:700">
         <i class="fa-solid fa-trophy" style="color:#ffd700"></i>
         <i class="fa-solid fa-medal" style="color:#c0c0c0"></i>
         <i class="fa-solid fa-medal" style="color:#cd7f32"></i>
-        <span style="color:var(--gold);margin-left:4px">TOP 6</span> — session de 3h
+        <span style="color:var(--gold);margin-left:4px">TOP 6</span> en finale — session de 3h
       </div>
     </div>
   </div>
@@ -1746,7 +1746,7 @@ main {
       </div>
       <div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:10px 14px;margin-top:12px;font-size:12px;color:var(--text-muted);line-height:1.7">
         <i class="fa-solid fa-circle-info" style="color:var(--gold);margin-right:4px"></i>
-        Coupe et médailles sont attribuées à la clôture officielle de la Summer Ligue, selon le classement général final.
+        Coupe et médailles sont attribuées à la clôture officielle de la Summer Ligue, le <strong style="color:var(--gold)">30 septembre</strong>, selon le classement général final.
         Le <strong style="color:var(--blue)">tirage au sort de la GoXLR Mini</strong> a lieu à la fin de la Summer Ligue : aucune inscription à faire, participer suffit.
       </div>
     </div>
@@ -1772,7 +1772,11 @@ main {
         <div><div class="action-row-name"><i class="fa-solid fa-forward-step"></i> Skip</div><div style="font-size:11px;color:var(--text-muted)">Si skip activé, la prochaine game saisie est ignorée (ne compte pas)</div></div>
       </div>
       <div class="action-row" style="border-left:3px solid var(--gold)">
-        <div><div class="action-row-name"><i class="fa-solid fa-trophy" style="color:var(--gold)"></i> Finale</div><div style="font-size:11px;color:var(--text-muted)">Les 6 premiers du classement général se qualifient pour la finale — session de 3h</div></div>
+        <div><div class="action-row-name"><i class="fa-solid fa-calendar-days" style="color:var(--gold)"></i> Durée de la ligue</div><div style="font-size:11px;color:var(--text-muted)">La Summer Ligue court jusqu'au 30 septembre. Le classement est figé à cette date, et c'est lui qui détermine les qualifiés pour la finale ainsi que l'attribution des récompenses.</div></div>
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--gold);white-space:nowrap">30 SEPT.</span>
+      </div>
+      <div class="action-row" style="border-left:3px solid var(--gold)">
+        <div><div class="action-row-name"><i class="fa-solid fa-trophy" style="color:var(--gold)"></i> Finale</div><div style="font-size:11px;color:var(--text-muted)">Les 6 premiers du classement général au 30 septembre se qualifient pour la finale — session de 3h. Dans le classement, les qualifiés sont repérables à leur liseré doré, et un trait sépare le 6ᵉ du reste de la ligue.</div></div>
         <span style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--gold);white-space:nowrap">TOP 6</span>
       </div>
     </div>
@@ -2752,12 +2756,21 @@ function renderClassement() {
     const totalKills = p.games.reduce((s, g) => s + g.kills, 0);
     const rank = i + 1;
     const rankClass = rank <= 3 ? `rank-${rank}` : '';
-    const rowBg = rank === 1 ? 'background:rgba(255,215,0,0.06);box-shadow:inset 4px 0 0 #ffd700' : rank === 2 ? 'background:rgba(192,192,192,0.04);box-shadow:inset 4px 0 0 #c0c0c0' : rank === 3 ? 'background:rgba(205,127,50,0.04);box-shadow:inset 4px 0 0 #cd7f32' : '';
+    // Podium en métal, places 4 à 6 en doré atténué : qualifiées pour la finale sans
+    // voler la vedette au podium. Un trait sous la 6e marque la ligne de qualification.
+    const styles = [
+      rank === 1 ? 'background:rgba(255,215,0,0.06);box-shadow:inset 4px 0 0 #ffd700'
+        : rank === 2 ? 'background:rgba(192,192,192,0.04);box-shadow:inset 4px 0 0 #c0c0c0'
+        : rank === 3 ? 'background:rgba(205,127,50,0.04);box-shadow:inset 4px 0 0 #cd7f32'
+        : rank <= QUALIF_FINALE ? 'background:rgba(212,175,55,0.03);box-shadow:inset 4px 0 0 rgba(212,175,55,0.5)' : '',
+      rank === QUALIF_FINALE && sorted.length > QUALIF_FINALE ? 'border-bottom:2px solid rgba(212,175,55,0.5)' : ''
+    ].filter(Boolean).join(';');
 
-    return `<tr style="${rowBg}">
+    return `<tr style="${styles}">
       <td class="rank-num ${rankClass}" style="text-align:center">
         ${rankIcons[rank] || rank}
         ${rank <= 3 ? `<div style="font-size:11px;margin-top:2px">${rank}</div>` : ''}
+        ${rank > 3 && rank <= QUALIF_FINALE ? `<div style="font-size:9px;margin-top:3px;color:var(--gold);font-weight:700;letter-spacing:0.5px">FINALE</div>` : ''}
       </td>
       <td>
         <div class="player-name">${escHtml(p.name)}</div>
@@ -3368,6 +3381,10 @@ const JOKERS_MAX = 6;
 
 // Nombre de games minimum pour que la meilleure game d'un joueur puisse être figée.
 const FREEZE_MIN_GAMES = 30;
+
+// Nombre de qualifiés pour la finale, marqués dans le classement par un liseré doré
+// et un trait de séparation sous le dernier qualifié.
+const QUALIF_FINALE = 6;
 
 // Accorde des jokers dans la limite du plafond.
 // Renvoie le nombre réellement accordé, qui peut être inférieur au demandé, ou 0.
