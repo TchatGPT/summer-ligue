@@ -4833,6 +4833,22 @@ function _poolDivisible(p) {
   return movableGames(p).filter(g => g.score > 0 && !_dejaMultRoue(g));
 }
 
+// Détaille pourquoi un joueur n'a aucune game divisible. Chaque game est classée par la
+// première raison qui la disqualifie, pour que le total colle au nombre de ses games.
+function _raisonNonDivisible(p) {
+  let figees = 0, zero = 0, transformees = 0;
+  (p.games || []).forEach(g => {
+    if (g.locked) figees++;
+    else if (g.score <= 0) zero++;
+    else if (_dejaMultRoue(g)) transformees++;
+  });
+  const bouts = [];
+  if (transformees) bouts.push(`${transformees} déjà transformée${transformees > 1 ? 's' : ''} par une roue`);
+  if (figees) bouts.push(`${figees} figée${figees > 1 ? 's' : ''}`);
+  if (zero) bouts.push(`${zero} à 0`);
+  return bouts.join(' · ');
+}
+
 function doFolieHalfRand() {
   const eligible = state.players.filter(p => _poolDivisible(p).length);
   if (!eligible.length) { toast('Aucune game divisible : toutes sont à 0, figées ou déjà transformées par une roue.', 'error'); return; }
@@ -4840,11 +4856,18 @@ function doFolieHalfRand() {
     const pool = _poolDivisible(p);
     return { p, g: pool[Math.floor(Math.random() * pool.length)] };
   });
-  const intouchables = state.players.filter(p => p.games.length && !_poolDivisible(p).length).length;
+  // Un joueur sans aucune game ne compte ni parmi les touchés, ni parmi les épargnés
+  const epargnes = state.players.filter(p => p.games.length && !_poolDivisible(p).length);
   const totalPerdu = picks.reduce((s, x) => s + (x.g.score - Math.ceil(x.g.score / 2)), 0);
   const el = document.getElementById('action-half-rand-preview');
   const lignes = picks.map(x => `<strong>${escHtml(x.p.name)}</strong> — game <span style="color:var(--text-muted)">${x.g.score}</span> → <span style="color:var(--rust-light)">${Math.ceil(x.g.score / 2)} pts</span>`).join('<br>');
-  const desc = `<strong>${picks.length} joueur${picks.length > 1 ? 's' : ''}</strong> touché${picks.length > 1 ? 's' : ''} · <strong style="color:var(--rust-light)">−${totalPerdu} pts</strong> au total<br><br>${lignes}${intouchables ? `<br><br><span style="color:var(--text-muted)">${intouchables} joueur${intouchables > 1 ? 's épargnés' : ' épargné'} — plus aucune game vierge de roue</span>` : ''}`;
+  const lignesEpargnes = epargnes.slice(0, 12).map(p =>
+    `<strong>${escHtml(p.name)}</strong> — <span style="color:var(--text-muted)">${_raisonNonDivisible(p)}</span>`).join('<br>');
+  const blocEpargnes = epargnes.length
+    ? `<br><br><span style="color:var(--text-muted)">${epargnes.length} joueur${epargnes.length > 1 ? 's épargnés' : ' épargné'} — aucune game divisible :</span><br>${lignesEpargnes}`
+      + (epargnes.length > 12 ? `<br><span style="color:var(--text-muted)">… et ${epargnes.length - 12} autre${epargnes.length - 12 > 1 ? 's' : ''}</span>` : '')
+    : '';
+  const desc = `<strong>${picks.length} joueur${picks.length > 1 ? 's' : ''}</strong> touché${picks.length > 1 ? 's' : ''} · <strong style="color:var(--rust-light)">−${totalPerdu} pts</strong> au total<br><br>${lignes}${blocEpargnes}`;
   if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.9;max-height:280px;overflow-y:auto">${desc}</div>`;
   showConfirm('Confirmer la division', desc,
     () => {
