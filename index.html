@@ -1430,7 +1430,7 @@ main {
         <div class="ac-bg"><i class="fa-solid fa-star"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-star"></i></div>
         <div class="ac-title">Meilleure game × 1.5</div>
-        <div class="ac-desc">Multiplie le score de la meilleure game de chaque joueur par 1.5</div>
+        <div class="ac-desc">Multiplie par 1.5 la meilleure game non figée de chaque joueur — une seule fois par game</div>
       </div>
 
       <div class="action-card action-card-gold" onclick="openAction('add-bonus-game')">
@@ -1788,7 +1788,7 @@ main {
     </div>
     <div class="action-list-compact">
       <div class="action-row" style="border-left:3px solid var(--gold)"><div><div class="action-row-name"><i class="fa-solid fa-clock" style="color:var(--gold)"></i> Blocage 12h après usage</div><div style="font-size:11px;color:var(--text-muted)">Chaque action de la Roue Communautaire est utilisable une fois toutes les 12h. Dès qu'elle est déclenchée, sa carte est grisée et affiche le temps restant avant sa prochaine disponibilité. Les cooldowns sont indépendants d'une action à l'autre, et ne concernent ni la Roue Perso ni la Roue de Folie.</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-star"></i> Meilleure game × 1.5</div><div style="font-size:11px;color:var(--text-muted)">Multiplie le score de la meilleure game de chaque joueur par 1.5. Une game ne peut être transformée qu'une seule fois par une roue : si la meilleure game d'un joueur l'a déjà été, le bonus descend sur sa 2ᵉ meilleure, puis la 3ᵉ, et ainsi de suite jusqu'à en trouver une encore vierge.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-star"></i> Meilleure game × 1.5</div><div style="font-size:11px;color:var(--text-muted)">Multiplie le score de la meilleure game de chaque joueur par 1.5. Deux garde-fous : une game ne peut être modifiée qu'une seule fois par une roue, et une game figée est intouchable. Si la meilleure game d'un joueur est dans l'un de ces deux cas, le bonus descend sur sa 2ᵉ meilleure, puis la 3ᵉ, et ainsi de suite jusqu'à en trouver une éligible.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-circle-plus"></i> Ajout d'une game sup</div><div style="font-size:11px;color:var(--text-muted)">Accorde une game bonus hors limite à tous les joueurs (compteur +1 pour chacun)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-trash-can"></i> Suppression de la pire game</div><div style="font-size:11px;color:var(--text-muted)">Supprime la game avec le score le plus bas de chaque joueur</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-arrow-right-arrow-left"></i> Échange meilleure ↔ pire (aléatoire)</div><div style="font-size:11px;color:var(--text-muted)">Tire 2 joueurs au hasard — échange la meilleure game de l'un contre la pire de l'autre</div></div></div>
@@ -1799,8 +1799,8 @@ main {
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-crown"></i> +5 pts par Top 1</div><div style="font-size:11px;color:var(--text-muted)">+5 pts de bonus par nouveau Top 1 depuis la dernière application (tous joueurs)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-angles-up"></i> Pire game × 2</div><div style="font-size:11px;color:var(--text-muted)">Double le score de la pire game de chaque joueur. Une game ne peut être transformée qu'une seule fois par une roue : si la pire game d'un joueur l'a déjà été, le bonus remonte sur sa 2ᵉ pire, puis la 3ᵉ, et ainsi de suite. Les games figées sont protégées.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-user-secret"></i> Vol de score</div><div style="font-size:11px;color:var(--text-muted)">Un joueur tiré au sort copie le score total du joueur juste au-dessus de lui au classement. Celui du dessus garde son score, il ne perd rien. Les games et leur nombre ne changent pas</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-dice-three"></i> Game aléatoire × 2 — 3 joueurs</div><div style="font-size:11px;color:var(--text-muted)">3 joueurs sont tirés au sort et, pour chacun, une game au hasard voit son score doublé. Le tirage ne porte que sur les games encore vierges de toute roue : une game déjà ×1.5, ×2, ÷2 ou mise à 0 ne peut pas être retouchée.</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-lock"></i> 3 joueurs figent leur meilleure game</div><div style="font-size:11px;color:var(--text-muted)">Réservé aux joueurs ayant joué au moins 30 games. 3 d'entre eux sont tirés au sort et leur meilleure game est figée : elle ne peut plus être supprimée, échangée ni piquée par aucune action de roue. Elle reste clonable — un autre joueur peut en recevoir une copie. Le gel est indiqué dans le détail des games du joueur. Règle commune à tous les gels : la pire game d'un joueur ne peut jamais être figée, pour qu'il puisse toujours s'en débarrasser.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-dice-three"></i> Game aléatoire × 2 — 3 joueurs</div><div style="font-size:11px;color:var(--text-muted)">3 joueurs sont tirés au sort et, pour chacun, une game au hasard voit son score doublé. Le tirage ne porte que sur les games libres encore vierges de toute roue : une game figée, ou déjà ×1.5, ×2, ÷2 ou mise à 0, ne peut pas être tirée.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-lock"></i> 3 joueurs figent leur meilleure game</div><div style="font-size:11px;color:var(--text-muted)">Réservé aux joueurs ayant joué au moins 30 games. 3 d'entre eux sont tirés au sort et leur meilleure game est figée. <strong>Une game figée est totalement intouchable</strong> : elle ne peut plus être supprimée, échangée ni piquée, et aucune roue ne peut plus modifier son score — ni un bonus comme le ×1.5 ou le ×2, ni un malus comme le ÷2 ou la mise à 0. Seule exception : elle reste clonable, et le clone reçu par l'autre joueur n'est pas figé. Le gel est indiqué dans le détail des games du joueur. Règle commune à tous les gels : la pire game d'un joueur ne peut jamais être figée, pour qu'il puisse toujours s'en débarrasser.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-dice"></i> 3 joueurs figent une game au hasard</div><div style="font-size:11px;color:var(--text-muted)">3 joueurs sont tirés au sort et une de leurs games est figée au hasard, ni la meilleure ni la pire — uniquement une game intermédiaire. Un joueur avec 2 games ou moins n'est pas concerné.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-ranking-star"></i> Échange de games entre les 10 premiers</div><div style="font-size:11px;color:var(--text-muted)">Les 10 premiers du classement échangent une game en chaîne entre eux, dans un ordre tiré au sort. La game échangée n'est ni la meilleure ni la pire de son propriétaire. Chacun donne une game et en reçoit une : le nombre de games ne change pas et aucun point n'est créé ni perdu.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-right-left"></i> Échange avec FloooZii</div><div style="font-size:11px;color:var(--text-muted)">Un joueur est tiré au sort et échange une de ses games au hasard contre une game au hasard de FloooZii. Chacun donne une game et en reçoit une : le nombre de games ne change pas et aucun point n'est créé ni perdu.</div></div></div>
@@ -2550,7 +2550,8 @@ function getWorstMovable(player) {
 //   Roue de Folie — ÷2 sur une game au hasard, pire game mise à 0
 // Jamais deux fois la même, jamais deux différentes. Les multiplicateurs de la Roue
 // Perso ne comptent pas : une game déjà ×1.4 par la Roue Perso reste éligible.
-// Le gel n'est pas une modification de score : une game figée peut encore être visée.
+// Une game figée est totalement intouchable : ni bonus, ni malus, ni déplacement. Les
+// cinq actions passent donc par movableGames() avant de chercher une cible.
 // La note fait foi car elle est stockée en base : les games modifiées avant cette règle
 // sont donc reconnues elles aussi. Les drapeaux ne sont qu'un raccourci en mémoire.
 const NOTES_MULT_ROUE = [
@@ -2566,11 +2567,11 @@ function _dejaMultRoue(g) {
   return NOTES_MULT_ROUE.some(n => note.includes(n));
 }
 
-// Cible du ×1.5 : la meilleure game du joueur qui n'a pas encore été transformée par une
-// roue. Si sa meilleure l'a déjà été, on descend sur la 2e, puis la 3e, et ainsi de suite.
-// Renvoie null si toutes ses games sont déjà transformées.
+// Cible du ×1.5 : la meilleure game libre du joueur qui n'a pas encore été transformée
+// par une roue. Si sa meilleure l'a déjà été, on descend sur la 2e, puis la 3e, et ainsi
+// de suite. Renvoie null si toutes ses games libres sont déjà transformées.
 function _cibleX15(player) {
-  const tri = [...(player.games || [])].sort((a, b) => b.score - a.score);
+  const tri = movableGames(player).sort((a, b) => b.score - a.score);
   const i = tri.findIndex(g => !_dejaMultRoue(g));
   return i < 0 ? null : { g: tri[i], rang: i + 1 };
 }
@@ -4596,8 +4597,8 @@ function doCommVolScore() {
 }
 
 function doCommRandX2Trio() {
-  // Le tirage ne porte que sur les games encore vierges de toute roue
-  const dispo = p => (p.games || []).filter(g => !_dejaMultRoue(g));
+  // Le tirage ne porte que sur les games libres encore vierges de toute roue
+  const dispo = p => movableGames(p).filter(g => !_dejaMultRoue(g));
   const eligible = state.players.filter(p => dispo(p).length);
   if (eligible.length < 3) { toast(`Il faut au moins 3 joueurs ayant une game encore vierge de roue (${eligible.length} actuellement).`, 'error'); return; }
   const picks = [...eligible].sort(() => Math.random() - 0.5).slice(0, 3).map(p => {
@@ -5124,17 +5125,17 @@ function buildActionBody(type) {
 
   switch(type) {
     case 'best-x15': {
-      const avecGames = state.players.filter(p => p.games.length);
+      const avecGames = state.players.filter(p => movableGames(p).length);
       const cibles = avecGames.map(p => ({ p, c: _cibleX15(p) })).filter(x => x.c);
       const satures = avecGames.filter(p => !_cibleX15(p));
       const reportes = cibles.filter(x => x.c.rang > 1);
       const lignes = reportes.map(x =>
         `<strong>${escHtml(x.p.name)}</strong> — sa ${x.c.rang}<sup>e</sup> meilleure game (<span style="color:var(--gold)">${x.c.g.score} pts</span>)`).join('<br>');
       const lignesSatures = satures.map(p =>
-        `<strong>${escHtml(p.name)}</strong> <span style="color:var(--text-muted)">(${p.games.length} game${p.games.length > 1 ? 's' : ''}, toutes modifiées)</span>`).join('<br>');
+        `<strong>${escHtml(p.name)}</strong> <span style="color:var(--text-muted)">(${movableGames(p).length} game${movableGames(p).length > 1 ? 's' : ''} libre${movableGames(p).length > 1 ? 's' : ''}, toutes modifiées)</span>`).join('<br>');
       return `
-      <p style="color:var(--text-muted);margin-bottom:16px;font-size:13px">La meilleure game de <strong>chaque joueur</strong> aura son score multiplié par 1.5.<br>
-      Une game ne peut être modifiée qu'<strong>une seule fois</strong> par une roue : si la meilleure l'a déjà été, le bonus <strong>descend sur la 2<sup>e</sup></strong>, puis la 3<sup>e</sup>, et ainsi de suite.</p>
+      <p style="color:var(--text-muted);margin-bottom:16px;font-size:13px">La meilleure game <strong>non figée</strong> de <strong>chaque joueur</strong> aura son score multiplié par 1.5.<br>
+      Une game ne peut être modifiée qu'<strong>une seule fois</strong> par une roue, et une game <strong>figée est intouchable</strong> : si la meilleure est dans ce cas, le bonus <strong>descend sur la 2<sup>e</sup></strong>, puis la 3<sup>e</sup>, et ainsi de suite.</p>
       <div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.8;margin-bottom:14px;max-height:320px;overflow-y:auto">
         <strong>${cibles.length} game${cibles.length > 1 ? 's' : ''}</strong> seront multipliée${cibles.length > 1 ? 's' : ''}
         ${reportes.length ? `<br><br><span style="color:var(--text-muted)">dont <strong>${reportes.length}</strong> reporté${reportes.length > 1 ? 's' : ''} sur une game suivante :</span><br>${lignes}` : ''}
@@ -5331,20 +5332,20 @@ function buildActionBody(type) {
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center;background:var(--rust);border-color:var(--rust)" onclick="doFolieCloneBottom5()"><i class="fa-solid fa-life-ring" style="margin-right:6px"></i>Cloner pour les 5 derniers</button>`;
 
     case 'comm-freeze-best': return `
-      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px"><strong style="color:var(--gold)">3 joueurs</strong> sont tirés au sort <strong>parmi ceux ayant joué au moins ${FREEZE_MIN_GAMES} games</strong>. Leur <strong>meilleure game</strong> est <strong style="color:var(--blue)">figée</strong> : elle ne peut plus être supprimée, échangée ni piquée par aucune action de roue.<br>
-      Elle reste <strong>clonable</strong> — un autre joueur peut en recevoir une copie. Le gel est visible dans le détail des games du joueur.</p>
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px"><strong style="color:var(--gold)">3 joueurs</strong> sont tirés au sort <strong>parmi ceux ayant joué au moins ${FREEZE_MIN_GAMES} games</strong>. Leur <strong>meilleure game</strong> est <strong style="color:var(--blue)">figée</strong> : elle devient <strong>totalement intouchable</strong>, plus aucune roue ne peut la supprimer, l'échanger, la piquer ni modifier son score — ni en bonus, ni en malus.<br>
+      Elle reste <strong>clonable</strong> — un autre joueur peut en recevoir une copie, qui n'est pas figée. Le gel est visible dans le détail des games du joueur.</p>
       <div id="action-freeze-best-preview" style="margin-bottom:12px"></div>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCommFreezeBest()"><i class="fa-solid fa-lock" style="margin-right:6px"></i>Tirer au sort & figer</button>`;
 
     case 'folie-freeze-all': return `
-      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px"><strong style="color:var(--rust-light)">Chaque joueur</strong> de la ligue voit <strong>une de ses games tirée au hasard</strong> passer en <strong style="color:var(--blue)">figée</strong> : plus supprimable, plus échangeable, plus piquable.<br>
-      Elle reste <strong>clonable</strong>. Les games déjà figées ne sont pas retirées au sort une seconde fois.</p>
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px"><strong style="color:var(--rust-light)">Chaque joueur</strong> de la ligue voit <strong>une de ses games tirée au hasard</strong> passer en <strong style="color:var(--blue)">figée</strong> : plus supprimable, plus échangeable, plus piquable, et plus modifiable par aucune roue.<br>
+      Elle reste <strong>clonable</strong>. La pire game ne peut pas être tirée, et les games déjà figées ne le sont pas une seconde fois.</p>
       <div id="action-freeze-all-preview" style="margin-bottom:12px"></div>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center;background:var(--rust);border-color:var(--rust)" onclick="doFolieFreezeAll()"><i class="fa-solid fa-lock" style="margin-right:6px"></i>Figer une game pour chacun</button>`;
 
     case 'comm-freeze-rand': return `
       <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px"><strong style="color:var(--gold)">3 joueurs</strong> sont tirés au sort. Pour chacun, une game est tirée au hasard puis <strong style="color:var(--blue)">figée</strong> : ni sa meilleure ni sa pire, uniquement une game intermédiaire.<br>
-      Une game figée ne peut plus être supprimée, échangée ni piquée. Elle reste <strong>clonable</strong>.<br>
+      Une game figée est <strong>totalement intouchable</strong> : plus supprimable, plus échangeable, plus piquable, et plus modifiable par aucune roue. Elle reste <strong>clonable</strong>.<br>
       <span style="color:var(--text-muted)">Un joueur avec 2 games ou moins n'a aucune game intermédiaire : il n'est pas tiré au sort.</span></p>
       <div id="action-freeze-rand-preview" style="margin-bottom:12px"></div>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCommFreezeRand()"><i class="fa-solid fa-dice" style="margin-right:6px"></i>Tirer au sort & figer</button>`;
