@@ -1586,25 +1586,11 @@ main {
         <div class="ac-desc">Échange la meilleure game de A contre la pire game de B</div>
       </div>
 
-      <div class="action-card action-card-purple" onclick="openAction('perso-minus15')">
-        <div class="ac-bg"><i class="fa-solid fa-arrow-trend-down"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-arrow-trend-down"></i></div>
-        <div class="ac-title">−15 pts à un joueur</div>
-        <div class="ac-desc">Retire 15 points bonus à la personne de son choix</div>
-      </div>
-
       <div class="action-card action-card-purple" onclick="openAction('perso-minus20')">
         <div class="ac-bg"><i class="fa-solid fa-circle-xmark"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-circle-xmark"></i></div>
         <div class="ac-title">−20 pts à un joueur</div>
         <div class="ac-desc">Retire 20 points bonus à la personne de son choix</div>
-      </div>
-
-      <div class="action-card action-card-purple" onclick="openAction('perso-plus10')">
-        <div class="ac-bg"><i class="fa-solid fa-circle-plus"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-circle-plus"></i></div>
-        <div class="ac-title">+10 pts bonus</div>
-        <div class="ac-desc">Ajoute 10 points bonus au joueur de son choix</div>
       </div>
 
       <div class="action-card action-card-purple" onclick="openAction('perso-plus15')">
@@ -1642,11 +1628,11 @@ main {
         <div class="ac-desc">Retire une game au choix du joueur (pas forcément la pire)</div>
       </div>
 
-      <div class="action-card action-card-purple" onclick="openAction('perso-del-rand')">
-        <div class="ac-bg"><i class="fa-solid fa-dice"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-dice"></i></div>
-        <div class="ac-title">Enlève une game aléatoire</div>
-        <div class="ac-desc">Supprime une game au hasard (ni la meilleure ni la pire)</div>
+      <div class="action-card action-card-purple" onclick="openAction('perso-clone-best-ligue')">
+        <div class="ac-bg"><i class="fa-solid fa-trophy"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-trophy"></i></div>
+        <div class="ac-title">Ajout de la meilleure game de la ligue</div>
+        <div class="ac-desc">Le joueur reçoit un clone de la meilleure game de la ligue — en plus, sans rien perdre</div>
       </div>
 
       <div class="action-card action-card-purple" onclick="openAction('perso-extra-game')">
@@ -1849,15 +1835,13 @@ main {
     </div>
     <div class="action-list-compact">
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-arrow-right-arrow-left"></i> Échange de game avec joueur au choix</div><div style="font-size:11px;color:var(--text-muted)">Échange la meilleure game d'un joueur contre la pire game d'un autre (au choix)</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-arrow-trend-down"></i> −15 pts à un joueur</div><div style="font-size:11px;color:var(--text-muted)">Retire 15 points bonus à la personne de son choix</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-circle-xmark"></i> −20 pts à un joueur</div><div style="font-size:11px;color:var(--text-muted)">Retire 20 points bonus à la personne de son choix</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-bolt-lightning"></i> +10 pts bonus</div><div style="font-size:11px;color:var(--text-muted)">Ajoute 10 pts de bonus permanent au joueur</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-arrow-trend-up"></i> +15 pts bonus</div><div style="font-size:11px;color:var(--text-muted)">Ajoute 15 points bonus au joueur de son choix</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-asterisk"></i> Multiplicateur game</div><div style="font-size:11px;color:var(--text-muted)">×1.3 à ×2 appliqué sur les kills de la prochaine game du joueur (les pts de classement ne sont pas multipliés)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-crosshairs"></i> Clone kill du meilleur</div><div style="font-size:11px;color:var(--text-muted)">Crée une nouvelle game avec les kills du meilleur killeur de la game (saisis manuellement), sans top et sans multiplicateur</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-wand-magic-sparkles"></i> Joker</div><div style="font-size:11px;color:var(--text-muted)">Accorde 1 Joker au joueur ciblé, qui s'ajoute à ceux qu'il possède déjà. Un joker permet de ne pas compter une game. Un joueur ne peut pas dépasser 6 jokers.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-trash-can"></i> Enlève une mauvaise game</div><div style="font-size:11px;color:var(--text-muted)">Retire une game au choix du joueur (pas forcément la pire)</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-dice"></i> Enlève une game aléatoire</div><div style="font-size:11px;color:var(--text-muted)">Supprime une game au hasard (la meilleure et la pire sont protégées)</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-trophy"></i> Ajout de la meilleure game de la ligue</div><div style="font-size:11px;color:var(--text-muted)">Le joueur reçoit un clone de la meilleure game de toute la ligue, en plus de ses games — rien n'est remplacé et le propriétaire d'origine garde la sienne</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-plus"></i> Game supplémentaire</div><div style="font-size:11px;color:var(--text-muted)">Ajoute un slot de game bonus hors limite globale pour le joueur ciblé</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-trophy"></i> +10 pts à partir du top 10</div><div style="font-size:11px;color:var(--text-muted)">Si le joueur finit dans le top 10 Warzone, +10 pts s'appliquent sur sa prochaine game</div></div></div>
     </div>
@@ -5044,15 +5028,13 @@ function openAction(type) {
     'clone-best-worst-rand': 'Clone meilleure → pire aléatoire',
     'top1-bonus': '+5 pts par Top 1',
     'perso-echange': 'Échange de game',
-    'perso-minus15': '-15 pts',
     'perso-minus20': '-20 pts',
-    'perso-plus10': '+10 pts',
     'perso-plus15': '+15 pts',
     'perso-mult': 'Multiplicateur',
     'perso-clone-game': 'Clone kill du meilleur killeur',
     'perso-joker': 'Joker',
     'perso-del-worst': 'Enlève une mauvaise game',
-    'perso-del-rand': 'Enlève une game aléatoire',
+    'perso-clone-best-ligue': 'Ajout de la meilleure game de la ligue',
     'perso-extra-game': 'Game supplémentaire',
     'perso-top10pts': '+10 pts Top 10',
     'comm-worst-x2': 'Pire game × 2',
@@ -5163,17 +5145,9 @@ function buildActionBody(type) {
       <p style="color:var(--text-muted);font-size:12px;margin-bottom:8px">Échange la meilleure game de A contre la pire game de B.</p>
       <button class="btn btn-purple" style="width:100%;justify-content:center;border-width:1px" onclick="execAction()">Échanger</button>`;
 
-    case 'perso-minus15': return `
-      ${playerSelect('p1', 'Joueur ciblé')}
-      <button class="btn btn-solid-rust" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Retirer 15 pts</button>`;
-
     case 'perso-minus20': return `
       ${playerSelect('p1', 'Joueur ciblé')}
       <button class="btn btn-solid-rust" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Retirer 20 pts</button>`;
-
-    case 'perso-plus10': return `
-      ${playerSelect('p1', 'Joueur')}
-      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-bolt-lightning"></i> +10 pts</button>`;
 
     case 'perso-plus15': return `
       ${playerSelect('p1', 'Joueur')}
@@ -5219,10 +5193,18 @@ function buildActionBody(type) {
       <p style="color:var(--text-muted);font-size:12px;margin-top:4px">Choisissez n'importe quelle game, pas forcément la pire.</p>
       <button class="btn btn-solid-rust" style="width:100%;justify-content:center;margin-top:14px" onclick="execAction()"><i class="fa-solid fa-trash-can"></i> Supprimer cette game</button>`;
 
-    case 'perso-del-rand': return `
-      ${playerSelect('p1', 'Joueur')}
-      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Une game tirée au sort sera supprimée — la meilleure et la pire sont protégées.</p>
-      <button class="btn btn-solid-rust" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-dice"></i> Tirer au sort et supprimer</button>`;
+    case 'perso-clone-best-ligue': {
+      let best = null, owner = null;
+      state.players.forEach(pl => pl.games.forEach(g => { if (!best || g.score > best.score) { best = g; owner = pl; } }));
+      return `
+      ${playerSelect('p1', 'Joueur qui reçoit la game')}
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">La <strong style="color:var(--gold)">meilleure game de toute la ligue</strong> est <strong>ajoutée</strong> au joueur en tant que nouvelle game.<br>
+      Rien n'est remplacé ni supprimé : son nombre de games augmente de 1. Le propriétaire d'origine garde la sienne, elle est seulement copiée.</p>
+      ${best ? `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.8;margin-top:12px">
+        Meilleure game de la ligue : <strong style="color:var(--gold)">${best.score} pts</strong> <span style="color:var(--text-muted)">(${best.kills} kills — ${escHtml(owner.name)})</span>
+      </div>` : '<p style="color:var(--rust-light);font-size:12px;margin-top:8px">Aucune game dans la ligue.</p>'}
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-trophy" style="margin-right:6px"></i>Ajouter la game</button>`;
+    }
 
     case 'perso-extra-game': return `
       ${playerSelect('p1', 'Joueur')}
@@ -5468,28 +5450,12 @@ function execAction() {
       toast('Échange effectué !', 'purple');
       break;
     }
-    case 'perso-minus15': {
-      const p = getP('p1');
-      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
-      p.bonusPoints = (p.bonusPoints || 0) - 15;
-      addLog(`<strong>${p.name}</strong> — 15 pts retirés (bonus: ${p.bonusPoints}).`, 'rust', 'circle-minus', true);
-      toast(`-15 pts pour ${p.name}.`, 'error');
-      break;
-    }
     case 'perso-minus20': {
       const p = getP('p1');
       if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
       p.bonusPoints = (p.bonusPoints || 0) - 20;
       addLog(`<strong>${p.name}</strong> — 20 pts retirés (bonus: ${p.bonusPoints}).`, 'rust', 'skull', true);
       toast(`-20 pts pour ${p.name}.`, 'error');
-      break;
-    }
-    case 'perso-plus10': {
-      const p = getP('p1');
-      if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
-      p.bonusPoints = (p.bonusPoints || 0) + 10;
-      addLog(`<strong>${p.name}</strong> +10 pts bonus.`, 'green', 'bolt-lightning', true);
-      toast(`+10 pts pour ${p.name} !`);
       break;
     }
     case 'perso-plus15': {
@@ -5543,17 +5509,16 @@ function execAction() {
       toast(`Game supprimée pour ${p.name}.`, 'error');
       break;
     }
-    case 'perso-del-rand': {
+    case 'perso-clone-best-ligue': {
       const p = getP('p1');
       if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
-      const best = getBestGame(p);
-      const worst = getWorstGame(p);
-      const pool = p.games.filter(g => !g.locked && g.id !== best?.id && g.id !== worst?.id);
-      if (!pool.length) { toast('Pas assez de games (meilleure, pire et games figées protégées).', 'error'); return; }
-      const rand = pool[Math.floor(Math.random() * pool.length)];
-      p.games = p.games.filter(g => g.id !== rand.id);
-      addLog(`<strong>${p.name}</strong> — game aléatoire supprimée (${rand.score} pts).`, 'rust', 'dice', true);
-      toast(`Game supprimée : ${rand.score} pts.`, 'error');
+      // Meilleure game de toute la ligue — seulement copiée, son propriétaire la garde
+      let best = null, owner = null;
+      state.players.forEach(pl => pl.games.forEach(g => { if (!best || g.score > best.score) { best = g; owner = pl; } }));
+      if (!best) { toast('Aucune game dans la ligue.', 'error'); return; }
+      p.games.push({ ...best, id: uid(), locked: false, note: (best.note ? best.note + ' · ' : '') + `clone de la meilleure game de la ligue (${owner.name})` });
+      addLog(`<strong>${p.name}</strong> — meilleure game de la ligue ajoutée (${best.score} pts, de ${owner.name}).`, 'gold', 'trophy', true);
+      toast(`${p.name} reçoit une game de ${best.score} pts !`, 'gold');
       break;
     }
     case 'perso-extra-game': {
