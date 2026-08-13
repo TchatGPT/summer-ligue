@@ -1447,13 +1447,6 @@ main {
         <div class="ac-desc">Supprime la game avec le score le plus bas de chaque joueur</div>
       </div>
 
-      <div class="action-card action-card-gold" onclick="openAction('joker-game')">
-        <div class="ac-bg"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-        <div class="ac-title">1 Joker pour tous les participants</div>
-        <div class="ac-desc">Chaque joueur reçoit 1 joker — les jokers se cumulent avec ceux des autres roues</div>
-      </div>
-
       <div class="action-card action-card-gold" onclick="openAction('comm-echange-best-worst')">
         <div class="ac-bg"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
@@ -1830,10 +1823,9 @@ main {
     </div>
     <div class="action-list-compact">
       <div class="action-row" style="border-left:3px solid var(--gold)"><div><div class="action-row-name"><i class="fa-solid fa-clock" style="color:var(--gold)"></i> Blocage 12h après usage</div><div style="font-size:11px;color:var(--text-muted)">Chaque action de la Roue Communautaire est utilisable une fois toutes les 12h. Dès qu'elle est déclenchée, sa carte est grisée et affiche le temps restant avant sa prochaine disponibilité. Les cooldowns sont indépendants d'une action à l'autre, et ne concernent ni la Roue Perso ni la Roue de Folie.</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-star"></i> Meilleure game × 1.5</div><div style="font-size:11px;color:var(--text-muted)">Multiplie le score de la meilleure game de chaque joueur par 1.5</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-star"></i> Meilleure game × 1.5</div><div style="font-size:11px;color:var(--text-muted)">Multiplie le score de la meilleure game de chaque joueur par 1.5. Une game ne peut recevoir ce bonus qu'une seule fois : si elle a déjà été multipliée, elle est ignorée.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-circle-plus"></i> Ajout d'une game sup</div><div style="font-size:11px;color:var(--text-muted)">Accorde une game bonus hors limite à tous les joueurs (compteur +1 pour chacun)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-trash-can"></i> Suppression de la pire game</div><div style="font-size:11px;color:var(--text-muted)">Supprime la game avec le score le plus bas de chaque joueur</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-wand-magic-sparkles"></i> 1 Joker pour tous les participants</div><div style="font-size:11px;color:var(--text-muted)">Chaque joueur de la ligue reçoit 1 Joker, qui permet de ne pas compter une game. Les jokers se cumulent avec ceux obtenus via la Roue Perso ou la Roue de Folie, dans la limite de <strong>6 jokers par joueur</strong> : le compteur est visible dans le classement et se décrémente à chaque utilisation.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-arrow-right-arrow-left"></i> Échange meilleure ↔ pire (aléatoire)</div><div style="font-size:11px;color:var(--text-muted)">Tire 2 joueurs au hasard — échange la meilleure game de l'un contre la pire de l'autre</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shuffle"></i> Échange 2 games aléatoires</div><div style="font-size:11px;color:var(--text-muted)">Tire 2 joueurs au hasard et échange deux games aléatoires de chacun</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shuffle"></i> Échange 3 games aléatoires</div><div style="font-size:11px;color:var(--text-muted)">Tire 3 joueurs au hasard — leurs games tournent entre eux (A→B→C→A)</div></div></div>
@@ -1846,7 +1838,7 @@ main {
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-user-secret"></i> Vol de score</div><div style="font-size:11px;color:var(--text-muted)">Un joueur tiré au sort copie le score total du joueur juste au-dessus de lui au classement. Celui du dessus garde son score, il ne perd rien. Les games et leur nombre ne changent pas</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-angles-up"></i> Vol de score — 2 places au-dessus</div><div style="font-size:11px;color:var(--text-muted)">Même principe, mais le joueur tiré au sort copie le score du joueur situé 2 places au-dessus de lui au lieu d'une seule. Celui-ci garde son score, les games ne changent pas.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-dice-three"></i> Game aléatoire × 2 — 3 joueurs</div><div style="font-size:11px;color:var(--text-muted)">3 joueurs sont tirés au sort et, pour chacun, une game au hasard voit son score doublé.</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-lock"></i> 3 joueurs figent leur meilleure game</div><div style="font-size:11px;color:var(--text-muted)">3 joueurs sont tirés au sort et leur meilleure game est figée : elle ne peut plus être supprimée, échangée ni piquée par aucune action de roue. Elle reste clonable — un autre joueur peut en recevoir une copie. Le gel est indiqué dans le détail des games du joueur.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-lock"></i> 3 joueurs figent leur meilleure game</div><div style="font-size:11px;color:var(--text-muted)">Réservé aux joueurs ayant joué au moins 30 games. 3 d'entre eux sont tirés au sort et leur meilleure game est figée : elle ne peut plus être supprimée, échangée ni piquée par aucune action de roue. Elle reste clonable — un autre joueur peut en recevoir une copie. Le gel est indiqué dans le détail des games du joueur.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-dice"></i> 3 joueurs figent une game au hasard</div><div style="font-size:11px;color:var(--text-muted)">3 joueurs sont tirés au sort et une de leurs games est figée au hasard, ni la meilleure ni la pire — uniquement une game intermédiaire. Un joueur avec 2 games ou moins n'est pas concerné.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-ranking-star"></i> Échange de games entre les 10 premiers</div><div style="font-size:11px;color:var(--text-muted)">Les 10 premiers du classement échangent une game en chaîne entre eux, dans un ordre tiré au sort. La game échangée n'est ni la meilleure ni la pire de son propriétaire. Chacun donne une game et en reçoit une : le nombre de games ne change pas et aucun point n'est créé ni perdu.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-right-left"></i> Échange avec FloooZii</div><div style="font-size:11px;color:var(--text-muted)">Un joueur est tiré au sort et échange une de ses games au hasard contre une game au hasard de FloooZii. Chacun donne une game et en reçoit une : le nombre de games ne change pas et aucun point n'est créé ni perdu.</div></div></div>
@@ -2591,6 +2583,13 @@ function getBestMovable(player) {
 function getWorstMovable(player) {
   const l = movableGames(player);
   return l.length ? l.reduce((w, g) => g.score < w.score ? g : w, l[0]) : null;
+}
+
+// Une game ne peut recevoir le ×1.5 de la Roue Commu qu'une fois. La note fait foi :
+// elle est stockée en base, donc les games déjà multipliées avant cette règle sont
+// reconnues elles aussi. Le drapeau x15 n'est qu'un raccourci en mémoire.
+function _dejaX15(g) {
+  return !!g.x15 || (g.note || '').includes('x1.5 (roue comm)');
 }
 
 // Games « du milieu » : ni la meilleure, ni la pire, ni déjà figées.
@@ -3365,6 +3364,9 @@ function cancelJoker(playerId) {
 
 // Plafond de jokers par joueur : au-delà, les attributions sont sans effet.
 const JOKERS_MAX = 6;
+
+// Nombre de games minimum pour que la meilleure game d'un joueur puisse être figée.
+const FREEZE_MIN_GAMES = 30;
 
 // Accorde des jokers dans la limite du plafond.
 // Renvoie le nombre réellement accordé, qui peut être inférieur au demandé, ou 0.
@@ -4742,9 +4744,21 @@ function doFolieCloneBottom5() {
 }
 
 function doCommFreezeBest() {
-  // Un joueur dont la meilleure game est déjà figée n'a rien à gagner : on l'écarte
-  const eligible = state.players.filter(p => { const b = getBestGame(p); return b && !b.locked; });
-  if (!eligible.length) { toast('Aucune meilleure game à figer (déjà figées ou aucune game).', 'error'); return; }
+  // Réservé aux joueurs ayant assez de games : figer sa meilleure game trop tôt
+  // reviendrait à la verrouiller alors que la saison est à peine entamée.
+  // Un joueur dont la meilleure game est déjà figée n'a rien à gagner : on l'écarte aussi.
+  const eligible = state.players.filter(p => {
+    if (p.games.length < FREEZE_MIN_GAMES) return false;
+    const b = getBestGame(p);
+    return b && !b.locked;
+  });
+  if (!eligible.length) {
+    const assez = state.players.filter(p => p.games.length >= FREEZE_MIN_GAMES).length;
+    toast(assez
+      ? 'Leurs meilleures games sont déjà toutes figées.'
+      : `Aucun joueur n'a encore ${FREEZE_MIN_GAMES} games jouées.`, 'error');
+    return;
+  }
   const picks = [...eligible].sort(() => Math.random() - 0.5).slice(0, Math.min(3, eligible.length))
     .map(p => ({ p, g: getBestGame(p) }));
   const el = document.getElementById('action-freeze-best-preview');
@@ -5055,7 +5069,6 @@ function openAction(type) {
     'best-x15': 'Meilleure game × 1.5',
     'add-bonus-game': 'Game supplémentaire',
     'remove-worst': 'Supprimer pire game',
-    'joker-game': '1 Joker pour tous les participants',
     'clone-best-worst': 'Clone meilleure → joueur aléatoire',
     'clone-best-worst-rand': 'Clone meilleure → pire aléatoire',
     'top1-bonus': '+5 pts par Top 1',
@@ -5134,9 +5147,18 @@ function buildActionBody(type) {
   }
 
   switch(type) {
-    case 'best-x15': return `
-      <p style="color:var(--text-muted);margin-bottom:16px;font-size:13px">La meilleure game de <strong>chaque joueur</strong> aura son score multiplié par 1.5.</p>
+    case 'best-x15': {
+      const cibles = state.players.filter(p => { const b = getBestGame(p); return b && !_dejaX15(b); }).length;
+      const ignores = state.players.filter(p => { const b = getBestGame(p); return b && _dejaX15(b); }).length;
+      return `
+      <p style="color:var(--text-muted);margin-bottom:16px;font-size:13px">La meilleure game de <strong>chaque joueur</strong> aura son score multiplié par 1.5.<br>
+      Une game ne peut recevoir ce bonus qu'<strong>une seule fois</strong> : celles déjà multipliées sont ignorées.</p>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.8;margin-bottom:14px">
+        <strong>${cibles} meilleure${cibles > 1 ? 's' : ''} game${cibles > 1 ? 's' : ''}</strong> seront multipliée${cibles > 1 ? 's' : ''}
+        ${ignores ? `<br><span style="color:var(--rust-light)">${ignores} game${ignores > 1 ? 's ont' : ' a'} déjà reçu le ×1.5 et ser${ignores > 1 ? 'ont' : 'a'} ignorée${ignores > 1 ? 's' : ''}</span>` : ''}
+      </div>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="execAction()">Appliquer à tous</button>`;
+    }
 
     case 'remove-worst': return `
       <p style="color:var(--text-muted);margin-bottom:16px;font-size:13px">Supprime la game avec le score le plus bas de <strong>chaque joueur</strong>.</p>
@@ -5149,21 +5171,6 @@ function buildActionBody(type) {
     case 'add-bonus-game': return `
       <p style="color:var(--text-muted);font-size:12px;margin:0 0 12px">Accorde <strong>+1 game supplémentaire à tous les joueurs</strong>. Chacun pourra saisir une game en plus via le formulaire principal.</p>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="execAction()">Accorder +1 game à tous</button>`;
-
-    case 'joker-game': {
-      const nb = state.players.length;
-      const deja = state.players.filter(p => p.jokerCount > 0).length;
-      const auPlafond = state.players.filter(p => (p.jokerCount || 0) >= JOKERS_MAX).length;
-      return `
-      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px"><strong style="color:var(--gold)">Chaque participant</strong> de la ligue reçoit <strong style="color:var(--gold)">1 Joker</strong>. Un joker permet de ne pas compter une game.<br>
-      Les jokers <strong>se cumulent</strong> : celui-ci s'ajoute à ceux déjà obtenus via la Roue Perso ou la Roue de Folie, dans la limite de <strong>${JOKERS_MAX} jokers</strong> par joueur.</p>
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.8;margin-bottom:14px">
-        <strong>${nb - auPlafond} joueur${nb - auPlafond > 1 ? 's' : ''}</strong> recevront 1 Joker
-        ${deja ? `<br><span style="color:var(--text-muted)">${deja} joueur${deja > 1 ? 's en ont' : ' en a'} déjà — le nouveau s'ajoute à leur compteur</span>` : ''}
-        ${auPlafond ? `<br><span style="color:var(--rust-light)">${auPlafond} joueur${auPlafond > 1 ? 's sont' : ' est'} au plafond de ${JOKERS_MAX} et ne recevr${auPlafond > 1 ? 'ont' : 'a'} rien</span>` : ''}
-      </div>
-      <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="execAction()"><i class="fa-solid fa-wand-magic-sparkles" style="margin-right:6px"></i>Offrir 1 Joker à tout le monde</button>`;
-    }
 
     case 'clone-best-worst': return `
       <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">Un joueur est tiré au hasard. La <strong style="color:var(--text)">meilleure game de toute la ligue</strong> lui est ajoutée en tant que nouvelle game.</p>
@@ -5335,7 +5342,7 @@ function buildActionBody(type) {
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center;background:var(--rust);border-color:var(--rust)" onclick="doFolieCloneBottom5()"><i class="fa-solid fa-life-ring" style="margin-right:6px"></i>Cloner pour les 5 derniers</button>`;
 
     case 'comm-freeze-best': return `
-      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px"><strong style="color:var(--gold)">3 joueurs</strong> sont tirés au sort. Leur <strong>meilleure game</strong> est <strong style="color:var(--blue)">figée</strong> : elle ne peut plus être supprimée, échangée ni piquée par aucune action de roue.<br>
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px"><strong style="color:var(--gold)">3 joueurs</strong> sont tirés au sort <strong>parmi ceux ayant joué au moins ${FREEZE_MIN_GAMES} games</strong>. Leur <strong>meilleure game</strong> est <strong style="color:var(--blue)">figée</strong> : elle ne peut plus être supprimée, échangée ni piquée par aucune action de roue.<br>
       Elle reste <strong>clonable</strong> — un autre joueur peut en recevoir une copie. Le gel est visible dans le détail des games du joueur.</p>
       <div id="action-freeze-best-preview" style="margin-bottom:12px"></div>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCommFreezeBest()"><i class="fa-solid fa-lock" style="margin-right:6px"></i>Tirer au sort & figer</button>`;
@@ -5421,17 +5428,20 @@ function execAction() {
 
   switch(type) {
     case 'best-x15': {
-      let count = 0;
+      let count = 0, dejaFait = 0;
       state.players.forEach(p => {
         const best = getBestGame(p);
-        if (best) {
-          best.score = Math.round(best.score * 1.5);
-          best.note = (best.note ? best.note + ' · ' : '') + 'x1.5 (roue comm)';
-          count++;
-        }
+        if (!best) return;
+        // Une game ne peut recevoir le ×1.5 qu'une seule fois
+        if (_dejaX15(best)) { dejaFait++; return; }
+        best.score = Math.round(best.score * 1.5);
+        best.x15 = true;
+        best.note = (best.note ? best.note + ' · ' : '') + 'x1.5 (roue comm)';
+        count++;
       });
-      addLog(`Meilleure game ×1.5 appliquée à ${count} joueur(s).`, 'gold', 'star', true);
-      toast(`×1.5 sur ${count} meilleures games !`, 'gold');
+      if (!count) { toast('Toutes les meilleures games ont déjà reçu le ×1.5.', 'error'); return; }
+      addLog(`Meilleure game ×1.5 appliquée à ${count} joueur${count > 1 ? 's' : ''}${dejaFait ? ` (${dejaFait} déjà multipliée${dejaFait > 1 ? 's' : ''})` : ''}.`, 'gold', 'star', true);
+      toast(`×1.5 sur ${count} meilleure${count > 1 ? 's' : ''} game${count > 1 ? 's' : ''}${dejaFait ? ` — ${dejaFait} ignorée${dejaFait > 1 ? 's' : ''}` : ''} !`, 'gold');
       break;
     }
     case 'remove-worst': {
@@ -5469,15 +5479,6 @@ function execAction() {
       const base = state.maxGames || 20;
       addLog(`Game supplémentaire accordée à tous les joueurs (max ${base + (state.players[0]?.extraGames || 1)} games).`, 'gold', 'plus', true);
       toast(`+1 game supplémentaire pour tout le monde !`, 'gold');
-      break;
-    }
-    case 'joker-game': {
-      if (!state.players.length) { toast('Aucun joueur dans la ligue.', 'error'); return; }
-      let servis = 0, satures = 0;
-      state.players.forEach(p => { _ajouteJokers(p, 1) ? servis++ : satures++; });
-      if (!servis) { toast(`Tout le monde est déjà au plafond de ${JOKERS_MAX} jokers.`, 'error'); return; }
-      addLog(`Roue Commu — <strong>1 Joker</strong> offert à tous les participants (${servis} joueur${servis > 1 ? 's' : ''} servi${servis > 1 ? 's' : ''}${satures ? `, ${satures} déjà au plafond` : ''}).`, 'gold', 'wand-magic-sparkles', true);
-      toast(`1 Joker pour tout le monde — ${servis} joueur${servis > 1 ? 's' : ''} servi${servis > 1 ? 's' : ''}${satures ? `, ${satures} au plafond` : ''} !`, 'gold');
       break;
     }
     case 'clone-best-worst': doCloneBestWorst(); return;
