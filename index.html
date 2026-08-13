@@ -1468,13 +1468,6 @@ main {
         <div class="ac-desc">Active le mode 20 subs/roue pour 2 sessions (au lieu de 50) — retrait manuel</div>
       </div>
 
-      <div class="action-card action-card-gold" onclick="openAction('comm-echange-rand3')">
-        <div class="ac-bg"><i class="fa-solid fa-arrows-rotate"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-arrows-rotate"></i></div>
-        <div class="ac-title">Échange 3 games aléatoires</div>
-        <div class="ac-desc">Tire 3 joueurs au hasard — leurs games tournent entre eux (A→B→C→A)</div>
-      </div>
-
       <div class="action-card action-card-gold" onclick="openAction('comm-top10-inverse')">
         <div class="ac-bg"><i class="fa-solid fa-arrows-up-down"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-arrows-up-down"></i></div>
@@ -1823,12 +1816,11 @@ main {
     </div>
     <div class="action-list-compact">
       <div class="action-row" style="border-left:3px solid var(--gold)"><div><div class="action-row-name"><i class="fa-solid fa-clock" style="color:var(--gold)"></i> Blocage 12h après usage</div><div style="font-size:11px;color:var(--text-muted)">Chaque action de la Roue Communautaire est utilisable une fois toutes les 12h. Dès qu'elle est déclenchée, sa carte est grisée et affiche le temps restant avant sa prochaine disponibilité. Les cooldowns sont indépendants d'une action à l'autre, et ne concernent ni la Roue Perso ni la Roue de Folie.</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-star"></i> Meilleure game × 1.5</div><div style="font-size:11px;color:var(--text-muted)">Multiplie le score de la meilleure game de chaque joueur par 1.5. Une game ne peut recevoir ce bonus qu'une seule fois : si elle a déjà été multipliée, elle est ignorée.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-star"></i> Meilleure game × 1.5</div><div style="font-size:11px;color:var(--text-muted)">Multiplie le score de la meilleure game de chaque joueur par 1.5. Une game ne peut recevoir ce bonus qu'une seule fois : si la meilleure game d'un joueur l'a déjà reçu, le bonus descend sur sa 2ᵉ meilleure, puis la 3ᵉ, et ainsi de suite jusqu'à en trouver une non multipliée.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-circle-plus"></i> Ajout d'une game sup</div><div style="font-size:11px;color:var(--text-muted)">Accorde une game bonus hors limite à tous les joueurs (compteur +1 pour chacun)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-trash-can"></i> Suppression de la pire game</div><div style="font-size:11px;color:var(--text-muted)">Supprime la game avec le score le plus bas de chaque joueur</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-arrow-right-arrow-left"></i> Échange meilleure ↔ pire (aléatoire)</div><div style="font-size:11px;color:var(--text-muted)">Tire 2 joueurs au hasard — échange la meilleure game de l'un contre la pire de l'autre</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shuffle"></i> Échange 2 games aléatoires</div><div style="font-size:11px;color:var(--text-muted)">Tire 2 joueurs au hasard et échange deux games aléatoires de chacun</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shuffle"></i> Échange 3 games aléatoires</div><div style="font-size:11px;color:var(--text-muted)">Tire 3 joueurs au hasard — leurs games tournent entre eux (A→B→C→A)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-rotate"></i> Top 10 inversé</div><div style="font-size:11px;color:var(--text-muted)">Top 10 de la ligue perdent 20 pts, les autres en gagnent 20</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-bolt"></i> Roue commu × 20 subs (2 sessions)</div><div style="font-size:11px;color:var(--text-muted)">Active la roue toutes les 20 subs au lieu de 50, prévu pour 2 sessions. Il n'y a pas de décompte : le mode reste actif jusqu'à son retrait manuel, et la bannière indique depuis combien de temps il tourne. Il peut aussi être mis en pause.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-clone"></i> Clone meilleure → joueur aléatoire</div><div style="font-size:11px;color:var(--text-muted)">Tire un joueur au hasard et lui ajoute la meilleure game de toute la ligue (sans supprimer de game)</div></div></div>
@@ -2590,6 +2582,15 @@ function getWorstMovable(player) {
 // reconnues elles aussi. Le drapeau x15 n'est qu'un raccourci en mémoire.
 function _dejaX15(g) {
   return !!g.x15 || (g.note || '').includes('x1.5 (roue comm)');
+}
+
+// Cible du ×1.5 : la meilleure game du joueur qui n'a pas encore reçu le bonus.
+// Si sa meilleure est déjà multipliée, on descend sur la 2e, puis la 3e, etc.
+// Renvoie null si toutes ses games ont déjà été multipliées.
+function _cibleX15(player) {
+  const tri = [...(player.games || [])].sort((a, b) => b.score - a.score);
+  const i = tri.findIndex(g => !_dejaX15(g));
+  return i < 0 ? null : { g: tri[i], rang: i + 1 };
 }
 
 // Games « du milieu » : ni la meilleure, ni la pire, ni déjà figées.
@@ -4535,36 +4536,6 @@ function doCommEchangeRand() {
   );
 }
 
-function doCommEchangeRand3() {
-  // Chaque joueur doit avoir au moins une game non figée à céder
-  const eligible = state.players.filter(p => movableGames(p).length > 0);
-  if (eligible.length < 3) { toast('Il faut au moins 3 joueurs avec des games non figées.', 'error'); return; }
-  const shuffled = [...eligible].sort(() => Math.random() - 0.5);
-  const pa = shuffled[0], pb = shuffled[1], pc = shuffled[2];
-  const randGame = arr => arr[Math.floor(Math.random() * arr.length)];
-  const gameA = randGame(movableGames(pa)), gameB = randGame(movableGames(pb)), gameC = randGame(movableGames(pc));
-  const gameNumOf = (player, game) => [...player.games].sort((a,b) => b.score - a.score).findIndex(g => g.id === game.id) + 1;
-  const nA = gameNumOf(pa, gameA), nB = gameNumOf(pb, gameB), nC = gameNumOf(pc, gameC);
-  const el = document.getElementById('action-echange-rand3-preview');
-  const desc = `<strong>${escHtml(pa.name)}</strong> donne game #${nA} <span style="color:var(--gold)">(${gameA.score} pts)</span> → <strong>${escHtml(pb.name)}</strong><br>` +
-    `<strong>${escHtml(pb.name)}</strong> donne game #${nB} <span style="color:var(--gold)">(${gameB.score} pts)</span> → <strong>${escHtml(pc.name)}</strong><br>` +
-    `<strong>${escHtml(pc.name)}</strong> donne game #${nC} <span style="color:var(--gold)">(${gameC.score} pts)</span> → <strong>${escHtml(pa.name)}</strong>`;
-  if (el) el.innerHTML = `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:2">${desc}</div>`;
-  showConfirm('Confirmer l\'échange', desc,
-    () => {
-      pa.games = pa.games.filter(g => g.id !== gameA.id);
-      pb.games = pb.games.filter(g => g.id !== gameB.id);
-      pc.games = pc.games.filter(g => g.id !== gameC.id);
-      pa.games.push({ ...gameC, id: uid(), locked: false, note: (gameC.note ? gameC.note + ' · ' : '') + `échange 3 joueurs (de ${pc.name})` });
-      pb.games.push({ ...gameA, id: uid(), locked: false, note: (gameA.note ? gameA.note + ' · ' : '') + `échange 3 joueurs (de ${pa.name})` });
-      pc.games.push({ ...gameB, id: uid(), locked: false, note: (gameB.note ? gameB.note + ' · ' : '') + `échange 3 joueurs (de ${pb.name})` });
-      addLog(`Échange 3 joueurs : <strong>${pa.name}</strong>→<strong>${pb.name}</strong>→<strong>${pc.name}</strong>→<strong>${pa.name}</strong>`, 'gold', 'shuffle', true);
-      toast('Échange 3 games effectué !', 'gold');
-      _finishCommuAction();
-    }, false, 'Confirmer', () => { if (el) el.innerHTML = ''; }
-  );
-}
-
 function doFolieEchangeAll() {
   // Seuls les joueurs ayant une game non figée à céder entrent dans la chaîne
   const eligible = state.players.filter(p => movableGames(p).length > 0);
@@ -5087,7 +5058,6 @@ function openAction(type) {
     'comm-worst-x2': 'Pire game × 2',
     'comm-echange-best-worst': 'Échange meilleure ↔ pire (aléatoire)',
     'comm-echange-rand': 'Échange 2 games aléatoires',
-    'comm-echange-rand3': 'Échange 3 games aléatoires',
     'folie-echange-all': 'Échange général',
     'comm-roue-20subs': 'Roue commu × 20 subs (2 sessions)',
     'comm-top10-inverse': 'Top 10 inversé',
@@ -5148,14 +5118,19 @@ function buildActionBody(type) {
 
   switch(type) {
     case 'best-x15': {
-      const cibles = state.players.filter(p => { const b = getBestGame(p); return b && !_dejaX15(b); }).length;
-      const ignores = state.players.filter(p => { const b = getBestGame(p); return b && _dejaX15(b); }).length;
+      const avecGames = state.players.filter(p => p.games.length);
+      const cibles = avecGames.map(p => ({ p, c: _cibleX15(p) })).filter(x => x.c);
+      const satures = avecGames.length - cibles.length;
+      const reportes = cibles.filter(x => x.c.rang > 1);
+      const lignes = reportes.slice(0, 10).map(x =>
+        `<strong>${escHtml(x.p.name)}</strong> — sa ${x.c.rang}<sup>e</sup> meilleure game (<span style="color:var(--gold)">${x.c.g.score} pts</span>)`).join('<br>');
       return `
       <p style="color:var(--text-muted);margin-bottom:16px;font-size:13px">La meilleure game de <strong>chaque joueur</strong> aura son score multiplié par 1.5.<br>
-      Une game ne peut recevoir ce bonus qu'<strong>une seule fois</strong> : celles déjà multipliées sont ignorées.</p>
+      Une game ne peut recevoir ce bonus qu'<strong>une seule fois</strong> : si la meilleure l'a déjà reçu, le bonus <strong>descend sur la 2<sup>e</sup></strong>, puis la 3<sup>e</sup>, et ainsi de suite.</p>
       <div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.8;margin-bottom:14px">
-        <strong>${cibles} meilleure${cibles > 1 ? 's' : ''} game${cibles > 1 ? 's' : ''}</strong> seront multipliée${cibles > 1 ? 's' : ''}
-        ${ignores ? `<br><span style="color:var(--rust-light)">${ignores} game${ignores > 1 ? 's ont' : ' a'} déjà reçu le ×1.5 et ser${ignores > 1 ? 'ont' : 'a'} ignorée${ignores > 1 ? 's' : ''}</span>` : ''}
+        <strong>${cibles.length} game${cibles.length > 1 ? 's' : ''}</strong> seront multipliée${cibles.length > 1 ? 's' : ''}
+        ${reportes.length ? `<br><span style="color:var(--text-muted)">dont <strong>${reportes.length}</strong> reporté${reportes.length > 1 ? 's' : ''} sur une game suivante :</span><br>${lignes}${reportes.length > 10 ? `<br><span style="color:var(--text-muted)">… et ${reportes.length - 10} autre${reportes.length - 10 > 1 ? 's' : ''}</span>` : ''}` : ''}
+        ${satures ? `<br><span style="color:var(--rust-light)">${satures} joueur${satures > 1 ? 's ont' : ' a'} toutes leurs games déjà multipliées</span>` : ''}
       </div>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="execAction()">Appliquer à tous</button>`;
     }
@@ -5285,11 +5260,6 @@ function buildActionBody(type) {
         ? `<button class="btn" style="width:100%;justify-content:center;opacity:0.5;cursor:not-allowed" disabled><i class="fa-solid fa-bolt" style="margin-right:6px"></i>Déjà actif — gestion en Modération</button>`
         : `<button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="execAction()"><i class="fa-solid fa-bolt" style="margin-right:6px"></i>Activer le mode 20 subs</button>`}`;
     }
-    case 'comm-echange-rand3': return `
-      <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px">Trois joueurs sont tirés au sort, puis une game de chacun tourne entre eux (A→B, B→C, C→A).</p>
-      <div id="action-echange-rand3-preview" style="margin-bottom:12px"></div>
-      <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCommEchangeRand3()"><i class="fa-solid fa-shuffle" style="margin-right:6px"></i>Tirer au sort & échanger</button>`;
-
     case 'folie-echange-all': return `
       <p style="color:var(--text-muted);font-size:12px;margin-bottom:14px"><strong style="color:var(--rust-light)">Tous les joueurs</strong> ayant au moins une game entrent dans la chaîne, dans un ordre tiré au sort. Chacun donne <strong>une game au hasard</strong> au suivant et en reçoit une du précédent (A→B, B→C, … →A).<br>Chacun donne une game et en reçoit une : <strong>le nombre de games de chaque joueur ne change pas</strong>, et aucun point n'est créé ni perdu.</p>
       <div id="action-echange-all-preview" style="margin-bottom:12px"></div>
@@ -5428,20 +5398,21 @@ function execAction() {
 
   switch(type) {
     case 'best-x15': {
-      let count = 0, dejaFait = 0;
+      let count = 0, satures = 0, reportes = 0;
       state.players.forEach(p => {
-        const best = getBestGame(p);
-        if (!best) return;
-        // Une game ne peut recevoir le ×1.5 qu'une seule fois
-        if (_dejaX15(best)) { dejaFait++; return; }
-        best.score = Math.round(best.score * 1.5);
-        best.x15 = true;
-        best.note = (best.note ? best.note + ' · ' : '') + 'x1.5 (roue comm)';
+        if (!p.games.length) return;
+        // Si la meilleure est déjà multipliée, on descend sur la suivante
+        const cible = _cibleX15(p);
+        if (!cible) { satures++; return; }
+        if (cible.rang > 1) reportes++;
+        cible.g.score = Math.round(cible.g.score * 1.5);
+        cible.g.x15 = true;
+        cible.g.note = (cible.g.note ? cible.g.note + ' · ' : '') + 'x1.5 (roue comm)';
         count++;
       });
-      if (!count) { toast('Toutes les meilleures games ont déjà reçu le ×1.5.', 'error'); return; }
-      addLog(`Meilleure game ×1.5 appliquée à ${count} joueur${count > 1 ? 's' : ''}${dejaFait ? ` (${dejaFait} déjà multipliée${dejaFait > 1 ? 's' : ''})` : ''}.`, 'gold', 'star', true);
-      toast(`×1.5 sur ${count} meilleure${count > 1 ? 's' : ''} game${count > 1 ? 's' : ''}${dejaFait ? ` — ${dejaFait} ignorée${dejaFait > 1 ? 's' : ''}` : ''} !`, 'gold');
+      if (!count) { toast('Toutes les games de la ligue ont déjà reçu le ×1.5.', 'error'); return; }
+      addLog(`Meilleure game ×1.5 appliquée à ${count} joueur${count > 1 ? 's' : ''}${reportes ? ` (dont ${reportes} reporté${reportes > 1 ? 's' : ''} sur une game suivante)` : ''}${satures ? `, ${satures} sans game éligible` : ''}.`, 'gold', 'star', true);
+      toast(`×1.5 sur ${count} game${count > 1 ? 's' : ''}${reportes ? ` — ${reportes} reporté${reportes > 1 ? 's' : ''}` : ''} !`, 'gold');
       break;
     }
     case 'remove-worst': {
@@ -5641,7 +5612,6 @@ function execAction() {
       renderSubsBanner();
       break;
     }
-    case 'comm-echange-rand3': doCommEchangeRand3(); return;
     case 'folie-echange-all': doFolieEchangeAll(); return;
     case 'comm-top10-inverse': {
       const sorted = [...state.players].sort((a, b) => getPlayerTotal(b) - getPlayerTotal(a));
