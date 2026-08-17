@@ -1422,7 +1422,7 @@ main {
   <!-- ROUE COMMUNAUTAIRE -->
   <div class="roue-section" id="roue-commu-section">
     <div class="roue-header">
-      <div class="roue-title roue-comm-color">Roue Communautaire <span style="font-size:13px;color:var(--text-muted);font-weight:400">(par palier de 50 subgifts)</span> <span style="font-size:12px;color:var(--text-muted);font-weight:400">— chaque action est bloquée 12h après usage</span></div>
+      <div class="roue-title roue-comm-color">Roue Communautaire <span style="font-size:13px;color:var(--text-muted);font-weight:400">(par palier de 50 subgifts)</span> <span style="font-size:12px;color:var(--text-muted);font-weight:400">— chaque action est bloquée 24h après usage</span></div>
     </div>
     <div class="action-grid">
 
@@ -1798,7 +1798,7 @@ main {
       </div>
     </div>
     <div class="action-list-compact">
-      <div class="action-row" style="border-left:3px solid var(--gold)"><div><div class="action-row-name"><i class="fa-solid fa-clock" style="color:var(--gold)"></i> Blocage 12h après usage</div><div style="font-size:11px;color:var(--text-muted)">Chaque action de la Roue Communautaire est utilisable une fois toutes les 12h. Dès qu'elle est déclenchée, sa carte est grisée et affiche le temps restant avant sa prochaine disponibilité. Les cooldowns sont indépendants d'une action à l'autre, et ne concernent ni la Roue Perso ni la Roue de Folie.</div></div></div>
+      <div class="action-row" style="border-left:3px solid var(--gold)"><div><div class="action-row-name"><i class="fa-solid fa-clock" style="color:var(--gold)"></i> Blocage 24h après usage</div><div style="font-size:11px;color:var(--text-muted)">Chaque action de la Roue Communautaire est utilisable une fois toutes les 24h. Dès qu'elle est déclenchée, sa carte est grisée et affiche le temps restant avant sa prochaine disponibilité. Les cooldowns sont indépendants d'une action à l'autre, et ne concernent ni la Roue Perso ni la Roue de Folie.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-star"></i> Meilleure game × 1.5</div><div style="font-size:11px;color:var(--text-muted)">Multiplie le score de la meilleure game de chaque joueur par 1.5. Deux garde-fous : une game ne peut être modifiée qu'une seule fois par une roue, et une game figée est intouchable. Si la meilleure game d'un joueur est dans l'un de ces deux cas, le bonus descend sur sa 2ᵉ meilleure, puis la 3ᵉ, et ainsi de suite jusqu'à en trouver une éligible.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-circle-plus"></i> Ajout d'une game sup</div><div style="font-size:11px;color:var(--text-muted)">Accorde une game bonus hors limite à tous les joueurs (compteur +1 pour chacun)</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-trash-can"></i> Suppression de la pire game</div><div style="font-size:11px;color:var(--text-muted)">Supprime la game avec le score le plus bas de chaque joueur</div></div></div>
@@ -2260,7 +2260,7 @@ let state = {
   roueCommu20Paused: 0,  // 1 = en pause, le compteur est figé
   roueCommu20Start: 0,   // subsCount au moment d'activation du mode 20
   roueCommu50Next: 0,    // prochain palier forcé après annulation du mode 20 (0 = pas de forçage)
-  actionCooldowns: {}   // { cléAction: timestamp ms } — blocage 12h après usage (Roue Commu)
+  actionCooldowns: {}   // { cléAction: timestamp ms } — blocage 24h après usage (Roue Commu)
 };
 
 let currentTop = 0;
@@ -2656,9 +2656,9 @@ function renderRegles() {
 }
 
 // ---- Cooldown des actions de la Roue Commu ----
-// Chaque action est bloquée 12h après usage. La liste des actions concernées est
+// Chaque action est bloquée 24h après usage. La liste des actions concernées est
 // lue depuis la section du DOM : une action ajoutée plus tard en hérite d'office.
-const COOLDOWN_MS = 12 * 60 * 60 * 1000;
+const COOLDOWN_MS = 24 * 60 * 60 * 1000;
 
 function _commuCards() {
   const sec = document.getElementById('roue-commu-section');
@@ -5180,7 +5180,7 @@ function buildActionBody(type) {
         Cette action de la <strong style="color:var(--gold)">Roue Communautaire</strong> a déjà été utilisée.<br>
         <span style="color:var(--rust-light);margin-top:8px;display:block"><i class="fa-solid fa-clock"></i> Prochaine utilisation dans <strong>${_fmtRestant(_cdRestantType)}</strong></span>
       </p>
-      <button class="btn" style="width:100%;justify-content:center;opacity:0.4;cursor:not-allowed" disabled><i class="fa-solid fa-clock" style="margin-right:6px"></i>Indisponible — bloquée 12h</button>`;
+      <button class="btn" style="width:100%;justify-content:center;opacity:0.4;cursor:not-allowed" disabled><i class="fa-solid fa-clock" style="margin-right:6px"></i>Indisponible — bloquée 24h</button>`;
   }
 
   switch(type) {
@@ -5993,7 +5993,9 @@ function _fmtDuree(ms) {
   if (min < 60) return `${min}min`;
   const h = Math.floor(min / 60), m = min % 60;
   if (h < 24) return `${h}h${String(m).padStart(2, '0')}`;
-  return `${Math.floor(h / 24)}j ${h % 24}h`;
+  // Un cooldown de 24h tout juste posé s'affichait « 1j 0h » : on coupe l'heure à zéro.
+  const j = Math.floor(h / 24), reste = h % 24;
+  return reste ? `${j}j ${reste}h` : `${j}j`;
 }
 
 // Le mode tourne tant qu'il n'est pas retiré à la main : actif s'il a un départ
