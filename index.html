@@ -4118,8 +4118,12 @@ function showPlayerDetail(id) {
     ? '<p style="color:var(--text-muted);text-align:center;padding:20px">Aucune game.</p>'
     : `<div class="player-detail-games">${(() => {
       // Quand la meilleure game est figée, c'est la meilleure NON figée qui est réellement
-      // exposée aux actions de roue : on la signale comme 2e best.
+      // exposée aux actions de roue : on la signale. Le gel pouvant se cumuler sur les
+      // premières games, ce n'est pas forcément la 2e — on affiche donc son vrai rang.
       const secondBest = (best && best.locked) ? getBestMovable(p) : null;
+      const rangSecond = secondBest
+        ? [...p.games].sort((a, b) => b.score - a.score).findIndex(x => x.id === secondBest.id) + 1
+        : 0;
       return p.games.map((g, i) => {
       const isBest = best && g.id === best.id;
       const isSecondBest = secondBest && g.id === secondBest.id;
@@ -4127,7 +4131,7 @@ function showPlayerDetail(id) {
       const isCounted = counted.some(c => c.id === g.id);
       return `<div class="game-card ${isBest ? 'best-game' : ''} ${isWorst ? 'worst-game' : ''}" ${isAdmin() ? 'style="padding-bottom:24px"' : ''}>
         ${isBest ? '<span class="gc-tag" style="background:var(--gold);color:var(--bg)">BEST</span>' : ''}
-        ${isSecondBest && !isBest ? '<span class="gc-tag" style="background:var(--gold-light);color:var(--bg)">2ᵉ BEST</span>' : ''}
+        ${isSecondBest && !isBest ? `<span class="gc-tag" style="background:var(--gold-light);color:var(--bg)" title="Meilleure game encore libre — c'est elle qui est exposée aux actions de roue">${rangSecond}ᵉ BEST</span>` : ''}
         ${isWorst && !isBest && !isSecondBest ? '<span class="gc-tag" style="background:var(--rust);color:white">PIRE</span>' : ''}
         ${g.locked ? `<div style="display:inline-flex;align-items:center;gap:4px;margin-bottom:3px;background:rgba(74,142,201,0.15);border:1px solid var(--blue);border-radius:3px;padding:1px 6px;font-size:9px;font-weight:700;color:var(--blue);letter-spacing:0.5px"><i class="fa-solid fa-lock" style="font-size:8px"></i> FIGÉE${isAdmin() ? `<button onclick="unlockGame('${p.id}','${g.id}');event.stopPropagation()" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:11px;padding:0;line-height:1;margin-left:2px;opacity:0.75" title="Dégeler cette game">×</button>` : ''}</div>` : ''}
         <div class="gc-num">Game ${i + 1} · ${g.date || ''}</div>
