@@ -938,6 +938,7 @@ main {
 .roue-comm-color { color: var(--gold); }
 .roue-perso-color { color: var(--purple); }
 .roue-folie-color { color: var(--rust-light); }
+.roue-fin-color { color: var(--blue); }
 
 
 .action-list-compact {
@@ -988,6 +989,8 @@ main {
 .action-card-gold:hover { border-color: var(--gold); background: rgba(212,175,55,0.06); }
 .action-card-purple { border-color: rgba(155,89,182,0.25); }
 .action-card-purple:hover { border-color: var(--purple); background: rgba(155,89,182,0.06); }
+.action-card-blue { border-color: rgba(74,142,201,0.28); }
+.action-card-blue:hover { border-color: var(--blue); background: rgba(74,142,201,0.07); }
 .action-card-rust { border-color: rgba(224,90,56,0.28); }
 .action-card-rust:hover { border-color: var(--rust-light); background: rgba(224,90,56,0.07); }
 .ac-bg {
@@ -1644,6 +1647,68 @@ main {
 
     </div>
   </div>
+
+  <!-- ROUE DES FINISSEURS -->
+  <div class="roue-section" id="roue-fin-section" style="margin-top:20px;border-color:rgba(74,142,201,0.3);background:rgba(74,142,201,0.04)">
+    <div class="roue-header" style="border-bottom-color:rgba(74,142,201,0.25)">
+      <div>
+        <div class="roue-title roue-fin-color"><i class="fa-solid fa-flag-checkered" style="font-size:14px;margin-right:6px"></i>Roue des finisseurs <span style="font-size:13px;color:var(--text-muted);font-weight:400">(+ de 60 games)</span></div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px"><i class="fa-solid fa-circle-info"></i> Réservée aux joueurs ayant bouclé leur saison, ou à quelques games de la boucler</div>
+      </div>
+    </div>
+    <div class="action-grid">
+
+      <div class="action-card action-card-blue" onclick="openAction('fin-del-worst')">
+        <div class="ac-bg"><i class="fa-solid fa-trash-can"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-trash-can"></i></div>
+        <div class="ac-title">Retire ta pire game</div>
+        <div class="ac-desc">Sa pire game est supprimée — elle ne compte plus, mais un créneau se libère sous sa limite</div>
+      </div>
+
+      <div class="action-card action-card-blue" onclick="openAction('fin-freeze-top3')">
+        <div class="ac-bg"><i class="fa-solid fa-lock"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-lock"></i></div>
+        <div class="ac-title">Fige tes 3 meilleures games</div>
+        <div class="ac-desc">Ses 3 meilleures games deviennent intouchables : ni vol, ni échange, ni modification de score</div>
+      </div>
+
+      <div class="action-card action-card-blue" onclick="openAction('fin-immunite')">
+        <div class="ac-bg"><i class="fa-solid fa-shield-halved"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <div class="ac-title">Immunité 4 jours</div>
+        <div class="ac-desc">Pendant 4 jours, aucune action négative ne peut le cibler — les bonus l'atteignent toujours</div>
+      </div>
+
+      <div class="action-card action-card-blue" onclick="openAction('fin-extra-game')">
+        <div class="ac-bg"><i class="fa-solid fa-circle-plus"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-circle-plus"></i></div>
+        <div class="ac-title">1 game supplémentaire</div>
+        <div class="ac-desc">Sa limite personnelle augmente d'une game, hors des 60 de la ligue</div>
+      </div>
+
+      <div class="action-card action-card-blue" onclick="openAction('fin-fusion')">
+        <div class="ac-bg"><i class="fa-solid fa-code-merge"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-code-merge"></i></div>
+        <div class="ac-title">Fusion des 2 pires games</div>
+        <div class="ac-desc">Ses 2 pires games n'en font plus qu'une, qui cumule leurs points — et un créneau se libère</div>
+      </div>
+
+      <div class="action-card action-card-blue" onclick="openAction('fin-moyenne')">
+        <div class="ac-bg"><i class="fa-solid fa-chart-line"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-chart-line"></i></div>
+        <div class="ac-title">Pire game ramenée à la moyenne</div>
+        <div class="ac-desc">Sa pire game monte au niveau de la moyenne de toutes ses games</div>
+      </div>
+
+      <div class="action-card action-card-blue" onclick="openAction('fin-echange-best')">
+        <div class="ac-bg"><i class="fa-solid fa-right-left"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-right-left"></i></div>
+        <div class="ac-title">Échange pire contre meilleure</div>
+        <div class="ac-desc">Sa pire game part chez un joueur au choix, dont il récupère la meilleure</div>
+      </div>
+
+    </div>
+  </div>
 </div>
 
 <!-- PAGE JOUEURS -->
@@ -1843,6 +1908,25 @@ main {
     </div>
   </div>
 
+
+  <!-- ROUE DES FINISSEURS -->
+  <div class="roue-section" style="margin-top:20px;border-color:rgba(74,142,201,0.3);background:rgba(74,142,201,0.04)">
+    <div class="roue-header" style="border-bottom-color:rgba(74,142,201,0.25)">
+      <div>
+        <div class="roue-title roue-fin-color">Roue des finisseurs <span style="font-size:13px;color:var(--text-muted);font-weight:400">(+ de 60 games)</span></div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Réservée aux joueurs ayant joué au moins <span id="regle-seuil-fin">—</span> games. Les games bonus n'entrent pas dans ce décompte : un joueur à 60/65 a bien bouclé ses 60.</div>
+      </div>
+    </div>
+    <div class="action-list-compact">
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-trash-can"></i> Retire ta pire game</div><div style="font-size:11px;color:var(--text-muted)">Sa pire game non figée est supprimée définitivement. Attention : tant que son nombre de games ne dépasse pas sa limite, toutes ses games comptent — il perd donc les points de cette game. En contrepartie, un créneau se libère sous sa limite, qu'il peut rejouer pour la remplacer.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-lock"></i> Fige tes 3 meilleures games</div><div style="font-size:11px;color:var(--text-muted)">Ses 3 meilleures games encore libres passent en figées : plus supprimables, plus échangeables, plus piquables, et aucune roue ne peut plus modifier leur score. Elles restent clonables. Sa pire game n'est jamais figée, et s'il a moins de 3 games éligibles, seules celles disponibles sont figées.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shield-halved"></i> Immunité 4 jours</div><div style="font-size:11px;color:var(--text-muted)">Pendant 4 jours, le joueur ne peut être la cible d'aucune action négative : vol de score, échange subi, clone qui remplace une de ses games, ÷ 2 aléatoire, pire game à 0, roulette russe, échange général. Les bonus continuent de l'atteindre normalement — gel, points bonus, multiplicateurs, games offertes. Le badge et le temps restant sont visibles dans le classement.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-circle-plus"></i> 1 game supplémentaire</div><div style="font-size:11px;color:var(--text-muted)">Sa limite personnelle augmente d'une game, hors des 60 de la ligue. Elle se cumule avec les games bonus déjà obtenues.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-code-merge"></i> Fusion des 2 pires games</div><div style="font-size:11px;color:var(--text-muted)">Ses 2 pires games non figées sont remplacées par une seule, dont le score est exactement leur somme : il ne perd aucun point. Son nombre de games baisse d'une unité, ce qui libère un créneau sous sa limite. La game issue de la fusion hérite des notes des deux games d'origine : si l'une avait déjà été modifiée par une roue, la fusion ne l'efface pas.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-chart-line"></i> Pire game ramenée à la moyenne</div><div style="font-size:11px;color:var(--text-muted)">Sa pire game non figée est remontée au niveau de la moyenne de toutes ses games. Le plafond est donc sa propre moyenne, aucun score aberrant n'est possible. Comme toute modification de roue, elle ne s'applique qu'à une game encore vierge : si sa pire game a déjà été multipliée, divisée ou mise à zéro, l'action est refusée.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-right-left"></i> Échange pire contre meilleure</div><div style="font-size:11px;color:var(--text-muted)">La pire game du finisseur part chez un joueur ciblé, qui lui cède sa meilleure game. Le nombre de games de chacun reste identique. Les games figées ne peuvent pas être cédées, et un joueur immunisé ne peut pas être ciblé.</div></div></div>
+    </div>
+  </div>
   <!-- ROUE DE FOLIE -->
   <div class="roue-section" style="margin-top:20px;border-color:rgba(224,90,56,0.3);background:rgba(180,60,40,0.04)">
     <div class="roue-header" style="border-bottom-color:rgba(224,90,56,0.25)">
@@ -2260,7 +2344,8 @@ let state = {
   roueCommu20Paused: 0,  // 1 = en pause, le compteur est figé
   roueCommu20Start: 0,   // subsCount au moment d'activation du mode 20
   roueCommu50Next: 0,    // prochain palier forcé après annulation du mode 20 (0 = pas de forçage)
-  actionCooldowns: {}   // { cléAction: timestamp ms } — blocage 24h après usage (Roue Commu)
+  actionCooldowns: {},  // { cléAction: timestamp ms } — blocage 24h après usage (Roue Commu)
+  immunites: {}         // { idJoueur: timestamp ms } — protection contre les actions négatives
 };
 
 let currentTop = 0;
@@ -2354,6 +2439,9 @@ async function loadState() {
     try { const ids = new Set(JSON.parse(lockedGamesFlag?.value || '[]')); state.players.forEach(p => p.games.forEach(g => { g.locked = ids.has(g.id); })); } catch { state.players.forEach(p => p.games.forEach(g => { g.locked = false; })); }
     const cooldownsFlag = (flags || []).find(f => f.key === 'actionCooldowns');
     try { state.actionCooldowns = JSON.parse(cooldownsFlag?.value || '{}') || {}; } catch { state.actionCooldowns = {}; }
+
+    const immunitesFlag = (flags || []).find(f => f.key === 'immunites');
+    try { state.immunites = JSON.parse(immunitesFlag?.value || '{}') || {}; } catch { state.immunites = {}; }
     // Migration de l'ancien cooldown unique de Meilleure game × 1.5
     const ancienX15 = parseInt((flags || []).find(f => f.key === 'bestX15Until')?.value || '0') || 0;
     if (ancienX15 > Date.now() && !state.actionCooldowns['best-x15']) state.actionCooldowns['best-x15'] = ancienX15;
@@ -2490,6 +2578,7 @@ async function saveState() {
       { key: 'lockedGames', value: JSON.stringify(state.players.flatMap(p => (p.games || []).filter(g => g.locked).map(g => g.id))) },
       { key: 'rouePersoCounts', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.rouePersoCount > 0).map(p => [p.id, p.rouePersoCount]))) },
       { key: 'actionCooldowns', value: JSON.stringify(Object.fromEntries(Object.entries(state.actionCooldowns || {}).filter(([, t]) => t > Date.now()))) },
+      { key: 'immunites', value: JSON.stringify(Object.fromEntries(Object.entries(state.immunites || {}).filter(([, t]) => t > Date.now()))) },
       { key: 'bestX15Until', value: '0' }, // LEGACY — remplacé par actionCooldowns
       { key: 'roueCommu20Since', value: String(state.roueCommu20Since || 0) },
       { key: 'roueCommu20Elapsed', value: String(state.roueCommu20Elapsed || 0) },
@@ -2558,8 +2647,9 @@ function getWorstMovable(player) {
 }
 
 // Une game ne peut subir qu'UNE SEULE modification de roue, quelle qu'elle soit :
-//   Roue Commu   — ×1.5 sur la meilleure, ×2 sur la pire, ×2 sur une game au hasard
-//   Roue de Folie — ÷2 sur une game au hasard, pire game mise à 0
+//   Roue Commu     — ×1.5 sur la meilleure, ×2 sur la pire, ×2 sur une game au hasard
+//   Roue de Folie  — ÷2 sur une game au hasard, pire game mise à 0
+//   Roue finisseurs — pire game ramenée à la moyenne
 // Jamais deux fois la même, jamais deux différentes. Les multiplicateurs de la Roue
 // Perso ne comptent pas : une game déjà ×1.4 par la Roue Perso reste éligible.
 // Une game figée est totalement intouchable : ni bonus, ni malus, ni déplacement. Les
@@ -2571,10 +2661,11 @@ const NOTES_MULT_ROUE = [
   '×2 pire game (roue commu)',
   '×2 aléatoire (roue commu)',
   '÷ 2 aléatoire (roue de folie)',
-  'pire game mise à 0 (roue de folie)'
+  'pire game mise à 0 (roue de folie)',
+  'ramenée à la moyenne (roue finisseurs)'
 ];
 function _dejaMultRoue(g) {
-  if (g.x15 || g.x2commu || g.x2rand || g.div2folie || g.zeroFolie) return true;
+  if (g.x15 || g.x2commu || g.x2rand || g.div2folie || g.zeroFolie || g.moyenneFin) return true;
   const note = g.note || '';
   return NOTES_MULT_ROUE.some(n => note.includes(n));
 }
@@ -2656,6 +2747,8 @@ function renderRegles() {
   const b = document.getElementById('regle-maxgames-badge');
   if (t) t.textContent = mg;
   if (b) b.textContent = `${mg} max`;
+  const sf = document.getElementById('regle-seuil-fin');
+  if (sf) sf.textContent = seuilFinLigue();
 }
 
 // ---- Cooldown des actions de la Roue Commu ----
@@ -2803,6 +2896,7 @@ function renderClassement() {
       </td>
       <td>
         <div class="player-name">${escHtml(p.name)}</div>
+        ${estImmunise(p) ? `<div style="display:inline-flex;align-items:center;gap:5px;margin-top:3px;background:rgba(74,142,201,0.15);border:1px solid var(--blue);border-radius:3px;padding:2px 6px;font-size:10px;font-weight:700;color:var(--blue);letter-spacing:0.5px" title="Protégé contre les actions négatives"><i class="fa-solid fa-shield-halved" style="font-size:9px"></i> IMMUNISÉ ${_fmtDuree(finImmunite(p))}</div>` : ''}
         ${p.skipNext ? `<div style="display:inline-flex;align-items:center;gap:5px;margin-top:3px;background:rgba(192,71,42,0.15);border:1px solid var(--rust);border-radius:3px;padding:2px 6px;font-size:10px;font-weight:700;color:var(--rust);letter-spacing:0.5px"><i class="fa-solid fa-forward-step" style="font-size:9px"></i> SKIP DISPO${isAdmin() ? `<button onclick="cancelSkip('${p.id}');event.stopPropagation()" style="background:none;border:none;color:var(--rust);cursor:pointer;font-size:12px;padding:0;line-height:1;margin-left:2px;opacity:0.7" title="Annuler le skip">×</button>` : ''}</div>` : ''}
         ${p.freezeKills ? `<div style="font-size:10px;color:var(--blue)"><i class="fa-solid fa-snowflake"></i> Gelé à ${p.freezeKills} kills</div>` : ''}
         ${p.pendingMult ? `<div style="font-size:10px;color:var(--purple)"><i class="fa-solid fa-xmark"></i> ×${p.pendingMult} game (roue)</div>` : ''}
@@ -3410,6 +3504,23 @@ const JOKERS_MAX = 6;
 
 // Nombre de games minimum pour que la meilleure game d'un joueur puisse être figée.
 const FREEZE_MIN_GAMES = 30;
+
+// ---- Roue des finisseurs (+ de 60 games) ----
+// Réservée aux joueurs ayant bouclé leur saison, ou à quelques games de la boucler.
+// Le seuil se mesure sur le nombre de games JOUÉES, pas sur la limite personnelle :
+// un joueur à 60/65 a bien fini ses 60, ses games bonus ne doivent pas l'exclure.
+const MARGE_FIN_LIGUE = 2;
+function seuilFinLigue() { return Math.max(1, (state.maxGames || 60) - MARGE_FIN_LIGUE); }
+function estFinisseur(p) { return (p.games || []).length >= seuilFinLigue(); }
+function joueursFinisseurs() { return state.players.filter(estFinisseur); }
+
+// Immunité : 4 jours pendant lesquels le joueur ne peut être la CIBLE d'une action
+// négative. Les bonus continuent de l'atteindre normalement.
+const IMMUNITE_MS = 4 * 24 * 60 * 60 * 1000;
+function estImmunise(p) { return !!p && (state.immunites?.[p.id] || 0) > Date.now(); }
+function finImmunite(p) { return (state.immunites?.[p.id] || 0) - Date.now(); }
+// À appliquer sur tout tirage d'une action négative, pour écarter les protégés.
+function sansImmunises(joueurs) { return joueurs.filter(p => !estImmunise(p)); }
 
 // Nombre de qualifiés pour la finale, marqués dans le classement par un liseré doré
 // et un trait de séparation sous le dernier qualifié.
@@ -4501,7 +4612,8 @@ function doCloneBestWorstRand() {
   if (poolA.length < 2) { toast('Il faut au moins 2 joueurs avec des games.', 'error'); return; }
   const src = poolA[Math.floor(Math.random() * poolA.length)];
   // dst doit avoir une pire game non figée à céder, ou aucune game du tout
-  const poolB = state.players.filter(p => p.id !== src.id && (p.games.length === 0 || getWorstMovable(p)));
+  // Le destinataire cède sa pire game : un immunisé n'entre pas dans le tirage
+  const poolB = sansImmunises(state.players).filter(p => p.id !== src.id && (p.games.length === 0 || getWorstMovable(p)));
   if (!poolB.length) { toast('Aucun joueur éligible.', 'error'); return; }
   const dst = poolB[Math.floor(Math.random() * poolB.length)];
   const srcBest = getBestGame(src); // la source est seulement clonée : une game figée peut l'être
@@ -4524,8 +4636,9 @@ function doCloneBestWorstRand() {
 }
 
 function doCommEchangeBestWorst() {
-  const eligible = state.players.filter(p => p.games.length > 0);
-  if (eligible.length < 2) { toast('Il faut au moins 2 joueurs avec des games.', 'error'); return; }
+  // Les joueurs immunisés sont écartés du tirage : cette action leur est défavorable
+  const eligible = sansImmunises(state.players).filter(p => p.games.length > 0);
+  if (eligible.length < 2) { toast('Il faut au moins 2 joueurs ciblables (hors immunisés).', 'error'); return; }
   // Les deux games sont cédées : elles doivent être non figées
   const poolA = eligible.filter(p => getBestMovable(p));
   if (!poolA.length) { toast('Aucun joueur éligible (meilleures games figées).', 'error'); return; }
@@ -4556,7 +4669,8 @@ function doCommEchangeBestWorst() {
 
 function doCommEchangeRand() {
   // Il faut 2 games NON FIGÉES à céder de chaque côté
-  const eligible = state.players.filter(p => movableGames(p).length >= 2);
+  // Les joueurs immunisés sont écartés du tirage : cette action leur est défavorable
+  const eligible = sansImmunises(state.players).filter(p => movableGames(p).length >= 2);
   if (eligible.length < 2) { toast('Il faut au moins 2 joueurs avec 2 games non figées chacun.', 'error'); return; }
   const pa = eligible[Math.floor(Math.random() * eligible.length)];
   const poolB = eligible.filter(p => p.id !== pa.id);
@@ -4590,7 +4704,8 @@ function doCommEchangeRand() {
 
 function doFolieEchangeAll() {
   // Seuls les joueurs ayant une game non figée à céder entrent dans la chaîne
-  const eligible = state.players.filter(p => movableGames(p).length > 0);
+  // Les joueurs immunisés sont écartés du tirage : cette action leur est défavorable
+  const eligible = sansImmunises(state.players).filter(p => movableGames(p).length > 0);
   if (eligible.length < 2) { toast(`Il faut au moins 2 joueurs avec des games non figées (${eligible.length} actuellement).`, 'error'); return; }
   // Toute la ligue entre dans la chaîne, dans un ordre tiré au sort
   const picks = [...eligible].sort(() => Math.random() - 0.5)
@@ -4621,12 +4736,15 @@ function doCommVolScore() {
   const eligible = state.players.filter(p => p.games.length > 0);
   if (eligible.length < 2) { toast('Il faut au moins 2 joueurs avec des games.', 'error'); return; }
   const sorted = [...eligible].sort((a, b) => getPlayerTotal(b) - getPlayerTotal(a));
-  // Seuls les joueurs dont le voisin du dessus a un total différent : cloner un score identique ne changerait rien
+  // Seuls les joueurs dont le voisin du dessus a un total différent : cloner un score identique ne changerait rien.
+  // Le joueur copié subit l'action — il voit son score dupliqué juste derrière lui — donc
+  // un immunisé ne peut pas servir de modèle.
   const candidates = [];
   for (let i = 1; i < sorted.length; i++) {
+    if (estImmunise(sorted[i - 1])) continue;
     if (getPlayerTotal(sorted[i]) !== getPlayerTotal(sorted[i - 1])) candidates.push(i);
   }
-  if (!candidates.length) { toast('Tous les joueurs sont à égalité — rien à cloner.', 'error'); return; }
+  if (!candidates.length) { toast('Aucun modèle à cloner : égalités, ou joueurs du dessus immunisés.', 'error'); return; }
   const i = candidates[Math.floor(Math.random() * candidates.length)];
   const voleur = sorted[i];      // tiré au sort, il clone vers le haut
   const modele = sorted[i - 1];  // juste au-dessus de lui au classement, il garde son score
@@ -4679,8 +4797,9 @@ function doCommRandX2Trio() {
 }
 
 function doFolieWorstZero() {
-  const eligible = state.players.filter(p => p.games.length > 0);
-  if (!eligible.length) { toast('Aucun joueur avec des games.', 'error'); return; }
+  // Les joueurs immunisés sont écartés du tirage : cette action leur est défavorable
+  const eligible = sansImmunises(state.players).filter(p => p.games.length > 0);
+  if (!eligible.length) { toast('Aucun joueur ciblable (aucune game, ou tous immunisés).', 'error'); return; }
   // Une pire game déjà à 0 n'a rien à perdre, et une game déjà modifiée par une roue ne
   // peut plus l'être : dans les deux cas le joueur est épargné. Pas de report sur la 2e
   // pire game — ce serait plus punitif que l'action ne le prévoit.
@@ -4798,8 +4917,9 @@ function doCommEchangeFlooozii() {
   const flo = getFlooozii();
   if (!flo) { toast(`Aucun joueur nommé ${FLOOOZII_NAME} dans la ligue.`, 'error'); return; }
   if (!movableGames(flo).length) { toast(`${flo.name} n'a aucune game échangeable (aucune game ou toutes figées).`, 'error'); return; }
-  const pool = state.players.filter(p => p.id !== flo.id && movableGames(p).length > 0);
-  if (!pool.length) { toast('Aucun autre joueur avec une game échangeable.', 'error'); return; }
+  // Les joueurs immunisés sont écartés du tirage : cette action leur est défavorable
+  const pool = sansImmunises(state.players).filter(p => p.id !== flo.id && movableGames(p).length > 0);
+  if (!pool.length) { toast('Aucun autre joueur échangeable (hors immunisés).', 'error'); return; }
   const autre = pool[Math.floor(Math.random() * pool.length)];
   const mvA = movableGames(autre), mvF = movableGames(flo);
   const gA = mvA[Math.floor(Math.random() * mvA.length)];
@@ -4827,8 +4947,9 @@ function doCommCloneFlooozii() {
   if (!flo) { toast(`Aucun joueur nommé ${FLOOOZII_NAME} dans la ligue.`, 'error'); return; }
   const best = getBestGame(flo); // seulement clonée : une game figée peut l'être
   if (!best) { toast(`${flo.name} n'a aucune game à cloner.`, 'error'); return; }
-  const pool = state.players.filter(p => p.id !== flo.id && movableGames(p).length > 0);
-  if (!pool.length) { toast('Aucun autre joueur avec une game remplaçable.', 'error'); return; }
+  // Le joueur ciblé perd une de ses games : un immunisé n'entre pas dans le tirage
+  const pool = sansImmunises(state.players).filter(p => p.id !== flo.id && movableGames(p).length > 0);
+  if (!pool.length) { toast('Aucun autre joueur remplaçable (hors immunisés).', 'error'); return; }
   const autre = pool[Math.floor(Math.random() * pool.length)];
   const mv = movableGames(autre);
   const cible = mv[Math.floor(Math.random() * mv.length)];
@@ -4876,7 +4997,8 @@ function doCommEchangeTop10() {
   // Le top 10 du classement, restreint à ceux ayant une game intermédiaire à céder
   const classement = [...state.players].filter(p => p.games.length > 0)
     .sort((a, b) => getPlayerTotal(b) - getPlayerTotal(a)).slice(0, 10);
-  const eligible = classement.filter(p => middleGames(p).length > 0);
+  // Les joueurs immunisés sont écartés du tirage : cette action leur est défavorable
+  const eligible = sansImmunises(classement).filter(p => middleGames(p).length > 0);
   if (eligible.length < 2) { toast(`Il faut au moins 2 joueurs du top 10 avec une game intermédiaire (${eligible.length} actuellement).`, 'error'); return; }
   const picks = [...eligible].sort(() => Math.random() - 0.5)
     .map(p => { const pool = middleGames(p); return { p, g: pool[Math.floor(Math.random() * pool.length)], rang: classement.indexOf(p) + 1 }; });
@@ -4923,7 +5045,8 @@ function _raisonNonDivisible(p) {
 }
 
 function doFolieHalfRand() {
-  const eligible = state.players.filter(p => _poolDivisible(p).length);
+  // Les joueurs immunisés sont écartés du tirage : cette action leur est défavorable
+  const eligible = sansImmunises(state.players).filter(p => _poolDivisible(p).length);
   if (!eligible.length) { toast('Aucune game divisible : toutes sont à 0, figées ou déjà transformées par une roue.', 'error'); return; }
   const picks = eligible.map(p => {
     const pool = _poolDivisible(p);
@@ -5000,7 +5123,8 @@ let _rouletteGen = 0;   // invalide les animations en cours si un nouveau barill
 function doFolieRouletteDraw() {
   // Une game figée ne peut pas être perdue : seuls les joueurs ayant une meilleure game
   // non figée entrent dans le barillet
-  const eligible = state.players.filter(p => getBestMovable(p));
+  // Les joueurs immunisés sont écartés du tirage : cette action leur est défavorable
+  const eligible = sansImmunises(state.players).filter(p => getBestMovable(p));
   if (eligible.length < 6) { toast(`Il faut au moins 6 joueurs avec des games non figées (${eligible.length} actuellement).`, 'error'); return; }
   _roulette = {
     picks: [...eligible].sort(() => Math.random() - 0.5).slice(0, 6),
@@ -5116,6 +5240,13 @@ function openAction(type) {
     'perso-freeze-best': 'Fige la meilleure game',
     'perso-clone-best-ligue': 'Ajout de la meilleure game de la ligue',
     'perso-extra-game': 'Game supplémentaire',
+    'fin-del-worst': 'Retire ta pire game',
+    'fin-freeze-top3': 'Fige tes 3 meilleures games',
+    'fin-immunite': 'Immunité 4 jours',
+    'fin-extra-game': '1 game supplémentaire',
+    'fin-fusion': 'Fusion des 2 pires games',
+    'fin-moyenne': 'Pire game ramenée à la moyenne',
+    'fin-echange-best': 'Échange pire contre meilleure',
     'perso-top10pts': '+10 pts Top 10',
     'comm-worst-x2': 'Pire game × 2',
     'comm-echange-best-worst': 'Échange meilleure ↔ pire (aléatoire)',
@@ -5140,6 +5271,91 @@ function openAction(type) {
   document.getElementById('modal-action-title').textContent = titles[type] || type;
   document.getElementById('modal-action-body').innerHTML = buildActionBody(type);
   openModal('modal-action');
+}
+
+// ---- Roue des finisseurs : cibles et aperçu ----
+// Une seule source de vérité par action, partagée par l'aperçu et l'exécution, pour
+// qu'un refus annoncé avant le clic soit exactement celui qui se produit après.
+function cibleFin(cle, p, p2) {
+  if (!p) return { err: 'Sélectionnez un joueur.' };
+  if (!estFinisseur(p)) return { err: `${p.name} n'a que ${p.games.length} games, il en faut ${seuilFinLigue()}.` };
+  const libres = movableGames(p);
+  if (cle === 'fin-extra-game') return { ok: true };
+  if (cle === 'fin-immunite') {
+    return estImmunise(p) ? { err: `${p.name} est déjà immunisé pour ${_fmtDuree(finImmunite(p))}.` } : { ok: true };
+  }
+  if (cle === 'fin-freeze-top3') {
+    const cibles = freezableGames(p).sort((a, b) => b.score - a.score).slice(0, 3);
+    if (!cibles.length) return { err: libres.length ? `Il ne reste que la pire game de ${p.name}, elle ne peut pas être figée.` : `Toutes les games de ${p.name} sont déjà figées.` };
+    return { cibles };
+  }
+  if (cle === 'fin-del-worst') {
+    const g = getWorstMovable(p);
+    return g ? { g } : { err: `${p.name} n'a aucune game libre à supprimer.` };
+  }
+  if (cle === 'fin-fusion') {
+    const tri = libres.slice().sort((a, b) => a.score - b.score);
+    if (tri.length < 2) return { err: `${p.name} n'a que ${tri.length} game libre : il en faut 2 à fusionner.` };
+    return { cibles: [tri[0], tri[1]] };
+  }
+  if (cle === 'fin-moyenne') {
+    const g = getWorstMovable(p);
+    if (!g) return { err: `${p.name} n'a aucune game libre.` };
+    if (_dejaMultRoue(g)) return { err: `La pire game de ${p.name} a déjà été modifiée par une roue.` };
+    const moy = Math.round(p.games.reduce((t, x) => t + x.score, 0) / p.games.length);
+    if (moy <= g.score) return { err: `La pire game de ${p.name} est déjà au niveau de sa moyenne.` };
+    return { g, moy };
+  }
+  if (cle === 'fin-echange-best') {
+    if (!p2) return { err: 'Sélectionnez le joueur ciblé.' };
+    if (p2.id === p.id) return { err: 'Choisissez deux joueurs différents.' };
+    if (estImmunise(p2)) return { err: `${p2.name} est immunisé pour ${_fmtDuree(finImmunite(p2))} : il ne peut pas être ciblé.` };
+    const pire = getWorstMovable(p), best = getBestMovable(p2);
+    if (!pire) return { err: `${p.name} n'a aucune game libre à céder.` };
+    if (!best) return { err: `${p2.name} n'a aucune game libre à céder.` };
+    return { pire, best, p2 };
+  }
+  return { err: 'Action inconnue.' };
+}
+
+function apercuFin(cle) {
+  const el = document.getElementById('action-fin-preview');
+  if (!el) return;
+  const lire = id => { const s = document.getElementById(id); return s ? state.players.find(x => x.id === s.value) : null; };
+  const p = lire('act-p1'), p2 = lire('act-p2');
+  if (!p) { el.innerHTML = ''; return; }
+  const r = cibleFin(cle, p, p2);
+  const encadre = html => `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:13px;line-height:1.8">${html}</div>`;
+  if (r.err) {
+    el.innerHTML = `<div style="background:rgba(192,71,42,0.1);border:1px solid var(--rust);border-radius:4px;padding:12px;font-size:13px;color:var(--rust-light)"><i class="fa-solid fa-circle-exclamation" style="margin-right:6px"></i>${escHtml(r.err)}</div>`;
+    return;
+  }
+  const total = getPlayerTotal(p), lim = (state.maxGames || 20) + (p.extraGames || 0);
+  let html = '';
+  if (cle === 'fin-del-worst') {
+    html = `Game supprimée : <strong style="color:var(--rust-light)">${r.g.score} pts</strong> <span style="color:var(--text-muted)">(${r.g.kills} kills)</span><br>
+      Total : <span style="color:var(--text-muted)">${total}</span> → <strong style="color:var(--rust-light)">${total - r.g.score} pts</strong><br>
+      Games : ${p.games.length}/${lim} → <strong>${p.games.length - 1}/${lim}</strong> <span style="color:var(--green)">— un créneau libre à rejouer</span>`;
+  } else if (cle === 'fin-freeze-top3') {
+    html = `<strong>${r.cibles.length} game${r.cibles.length > 1 ? 's' : ''}</strong> figée${r.cibles.length > 1 ? 's' : ''} : ${r.cibles.map(g => `<strong style="color:var(--gold)">${g.score} pts</strong>`).join(', ')}
+      ${r.cibles.length < 3 ? `<br><span style="color:var(--text-muted)">Moins de 3 : les autres sont déjà figées, ou c'est sa pire game.</span>` : ''}`;
+  } else if (cle === 'fin-immunite') {
+    html = `<strong style="color:var(--blue)">${escHtml(p.name)}</strong> sera protégé jusqu'au <strong>${new Date(Date.now() + IMMUNITE_MS).toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</strong>`;
+  } else if (cle === 'fin-extra-game') {
+    html = `Limite : ${p.games.length}/${lim} → <strong>${p.games.length}/${lim + 1}</strong>`;
+  } else if (cle === 'fin-fusion') {
+    const [a, b] = r.cibles;
+    html = `<span style="color:var(--text-muted)">${a.score} pts + ${b.score} pts</span> → <strong style="color:var(--gold)">${a.score + b.score} pts</strong> en une seule game<br>
+      Total inchangé : <strong>${total} pts</strong><br>
+      Games : ${p.games.length}/${lim} → <strong>${p.games.length - 1}/${lim}</strong> <span style="color:var(--green)">— un créneau libre</span>`;
+  } else if (cle === 'fin-moyenne') {
+    html = `Pire game : <span style="color:var(--text-muted)">${r.g.score} pts</span> → <strong style="color:var(--gold)">${r.moy} pts</strong> <span style="color:var(--green)">(+${r.moy - r.g.score})</span><br>
+      <span style="color:var(--text-muted)">Moyenne calculée sur ses ${p.games.length} games.</span>`;
+  } else if (cle === 'fin-echange-best') {
+    html = `<strong>${escHtml(p.name)}</strong> cède <span style="color:var(--text-muted)">${r.pire.score} pts</span> et reçoit <strong style="color:var(--gold)">${r.best.score} pts</strong> <span style="color:var(--green)">(+${r.best.score - r.pire.score})</span><br>
+      <strong>${escHtml(r.p2.name)}</strong> cède <span style="color:var(--gold)">${r.best.score} pts</span> et reçoit <span style="color:var(--text-muted)">${r.pire.score} pts</span> <span style="color:var(--rust-light)">(${r.pire.score - r.best.score})</span>`;
+  }
+  el.innerHTML = encadre(html);
 }
 
 // Aperçu du gel Roue Perso : annonce la game visée, ou la raison du refus, dès que le
@@ -5182,6 +5398,21 @@ function buildActionBody(type) {
         ${state.players.map(p => `<option value="${p.id}">${escHtml(p.name)}</option>`).join('')}
       </select>
     </div>`;
+
+  // Même sélecteur, restreint aux joueurs ayant bouclé leur saison. Un joueur trop peu
+  // avancé ne doit pas pouvoir être choisi par erreur dans la Roue des finisseurs.
+  const finisseurSelect = (id, label, onchange) => {
+    const dispo = joueursFinisseurs();
+    return `
+    <div class="form-row">
+      <label class="form-label">${label}</label>
+      <select class="form-select" id="act-${id}" ${onchange ? `onchange="${onchange}"` : ''}>
+        ${dispo.length
+          ? `<option value="">— Sélectionner —</option>${dispo.map(p => `<option value="${p.id}">${escHtml(p.name)} — ${p.games.length} games</option>`).join('')}`
+          : `<option value="">— aucun joueur n'a encore ${seuilFinLigue()} games —</option>`}
+      </select>
+    </div>`;
+  };
 
   // Barrage commun : une action de Roue Commu encore en cooldown n'affiche aucun bouton
   const _cdRestantType = _cdRestant(type);
@@ -5457,6 +5688,55 @@ function buildActionBody(type) {
       <div id="action-rand-x2-trio-preview" style="margin-bottom:12px"></div>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center" onclick="doCommRandX2Trio()"><i class="fa-solid fa-dice-three" style="margin-right:6px"></i>Tirer au sort & × 2</button>`;
 
+    case 'fin-del-worst': return `
+      ${finisseurSelect('p1', 'Joueur (60 games ou presque)', "apercuFin('fin-del-worst')")}
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Sa <strong>pire game</strong> est supprimée définitivement.<br>
+      Elle ne compte plus dans son total, mais son nombre de games baisse d'une unité : <strong>un créneau se libère</strong> sous sa limite, qu'il peut rejouer.</p>
+      <div id="action-fin-preview" style="margin-top:12px"></div>
+      <button class="btn btn-solid-rust" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-trash-can" style="margin-right:6px"></i>Supprimer sa pire game</button>`;
+
+    case 'fin-freeze-top3': return `
+      ${finisseurSelect('p1', 'Joueur (60 games ou presque)', "apercuFin('fin-freeze-top3')")}
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Ses <strong>3 meilleures games</strong> passent en <strong style="color:var(--blue)">figées</strong> : plus supprimables, plus échangeables, plus piquables, et aucune roue ne peut plus modifier leur score.<br>
+      Sa <strong>pire game reste libre</strong> dans tous les cas, et les games déjà figées ne comptent pas dans les 3.</p>
+      <div id="action-fin-preview" style="margin-top:12px"></div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-lock" style="margin-right:6px"></i>Figer ses 3 meilleures</button>`;
+
+    case 'fin-immunite': return `
+      ${finisseurSelect('p1', 'Joueur (60 games ou presque)', "apercuFin('fin-immunite')")}
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Pendant <strong style="color:var(--blue)">4 jours</strong>, il ne peut être la <strong>cible d'aucune action négative</strong> : vol de score, échange subi, clone qui remplace une de ses games, ÷ 2, pire game à 0, roulette russe.<br>
+      Les <strong>bonus continuent de l'atteindre</strong> normalement : gel, points bonus, multiplicateurs, games offertes.</p>
+      <div id="action-fin-preview" style="margin-top:12px"></div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-shield-halved" style="margin-right:6px"></i>Accorder l'immunité</button>`;
+
+    case 'fin-extra-game': return `
+      ${finisseurSelect('p1', 'Joueur (60 games ou presque)', "apercuFin('fin-extra-game')")}
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Sa <strong>limite personnelle</strong> augmente d'une game. Elle s'ajoute aux 60 de la ligue et se cumule avec ses games bonus déjà obtenues.</p>
+      <div id="action-fin-preview" style="margin-top:12px"></div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-circle-plus" style="margin-right:6px"></i>Accorder 1 game</button>`;
+
+    case 'fin-fusion': return `
+      ${finisseurSelect('p1', 'Joueur (60 games ou presque)', "apercuFin('fin-fusion')")}
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Ses <strong>2 pires games</strong> sont remplacées par une seule, dont le score est <strong>leur somme</strong>. Il ne perd aucun point et <strong>un créneau se libère</strong> sous sa limite.<br>
+      Les games figées ne sont jamais fusionnées.</p>
+      <div id="action-fin-preview" style="margin-top:12px"></div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-code-merge" style="margin-right:6px"></i>Fusionner ses 2 pires</button>`;
+
+    case 'fin-moyenne': return `
+      ${finisseurSelect('p1', 'Joueur (60 games ou presque)', "apercuFin('fin-moyenne')")}
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Sa <strong>pire game</strong> est remontée au niveau de la <strong>moyenne de toutes ses games</strong>. Le plafond est donc sa propre moyenne : aucun score aberrant possible.<br>
+      Comme toute modification de roue, elle ne s'applique qu'à une game encore vierge.</p>
+      <div id="action-fin-preview" style="margin-top:12px"></div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-chart-line" style="margin-right:6px"></i>Remonter à la moyenne</button>`;
+
+    case 'fin-echange-best': return `
+      ${finisseurSelect('p1', 'Finisseur (donne sa pire game)', "apercuFin('fin-echange-best')")}
+      ${playerSelect('p2', 'Joueur ciblé (donne sa meilleure game)', "apercuFin('fin-echange-best')")}
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">La <strong>pire game</strong> du finisseur part chez le joueur ciblé, qui lui cède sa <strong>meilleure game</strong>. Le nombre de games de chacun ne change pas.<br>
+      Les games figées ne peuvent pas être cédées, et un joueur <strong style="color:var(--blue)">immunisé</strong> ne peut pas être ciblé.</p>
+      <div id="action-fin-preview" style="margin-top:12px"></div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-right-left" style="margin-right:6px"></i>Échanger</button>`;
+
     default: return '<p>Action inconnue.</p>';
   }
 }
@@ -5649,6 +5929,80 @@ function execAction() {
       const newMax = (state.maxGames || 20) + p.extraGames;
       addLog(`<strong>${p.name}</strong> — game supplémentaire accordée (max ${newMax} games).`, 'purple', 'plus', true);
       toast(`${p.name} peut saisir 1 game supplémentaire !`);
+      break;
+    }
+    // ---- Roue des finisseurs ----
+    case 'fin-del-worst':
+    case 'fin-freeze-top3':
+    case 'fin-immunite':
+    case 'fin-extra-game':
+    case 'fin-fusion':
+    case 'fin-moyenne':
+    case 'fin-echange-best': {
+      const p = getP('p1');
+      const p2 = getP('p2');
+      const r = cibleFin(type, p, p2);
+      if (r.err) { toast(r.err, 'error'); return; }
+
+      if (type === 'fin-del-worst') {
+        p.games = p.games.filter(g => g.id !== r.g.id);
+        addLog(`<strong>${p.name}</strong> — pire game supprimée (${r.g.score} pts), un créneau se libère.`, 'rust', 'trash-can', true);
+        toast(`Pire game de ${p.name} supprimée (−${r.g.score} pts).`, 'error');
+
+      } else if (type === 'fin-freeze-top3') {
+        r.cibles.forEach(g => {
+          g.locked = true;
+          g.note = (g.note ? g.note + ' · ' : '') + 'game figée (roue finisseurs)';
+        });
+        const scores = r.cibles.map(g => g.score + ' pts').join(', ');
+        addLog(`<strong>${p.name}</strong> — ${r.cibles.length} meilleure${r.cibles.length > 1 ? 's' : ''} game${r.cibles.length > 1 ? 's' : ''} figée${r.cibles.length > 1 ? 's' : ''} (${scores}).`, 'blue', 'lock', true);
+        toast(`${r.cibles.length} game${r.cibles.length > 1 ? 's' : ''} figée${r.cibles.length > 1 ? 's' : ''} pour ${p.name} !`, 'gold');
+
+      } else if (type === 'fin-immunite') {
+        if (!state.immunites) state.immunites = {};
+        state.immunites[p.id] = Date.now() + IMMUNITE_MS;
+        addLog(`<strong>${p.name}</strong> — immunisé pendant 4 jours contre les actions négatives.`, 'blue', 'shield-halved', true);
+        toast(`${p.name} est immunisé pendant 4 jours !`, 'gold');
+
+      } else if (type === 'fin-extra-game') {
+        p.extraGames = (p.extraGames || 0) + 1;
+        const nouvelleLimite = (state.maxGames || 20) + p.extraGames;
+        addLog(`<strong>${p.name}</strong> — 1 game supplémentaire accordée (limite ${nouvelleLimite}).`, 'green', 'circle-plus', true);
+        toast(`${p.name} passe à ${nouvelleLimite} games max !`, 'gold');
+
+      } else if (type === 'fin-fusion') {
+        const [a, b] = r.cibles;
+        const somme = a.score + b.score;
+        // Les notes des deux sources sont conservées : une game déjà modifiée par une
+        // roue ne redevient pas vierge en fusionnant.
+        const notes = [a.note, b.note].filter(Boolean).join(' · ');
+        p.games = p.games.filter(g => g.id !== a.id && g.id !== b.id);
+        p.games.push({
+          id: uid(), kills: (a.kills || 0) + (b.kills || 0),
+          top: (a.top && b.top) ? Math.min(a.top, b.top) : (a.top || b.top || 0),
+          mult: 1, score: somme, date: a.date || b.date || '',
+          locked: false,
+          note: (notes ? notes + ' · ' : '') + `fusion de 2 games (${a.score}+${b.score}, roue finisseurs)`
+        });
+        addLog(`<strong>${p.name}</strong> — 2 pires games fusionnées : ${a.score} + ${b.score} = ${somme} pts.`, 'gold', 'code-merge', true);
+        toast(`Fusion : ${a.score} + ${b.score} = ${somme} pts pour ${p.name} !`, 'gold');
+
+      } else if (type === 'fin-moyenne') {
+        const avant = r.g.score;
+        r.g.score = r.moy;
+        r.g.moyenneFin = true;
+        r.g.note = (r.g.note ? r.g.note + ' · ' : '') + 'ramenée à la moyenne (roue finisseurs)';
+        addLog(`<strong>${p.name}</strong> — pire game remontée à sa moyenne : ${avant} → ${r.moy} pts.`, 'gold', 'chart-line', true);
+        toast(`Pire game de ${p.name} : ${avant} → ${r.moy} pts !`, 'gold');
+
+      } else if (type === 'fin-echange-best') {
+        p.games = p.games.filter(g => g.id !== r.pire.id);
+        r.p2.games = r.p2.games.filter(g => g.id !== r.best.id);
+        p.games.push({ ...r.best, id: uid(), locked: false, note: (r.best.note ? r.best.note + ' · ' : '') + `échange finisseur avec ${r.p2.name}` });
+        r.p2.games.push({ ...r.pire, id: uid(), locked: false, note: (r.pire.note ? r.pire.note + ' · ' : '') + `échange finisseur avec ${p.name}` });
+        addLog(`<strong>${p.name}</strong> ↔ <strong>${r.p2.name}</strong> — échange finisseur : ${r.pire.score} pts contre ${r.best.score} pts.`, 'gold', 'right-left', true);
+        toast(`${p.name} reçoit ${r.best.score} pts de ${r.p2.name} !`, 'gold');
+      }
       break;
     }
     case 'perso-top10pts': {
