@@ -479,7 +479,6 @@ main {
   line-height: 1.5;
 }
 
-
 .kills-input-group {
   display: flex;
   align-items: center;
@@ -940,7 +939,6 @@ main {
 .roue-folie-color { color: var(--rust-light); }
 .roue-fin-color { color: var(--blue); }
 
-
 .action-list-compact {
   display: flex;
   flex-direction: column;
@@ -1389,13 +1387,6 @@ main {
         <div class="ac-icon"><i class="fa-solid fa-shield-halved"></i></div>
         <div class="ac-title">Immunité 4 jours</div>
         <div class="ac-desc">Pendant 4 jours, aucune action négative ne peut le cibler — les bonus l'atteignent toujours</div>
-      </div>
-
-      <div class="action-card action-card-blue" onclick="openAction('fin-extra-game')">
-        <div class="ac-bg"><i class="fa-solid fa-circle-plus"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-circle-plus"></i></div>
-        <div class="ac-title">1 game supplémentaire</div>
-        <div class="ac-desc">Sa limite personnelle augmente d'une game, hors des 60 de la ligue</div>
       </div>
 
       <div class="action-card action-card-blue" onclick="openAction('fin-fusion')">
@@ -1867,7 +1858,7 @@ main {
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-trash-can"></i> Retire ta pire game</div><div style="font-size:11px;color:var(--text-muted)">Sa pire game non figée est supprimée définitivement. Attention : tant que son nombre de games ne dépasse pas sa limite, toutes ses games comptent — il perd donc les points de cette game. En contrepartie, un créneau se libère sous sa limite, qu'il peut rejouer pour la remplacer.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-lock"></i> Fige tes 3 meilleures games</div><div style="font-size:11px;color:var(--text-muted)">Ses 3 meilleures games encore libres passent en figées : plus supprimables, plus échangeables, plus piquables, et aucune roue ne peut plus modifier leur score. Elles restent clonables. Sa pire game n'est jamais figée, et s'il a moins de 3 games éligibles, seules celles disponibles sont figées.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shield-halved"></i> Immunité 4 jours</div><div style="font-size:11px;color:var(--text-muted)">Pendant 4 jours, le joueur ne peut être la cible d'aucune action négative : vol de score, échange subi, clone qui remplace une de ses games, ÷ 2 aléatoire, pire game à 0, roulette russe, échange général. Les bonus continuent de l'atteindre normalement — gel, points bonus, multiplicateurs, games offertes. Le badge et le temps restant sont visibles dans le classement.</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-circle-plus"></i> 1 game supplémentaire</div><div style="font-size:11px;color:var(--text-muted)">Sa limite personnelle augmente d'une game, hors des 60 de la ligue. Elle se cumule avec les games bonus déjà obtenues.</div></div></div>
+
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-code-merge"></i> Fusion des 2 pires games</div><div style="font-size:11px;color:var(--text-muted)">Ses 2 pires games non figées sont remplacées par une seule, dont le score est exactement leur somme : il ne perd aucun point. Son nombre de games baisse d'une unité, ce qui libère un créneau sous sa limite. La game issue de la fusion hérite des notes des deux games d'origine : si l'une avait déjà été modifiée par une roue, la fusion ne l'efface pas.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-chart-line"></i> Pire game ramenée à la moyenne</div><div style="font-size:11px;color:var(--text-muted)">Sa pire game non figée est remontée au niveau de la moyenne de toutes ses games. Le plafond est donc sa propre moyenne, aucun score aberrant n'est possible. Comme toute modification de roue, elle ne s'applique qu'à une game encore vierge : si sa pire game a déjà été multipliée, divisée ou mise à zéro, l'action est refusée.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-right-left"></i> Échange pire contre meilleure</div><div style="font-size:11px;color:var(--text-muted)">La pire game du finisseur part chez un joueur ciblé, qui lui cède sa meilleure game. Le nombre de games de chacun reste identique. Les games figées ne peuvent pas être cédées, et un joueur immunisé ne peut pas être ciblé.</div></div></div>
@@ -1970,7 +1961,6 @@ main {
         </div>
       </div>
       <div id="mod-subs-milestones" style="margin-bottom:16px"></div>
-
 
       <div style="margin-bottom:12px">
         <label class="form-label">Ajouter des subs manuellement</label>
@@ -2609,7 +2599,7 @@ function calcGameScore(kills, top, mult) {
 
 function getPlayerTotal(player) {
   const games = player.games || [];
-  const maxGames = (state.maxGames || 20) + (player.extraGames || 0);
+  const maxGames = limiteJoueur(player);
   const sorted = [...games].sort((a, b) => b.score - a.score);
   const counted = sorted.slice(0, maxGames);
   const gamesSum = counted.reduce((s, g) => s + g.score, 0);
@@ -2626,8 +2616,21 @@ function getWorstGame(player) {
   return player.games.reduce((worst, g) => g.score < worst.score ? g : worst, player.games[0]);
 }
 
+// Plafond absolu de games jouables, games bonus comprises. La limite de base reste
+// state.maxGames (60) ; les games bonus la font monter, mais jamais au-delà de 65.
+const LIMITE_MAX_GAMES = 65;
+
+// Limite personnelle réelle d'un joueur, plafond appliqué. Toute lecture de la limite
+// doit passer par ici, sinon l'affichage et le comptage divergeraient du plafond.
+function limiteJoueur(player) {
+  return Math.min(LIMITE_MAX_GAMES, (state.maxGames || 20) + (player.extraGames || 0));
+}
+
+// Vrai quand le joueur ne peut plus recevoir de game supplémentaire.
+function limiteAtteinte(player) { return limiteJoueur(player) >= LIMITE_MAX_GAMES; }
+
 function getCountedGames(player) {
-  const MAX_GAMES = (state.maxGames || 20) + (player.extraGames || 0);
+  const MAX_GAMES = limiteJoueur(player);
   return [...player.games].sort((a, b) => b.score - a.score).slice(0, MAX_GAMES);
 }
 
@@ -2750,6 +2753,8 @@ function renderRegles() {
   if (b) b.textContent = `${mg} max`;
   const sf = document.getElementById('regle-seuil-fin');
   if (sf) sf.textContent = seuilFinLigue();
+  const pl = document.getElementById('regle-plafond-games');
+  if (pl) pl.textContent = LIMITE_MAX_GAMES;
 }
 
 // ---- Cooldown des actions de la Roue Commu ----
@@ -2909,7 +2914,7 @@ function renderClassement() {
           : (isAdmin() ? `<button onclick="addRouePerso('${p.id}');event.stopPropagation()" style="margin-top:3px;margin-left:4px;background:none;border:1px dashed var(--border);color:var(--text-muted);border-radius:3px;padding:1px 6px;font-size:10px;font-weight:700;cursor:pointer;line-height:1.5" title="Ajouter une roue perso en attente">+ roue perso</button>` : '')}
       </td>
       <td class="score-total">${total}<small style="font-size:12px;color:var(--text-muted);font-weight:400"> pts</small>${p.bonusPoints ? `<div style="font-size:11px;color:${p.bonusPoints > 0 ? 'var(--green)' : 'var(--rust-light)'}">${p.bonusPoints > 0 ? '+' : ''}${p.bonusPoints} bonus</div>` : ''}${p.scoreOffset ? `<div style="font-size:11px;color:${p.scoreOffset > 0 ? 'var(--green)' : 'var(--rust-light)'}"><i class="fa-solid fa-user-secret" style="font-size:9px"></i> ${p.scoreOffset > 0 ? '+' : ''}${p.scoreOffset} clone</div>` : ''}</td>
-      <td class="stat-games">${p.games.length}/${(state.maxGames || 20) + (p.extraGames || 0)}</td>
+      <td class="stat-games">${p.games.length}/${limiteJoueur(p)}</td>
       <td class="stat-kills">${totalKills}</td>
       <td class="stat-tops">
         ${top1count ? `<span style="color:#ffd700;display:inline-flex;align-items:center;gap:3px"><i class="fa-solid fa-trophy" style="font-size:9px"></i>${top1count}</span> ` : ''}
@@ -2934,7 +2939,7 @@ function renderSaisieSelects() {
     const current = el.value;
     el.innerHTML = '<option value="">— Sélectionner un joueur —</option>' +
       state.players.map(p => {
-        const maxG = (state.maxGames || 20) + (p.extraGames || 0);
+        const maxG = limiteJoueur(p);
         const full = p.games.length >= maxG;
         return `<option value="${p.id}" ${current === p.id ? 'selected' : ''} ${full ? 'disabled' : ''}>${escHtml(p.name)}${full ? ' (complet)' : ''}</option>`;
       }).join('');
@@ -3448,7 +3453,7 @@ function updateSaisiePreview() {
 
   let warning = '';
   if (player) {
-    const maxG = (state.maxGames || 20) + (player.extraGames || 0);
+    const maxG = limiteJoueur(player);
     if (player.games.length >= maxG) warning = `Le joueur a déjà ${maxG} games (limite atteinte).`;
     if (player.pendingBonus) warning += `<div style="display:flex;align-items:center;gap:8px;margin-top:6px;padding:8px 10px;background:rgba(76,175,119,0.1);border:1px solid var(--green);border-radius:4px"><i class="fa-solid fa-bolt-lightning" style="color:var(--green)"></i><span style="flex:1;font-size:13px;color:var(--green)">+${player.pendingBonus} pts top 10 Warzone — s'applique sur cette game</span><button onclick="cancelPendingBonus('${pid}')" style="background:none;border:1px solid var(--green);color:var(--green);border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer;line-height:1.4">✕ Annuler</button></div>`;
     if (player.jokerCount > 0) warning += `<div style="display:flex;align-items:center;gap:8px;margin-top:6px;padding:8px 10px;background:rgba(212,175,55,0.1);border:1px solid var(--gold);border-radius:4px"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--gold)"></i><span style="flex:1;font-size:13px;color:var(--gold);font-weight:700">${player.jokerCount} JOKER${player.jokerCount > 1 ? 'S' : ''} — ce joueur peut ne pas compter une game</span>${isAdmin() ? `<button onclick="useJoker('${pid}')" style="background:none;border:1px solid var(--gold);color:var(--gold);border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer;line-height:1.4">− Utiliser</button>` : ''}</div>`;
@@ -5101,7 +5106,6 @@ function doFolieFreezeAll() {
   );
 }
 
-
 // Pastilles de paliers : on n'affiche que les 3 derniers franchis, sinon la ligne
 // devient illisible (à 1460 subs la Roue Commu en alignait 29). Les précédents sont
 // résumés par un « +N ».
@@ -5113,7 +5117,6 @@ function _pastillesPaliers(franchis, prochain, pill) {
     + visibles.map(m => pill(`✓ ${m}`, true)).join('')
     + pill(`→ ${prochain}`, false);
 }
-
 
 // ============================================================
 // ROUE DE FOLIE — Roulette russe
@@ -5244,7 +5247,7 @@ function openAction(type) {
     'fin-del-worst': 'Retire ta pire game',
     'fin-freeze-top3': 'Fige tes 3 meilleures games',
     'fin-immunite': 'Immunité 4 jours',
-    'fin-extra-game': '1 game supplémentaire',
+
     'fin-fusion': 'Fusion des 2 pires games',
     'fin-moyenne': 'Pire game ramenée à la moyenne',
     'fin-echange-best': 'Échange pire contre meilleure',
@@ -5281,7 +5284,7 @@ function cibleFin(cle, p, p2) {
   if (!p) return { err: 'Sélectionnez un joueur.' };
   if (!estFinisseur(p)) return { err: `${p.name} n'a que ${p.games.length} games, il en faut ${seuilFinLigue()}.` };
   const libres = movableGames(p);
-  if (cle === 'fin-extra-game') return { ok: true };
+
   if (cle === 'fin-immunite') {
     return estImmunise(p) ? { err: `${p.name} est déjà immunisé pour ${_fmtDuree(finImmunite(p))}.` } : { ok: true };
   }
@@ -5331,7 +5334,7 @@ function apercuFin(cle) {
     el.innerHTML = `<div style="background:rgba(192,71,42,0.1);border:1px solid var(--rust);border-radius:4px;padding:12px;font-size:13px;color:var(--rust-light)"><i class="fa-solid fa-circle-exclamation" style="margin-right:6px"></i>${escHtml(r.err)}</div>`;
     return;
   }
-  const total = getPlayerTotal(p), lim = (state.maxGames || 20) + (p.extraGames || 0);
+  const total = getPlayerTotal(p), lim = limiteJoueur(p);
   let html = '';
   if (cle === 'fin-del-worst') {
     html = `Game supprimée : <strong style="color:var(--rust-light)">${r.g.score} pts</strong> <span style="color:var(--text-muted)">(${r.g.kills} kills)</span><br>
@@ -5342,8 +5345,6 @@ function apercuFin(cle) {
       ${r.cibles.length < 3 ? `<br><span style="color:var(--text-muted)">Moins de 3 : les autres sont déjà figées, ou c'est sa pire game.</span>` : ''}`;
   } else if (cle === 'fin-immunite') {
     html = `<strong style="color:var(--blue)">${escHtml(p.name)}</strong> sera protégé jusqu'au <strong>${new Date(Date.now() + IMMUNITE_MS).toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</strong>`;
-  } else if (cle === 'fin-extra-game') {
-    html = `Limite : ${p.games.length}/${lim} → <strong>${p.games.length}/${lim + 1}</strong>`;
   } else if (cle === 'fin-fusion') {
     const [a, b] = r.cibles;
     html = `<span style="color:var(--text-muted)">${a.score} pts + ${b.score} pts</span> → <strong style="color:var(--gold)">${a.score + b.score} pts</strong> en une seule game<br>
@@ -5710,12 +5711,6 @@ function buildActionBody(type) {
       <div id="action-fin-preview" style="margin-top:12px"></div>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-shield-halved" style="margin-right:6px"></i>Accorder l'immunité</button>`;
 
-    case 'fin-extra-game': return `
-      ${finisseurSelect('p1', 'Joueur (60 games ou presque)', "apercuFin('fin-extra-game')")}
-      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Sa <strong>limite personnelle</strong> augmente d'une game. Elle s'ajoute aux 60 de la ligue et se cumule avec ses games bonus déjà obtenues.</p>
-      <div id="action-fin-preview" style="margin-top:12px"></div>
-      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-circle-plus" style="margin-right:6px"></i>Accorder 1 game</button>`;
-
     case 'fin-fusion': return `
       ${finisseurSelect('p1', 'Joueur (60 games ou presque)', "apercuFin('fin-fusion')")}
       <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Ses <strong>2 pires games</strong> sont remplacées par une seule, dont le score est <strong>leur somme</strong>. Il ne perd aucun point et <strong>un créneau se libère</strong> sous sa limite.<br>
@@ -5819,10 +5814,14 @@ function execAction() {
       break;
     }
     case 'add-bonus-game': {
-      state.players.forEach(p => { p.extraGames = (p.extraGames || 0) + 1; });
-      const base = state.maxGames || 20;
-      addLog(`Game supplémentaire accordée à tous les joueurs (max ${base + (state.players[0]?.extraGames || 1)} games).`, 'gold', 'plus', true);
-      toast(`+1 game supplémentaire pour tout le monde !`, 'gold');
+      // Les joueurs déjà au plafond de 65 sont sautés plutôt que de voir un compteur
+      // grimper sans effet : extraGames doit rester le reflet de la limite réelle.
+      const servis = state.players.filter(p => !limiteAtteinte(p));
+      if (!servis.length) { toast(`Tous les joueurs sont déjà à ${LIMITE_MAX_GAMES} games.`, 'error'); return; }
+      servis.forEach(p => { p.extraGames = (p.extraGames || 0) + 1; });
+      const plafonnes = state.players.length - servis.length;
+      addLog(`Game supplémentaire accordée à ${servis.length} joueur${servis.length > 1 ? 's' : ''}${plafonnes ? ` (${plafonnes} déjà à ${LIMITE_MAX_GAMES} games)` : ''}.`, 'gold', 'plus', true);
+      toast(`+1 game pour ${servis.length} joueur${servis.length > 1 ? 's' : ''} !`, 'gold');
       break;
     }
     case 'clone-best-worst': doCloneBestWorst(); return;
@@ -5926,8 +5925,9 @@ function execAction() {
     case 'perso-extra-game': {
       const p = getP('p1');
       if (!p) { toast('Sélectionnez un joueur.', 'error'); return; }
+      if (limiteAtteinte(p)) { toast(`${p.name} est déjà au plafond de ${LIMITE_MAX_GAMES} games.`, 'error'); return; }
       p.extraGames = (p.extraGames || 0) + 1;
-      const newMax = (state.maxGames || 20) + p.extraGames;
+      const newMax = limiteJoueur(p);
       addLog(`<strong>${p.name}</strong> — game supplémentaire accordée (max ${newMax} games).`, 'purple', 'plus', true);
       toast(`${p.name} peut saisir 1 game supplémentaire !`);
       break;
@@ -5936,7 +5936,6 @@ function execAction() {
     case 'fin-del-worst':
     case 'fin-freeze-top3':
     case 'fin-immunite':
-    case 'fin-extra-game':
     case 'fin-fusion':
     case 'fin-moyenne':
     case 'fin-echange-best': {
@@ -5964,12 +5963,6 @@ function execAction() {
         state.immunites[p.id] = Date.now() + IMMUNITE_MS;
         addLog(`<strong>${p.name}</strong> — immunisé pendant 4 jours contre les actions négatives.`, 'blue', 'shield-halved', true);
         toast(`${p.name} est immunisé pendant 4 jours !`, 'gold');
-
-      } else if (type === 'fin-extra-game') {
-        p.extraGames = (p.extraGames || 0) + 1;
-        const nouvelleLimite = (state.maxGames || 20) + p.extraGames;
-        addLog(`<strong>${p.name}</strong> — 1 game supplémentaire accordée (limite ${nouvelleLimite}).`, 'green', 'circle-plus', true);
-        toast(`${p.name} passe à ${nouvelleLimite} games max !`, 'gold');
 
       } else if (type === 'fin-fusion') {
         const [a, b] = r.cibles;
@@ -6300,7 +6293,6 @@ function renderSubsBanner() {
         </div>`
       : '';
   }
-
 
   // Milestones recap in modération
   const milestonesEl = document.getElementById('mod-subs-milestones');
