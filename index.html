@@ -1360,7 +1360,69 @@ main {
 <!-- PAGE ACTIONS ROUES -->
 <div id="page-actions" class="page">
   <h1 class="section-title" style="margin-bottom:20px">Actions <span>Roues</span></h1>
-<!-- ROUE DE FOLIE -->
+<!-- ROUE DES FINISSEURS -->
+  <div class="roue-section" id="roue-fin-section" style="margin-bottom:20px;border-color:rgba(74,142,201,0.3);background:rgba(74,142,201,0.04)">
+    <div class="roue-header" style="border-bottom-color:rgba(74,142,201,0.25)">
+      <div>
+        <div class="roue-title roue-fin-color"><i class="fa-solid fa-flag-checkered" style="font-size:14px;margin-right:6px"></i>Roue des finisseurs <span style="font-size:13px;color:var(--text-muted);font-weight:400">(+ de 60 games)</span></div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px"><i class="fa-solid fa-circle-info"></i> Réservée aux joueurs ayant bouclé leur saison, ou à quelques games de la boucler</div>
+      </div>
+    </div>
+    <div class="action-grid">
+
+      <div class="action-card action-card-blue" onclick="openAction('fin-del-worst')">
+        <div class="ac-bg"><i class="fa-solid fa-trash-can"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-trash-can"></i></div>
+        <div class="ac-title">Retire ta pire game</div>
+        <div class="ac-desc">Sa pire game est supprimée — elle ne compte plus, mais un créneau se libère sous sa limite</div>
+      </div>
+
+      <div class="action-card action-card-blue" onclick="openAction('fin-freeze-top3')">
+        <div class="ac-bg"><i class="fa-solid fa-lock"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-lock"></i></div>
+        <div class="ac-title">Fige tes 3 meilleures games</div>
+        <div class="ac-desc">Ses 3 meilleures games deviennent intouchables : ni vol, ni échange, ni modification de score</div>
+      </div>
+
+      <div class="action-card action-card-blue" onclick="openAction('fin-immunite')">
+        <div class="ac-bg"><i class="fa-solid fa-shield-halved"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <div class="ac-title">Immunité 4 jours</div>
+        <div class="ac-desc">Pendant 4 jours, aucune action négative ne peut le cibler — les bonus l'atteignent toujours</div>
+      </div>
+
+      <div class="action-card action-card-blue" onclick="openAction('fin-extra-game')">
+        <div class="ac-bg"><i class="fa-solid fa-circle-plus"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-circle-plus"></i></div>
+        <div class="ac-title">1 game supplémentaire</div>
+        <div class="ac-desc">Sa limite personnelle augmente d'une game, hors des 60 de la ligue</div>
+      </div>
+
+      <div class="action-card action-card-blue" onclick="openAction('fin-fusion')">
+        <div class="ac-bg"><i class="fa-solid fa-code-merge"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-code-merge"></i></div>
+        <div class="ac-title">Fusion des 2 pires games</div>
+        <div class="ac-desc">Ses 2 pires games n'en font plus qu'une, qui cumule leurs points — et un créneau se libère</div>
+      </div>
+
+      <div class="action-card action-card-blue" onclick="openAction('fin-moyenne')">
+        <div class="ac-bg"><i class="fa-solid fa-chart-line"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-chart-line"></i></div>
+        <div class="ac-title">Pire game ramenée à la moyenne</div>
+        <div class="ac-desc">Sa pire game monte au niveau de la moyenne de toutes ses games</div>
+      </div>
+
+      <div class="action-card action-card-blue" onclick="openAction('fin-echange-best')">
+        <div class="ac-bg"><i class="fa-solid fa-right-left"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-right-left"></i></div>
+        <div class="ac-title">Échange pire contre meilleure</div>
+        <div class="ac-desc">Sa pire game part chez un joueur au choix, dont il récupère la meilleure</div>
+      </div>
+
+    </div>
+  </div>
+
+<!-- ROUE DE FOLIE -->
   <div class="roue-section" style="margin-bottom:20px;border-color:rgba(224,90,56,0.3);background:rgba(180,60,40,0.04)">
     <div class="roue-header" style="border-bottom-color:rgba(224,90,56,0.25)">
       <div>
@@ -1648,67 +1710,6 @@ main {
     </div>
   </div>
 
-  <!-- ROUE DES FINISSEURS -->
-  <div class="roue-section" id="roue-fin-section" style="margin-top:20px;border-color:rgba(74,142,201,0.3);background:rgba(74,142,201,0.04)">
-    <div class="roue-header" style="border-bottom-color:rgba(74,142,201,0.25)">
-      <div>
-        <div class="roue-title roue-fin-color"><i class="fa-solid fa-flag-checkered" style="font-size:14px;margin-right:6px"></i>Roue des finisseurs <span style="font-size:13px;color:var(--text-muted);font-weight:400">(+ de 60 games)</span></div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:4px"><i class="fa-solid fa-circle-info"></i> Réservée aux joueurs ayant bouclé leur saison, ou à quelques games de la boucler</div>
-      </div>
-    </div>
-    <div class="action-grid">
-
-      <div class="action-card action-card-blue" onclick="openAction('fin-del-worst')">
-        <div class="ac-bg"><i class="fa-solid fa-trash-can"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-trash-can"></i></div>
-        <div class="ac-title">Retire ta pire game</div>
-        <div class="ac-desc">Sa pire game est supprimée — elle ne compte plus, mais un créneau se libère sous sa limite</div>
-      </div>
-
-      <div class="action-card action-card-blue" onclick="openAction('fin-freeze-top3')">
-        <div class="ac-bg"><i class="fa-solid fa-lock"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-lock"></i></div>
-        <div class="ac-title">Fige tes 3 meilleures games</div>
-        <div class="ac-desc">Ses 3 meilleures games deviennent intouchables : ni vol, ni échange, ni modification de score</div>
-      </div>
-
-      <div class="action-card action-card-blue" onclick="openAction('fin-immunite')">
-        <div class="ac-bg"><i class="fa-solid fa-shield-halved"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-shield-halved"></i></div>
-        <div class="ac-title">Immunité 4 jours</div>
-        <div class="ac-desc">Pendant 4 jours, aucune action négative ne peut le cibler — les bonus l'atteignent toujours</div>
-      </div>
-
-      <div class="action-card action-card-blue" onclick="openAction('fin-extra-game')">
-        <div class="ac-bg"><i class="fa-solid fa-circle-plus"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-circle-plus"></i></div>
-        <div class="ac-title">1 game supplémentaire</div>
-        <div class="ac-desc">Sa limite personnelle augmente d'une game, hors des 60 de la ligue</div>
-      </div>
-
-      <div class="action-card action-card-blue" onclick="openAction('fin-fusion')">
-        <div class="ac-bg"><i class="fa-solid fa-code-merge"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-code-merge"></i></div>
-        <div class="ac-title">Fusion des 2 pires games</div>
-        <div class="ac-desc">Ses 2 pires games n'en font plus qu'une, qui cumule leurs points — et un créneau se libère</div>
-      </div>
-
-      <div class="action-card action-card-blue" onclick="openAction('fin-moyenne')">
-        <div class="ac-bg"><i class="fa-solid fa-chart-line"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-chart-line"></i></div>
-        <div class="ac-title">Pire game ramenée à la moyenne</div>
-        <div class="ac-desc">Sa pire game monte au niveau de la moyenne de toutes ses games</div>
-      </div>
-
-      <div class="action-card action-card-blue" onclick="openAction('fin-echange-best')">
-        <div class="ac-bg"><i class="fa-solid fa-right-left"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-right-left"></i></div>
-        <div class="ac-title">Échange pire contre meilleure</div>
-        <div class="ac-desc">Sa pire game part chez un joueur au choix, dont il récupère la meilleure</div>
-      </div>
-
-    </div>
-  </div>
 </div>
 
 <!-- PAGE JOUEURS -->
@@ -1854,6 +1855,25 @@ main {
     </div>
   </div>
 
+<!-- ROUE DES FINISSEURS -->
+  <div class="roue-section" style="margin-bottom:20px;border-color:rgba(74,142,201,0.3);background:rgba(74,142,201,0.04)">
+    <div class="roue-header" style="border-bottom-color:rgba(74,142,201,0.25)">
+      <div>
+        <div class="roue-title roue-fin-color">Roue des finisseurs <span style="font-size:13px;color:var(--text-muted);font-weight:400">(+ de 60 games)</span></div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Réservée aux joueurs ayant joué au moins <span id="regle-seuil-fin">—</span> games. Les games bonus n'entrent pas dans ce décompte : un joueur à 60/65 a bien bouclé ses 60.</div>
+      </div>
+    </div>
+    <div class="action-list-compact">
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-trash-can"></i> Retire ta pire game</div><div style="font-size:11px;color:var(--text-muted)">Sa pire game non figée est supprimée définitivement. Attention : tant que son nombre de games ne dépasse pas sa limite, toutes ses games comptent — il perd donc les points de cette game. En contrepartie, un créneau se libère sous sa limite, qu'il peut rejouer pour la remplacer.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-lock"></i> Fige tes 3 meilleures games</div><div style="font-size:11px;color:var(--text-muted)">Ses 3 meilleures games encore libres passent en figées : plus supprimables, plus échangeables, plus piquables, et aucune roue ne peut plus modifier leur score. Elles restent clonables. Sa pire game n'est jamais figée, et s'il a moins de 3 games éligibles, seules celles disponibles sont figées.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shield-halved"></i> Immunité 4 jours</div><div style="font-size:11px;color:var(--text-muted)">Pendant 4 jours, le joueur ne peut être la cible d'aucune action négative : vol de score, échange subi, clone qui remplace une de ses games, ÷ 2 aléatoire, pire game à 0, roulette russe, échange général. Les bonus continuent de l'atteindre normalement — gel, points bonus, multiplicateurs, games offertes. Le badge et le temps restant sont visibles dans le classement.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-circle-plus"></i> 1 game supplémentaire</div><div style="font-size:11px;color:var(--text-muted)">Sa limite personnelle augmente d'une game, hors des 60 de la ligue. Elle se cumule avec les games bonus déjà obtenues.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-code-merge"></i> Fusion des 2 pires games</div><div style="font-size:11px;color:var(--text-muted)">Ses 2 pires games non figées sont remplacées par une seule, dont le score est exactement leur somme : il ne perd aucun point. Son nombre de games baisse d'une unité, ce qui libère un créneau sous sa limite. La game issue de la fusion hérite des notes des deux games d'origine : si l'une avait déjà été modifiée par une roue, la fusion ne l'efface pas.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-chart-line"></i> Pire game ramenée à la moyenne</div><div style="font-size:11px;color:var(--text-muted)">Sa pire game non figée est remontée au niveau de la moyenne de toutes ses games. Le plafond est donc sa propre moyenne, aucun score aberrant n'est possible. Comme toute modification de roue, elle ne s'applique qu'à une game encore vierge : si sa pire game a déjà été multipliée, divisée ou mise à zéro, l'action est refusée.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-right-left"></i> Échange pire contre meilleure</div><div style="font-size:11px;color:var(--text-muted)">La pire game du finisseur part chez un joueur ciblé, qui lui cède sa meilleure game. Le nombre de games de chacun reste identique. Les games figées ne peuvent pas être cédées, et un joueur immunisé ne peut pas être ciblé.</div></div></div>
+    </div>
+  </div>
+
   <!-- ROUE COMMUNAUTAIRE -->
   <div class="roue-section" style="margin-bottom:20px">
     <div class="roue-header">
@@ -1908,25 +1928,6 @@ main {
     </div>
   </div>
 
-
-  <!-- ROUE DES FINISSEURS -->
-  <div class="roue-section" style="margin-top:20px;border-color:rgba(74,142,201,0.3);background:rgba(74,142,201,0.04)">
-    <div class="roue-header" style="border-bottom-color:rgba(74,142,201,0.25)">
-      <div>
-        <div class="roue-title roue-fin-color">Roue des finisseurs <span style="font-size:13px;color:var(--text-muted);font-weight:400">(+ de 60 games)</span></div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Réservée aux joueurs ayant joué au moins <span id="regle-seuil-fin">—</span> games. Les games bonus n'entrent pas dans ce décompte : un joueur à 60/65 a bien bouclé ses 60.</div>
-      </div>
-    </div>
-    <div class="action-list-compact">
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-trash-can"></i> Retire ta pire game</div><div style="font-size:11px;color:var(--text-muted)">Sa pire game non figée est supprimée définitivement. Attention : tant que son nombre de games ne dépasse pas sa limite, toutes ses games comptent — il perd donc les points de cette game. En contrepartie, un créneau se libère sous sa limite, qu'il peut rejouer pour la remplacer.</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-lock"></i> Fige tes 3 meilleures games</div><div style="font-size:11px;color:var(--text-muted)">Ses 3 meilleures games encore libres passent en figées : plus supprimables, plus échangeables, plus piquables, et aucune roue ne peut plus modifier leur score. Elles restent clonables. Sa pire game n'est jamais figée, et s'il a moins de 3 games éligibles, seules celles disponibles sont figées.</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shield-halved"></i> Immunité 4 jours</div><div style="font-size:11px;color:var(--text-muted)">Pendant 4 jours, le joueur ne peut être la cible d'aucune action négative : vol de score, échange subi, clone qui remplace une de ses games, ÷ 2 aléatoire, pire game à 0, roulette russe, échange général. Les bonus continuent de l'atteindre normalement — gel, points bonus, multiplicateurs, games offertes. Le badge et le temps restant sont visibles dans le classement.</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-circle-plus"></i> 1 game supplémentaire</div><div style="font-size:11px;color:var(--text-muted)">Sa limite personnelle augmente d'une game, hors des 60 de la ligue. Elle se cumule avec les games bonus déjà obtenues.</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-code-merge"></i> Fusion des 2 pires games</div><div style="font-size:11px;color:var(--text-muted)">Ses 2 pires games non figées sont remplacées par une seule, dont le score est exactement leur somme : il ne perd aucun point. Son nombre de games baisse d'une unité, ce qui libère un créneau sous sa limite. La game issue de la fusion hérite des notes des deux games d'origine : si l'une avait déjà été modifiée par une roue, la fusion ne l'efface pas.</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-chart-line"></i> Pire game ramenée à la moyenne</div><div style="font-size:11px;color:var(--text-muted)">Sa pire game non figée est remontée au niveau de la moyenne de toutes ses games. Le plafond est donc sa propre moyenne, aucun score aberrant n'est possible. Comme toute modification de roue, elle ne s'applique qu'à une game encore vierge : si sa pire game a déjà été multipliée, divisée ou mise à zéro, l'action est refusée.</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-right-left"></i> Échange pire contre meilleure</div><div style="font-size:11px;color:var(--text-muted)">La pire game du finisseur part chez un joueur ciblé, qui lui cède sa meilleure game. Le nombre de games de chacun reste identique. Les games figées ne peuvent pas être cédées, et un joueur immunisé ne peut pas être ciblé.</div></div></div>
-    </div>
-  </div>
   <!-- ROUE DE FOLIE -->
   <div class="roue-section" style="margin-top:20px;border-color:rgba(224,90,56,0.3);background:rgba(180,60,40,0.04)">
     <div class="roue-header" style="border-bottom-color:rgba(224,90,56,0.25)">
