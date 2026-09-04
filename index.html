@@ -1410,6 +1410,27 @@ main {
         <div class="ac-desc">Sa pire game part chez un joueur au choix, dont il récupère la meilleure</div>
       </div>
 
+      <div class="action-card action-card-blue" onclick="openAction('fin-plus15')">
+        <div class="ac-bg"><i class="fa-solid fa-bolt"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-bolt"></i></div>
+        <div class="ac-title">+ 15 pts bonus</div>
+        <div class="ac-desc">Ajoute 15 points bonus permanents à son score total</div>
+      </div>
+
+      <div class="action-card action-card-blue" onclick="openAction('fin-plus10')">
+        <div class="ac-bg"><i class="fa-solid fa-bolt-lightning"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
+        <div class="ac-title">+ 10 pts bonus</div>
+        <div class="ac-desc">Ajoute 10 points bonus permanents à son score total</div>
+      </div>
+
+      <div class="action-card action-card-blue" onclick="openAction('fin-rien')">
+        <div class="ac-bg"><i class="fa-solid fa-circle-xmark"></i></div>
+        <div class="ac-icon"><i class="fa-solid fa-circle-xmark"></i></div>
+        <div class="ac-title">Pas de chance</div>
+        <div class="ac-desc">Il ne gagne rien du tout — la roue est passée à côté</div>
+      </div>
+
     </div>
   </div>
 
@@ -1862,6 +1883,9 @@ main {
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-code-merge"></i> Fusion des 2 pires games</div><div style="font-size:11px;color:var(--text-muted)">Ses 2 pires games non figées sont remplacées par une seule, dont le score est exactement leur somme : il ne perd aucun point. Son nombre de games baisse d'une unité, ce qui libère un créneau sous sa limite. La game issue de la fusion hérite des notes des deux games d'origine : si l'une avait déjà été modifiée par une roue, la fusion ne l'efface pas.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-chart-line"></i> Pire game ramenée à la moyenne</div><div style="font-size:11px;color:var(--text-muted)">Sa pire game non figée est remontée au niveau de la moyenne de toutes ses games. Le plafond est donc sa propre moyenne, aucun score aberrant n'est possible. Comme toute modification de roue, elle ne s'applique qu'à une game encore vierge : si sa pire game a déjà été multipliée, divisée ou mise à zéro, l'action est refusée.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-right-left"></i> Échange pire contre meilleure</div><div style="font-size:11px;color:var(--text-muted)">La pire game du finisseur part chez un joueur ciblé, qui lui cède sa meilleure game. Le nombre de games de chacun reste identique. Les games figées ne peuvent pas être cédées, et un joueur immunisé ne peut pas être ciblé.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-bolt"></i> + 15 pts bonus</div><div style="font-size:11px;color:var(--text-muted)">15 points bonus permanents s'ajoutent à son score total. Ils sont indépendants de ses games : aucune roue ne peut les lui reprendre.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-bolt-lightning"></i> + 10 pts bonus</div><div style="font-size:11px;color:var(--text-muted)">10 points bonus permanents s'ajoutent à son score total. Ils sont indépendants de ses games : aucune roue ne peut les lui reprendre.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-circle-xmark"></i> Pas de chance</div><div style="font-size:11px;color:var(--text-muted)">La roue est passée à côté : rien ne change, ni points, ni games, ni protection. L'évènement est quand même publié dans le fil pour que le tirage reste visible de tous.</div></div></div>
     </div>
   </div>
 
@@ -5250,6 +5274,9 @@ function openAction(type) {
 
     'fin-fusion': 'Fusion des 2 pires games',
     'fin-moyenne': 'Pire game ramenée à la moyenne',
+    'fin-plus15': '+ 15 pts bonus',
+    'fin-plus10': '+ 10 pts bonus',
+    'fin-rien': 'Pas de chance',
     'fin-echange-best': 'Échange pire contre meilleure',
     'perso-top10pts': '+10 pts Top 10',
     'comm-worst-x2': 'Pire game × 2',
@@ -5285,6 +5312,7 @@ function cibleFin(cle, p, p2) {
   if (!estFinisseur(p)) return { err: `${p.name} n'a que ${p.games.length} games, il en faut ${seuilFinLigue()}.` };
   const libres = movableGames(p);
 
+  if (cle === 'fin-plus15' || cle === 'fin-plus10' || cle === 'fin-rien') return { ok: true };
   if (cle === 'fin-immunite') {
     return estImmunise(p) ? { err: `${p.name} est déjà immunisé pour ${_fmtDuree(finImmunite(p))}.` } : { ok: true };
   }
@@ -5343,6 +5371,12 @@ function apercuFin(cle) {
   } else if (cle === 'fin-freeze-top3') {
     html = `<strong>${r.cibles.length} game${r.cibles.length > 1 ? 's' : ''}</strong> figée${r.cibles.length > 1 ? 's' : ''} : ${r.cibles.map(g => `<strong style="color:var(--gold)">${g.score} pts</strong>`).join(', ')}
       ${r.cibles.length < 3 ? `<br><span style="color:var(--text-muted)">Moins de 3 : les autres sont déjà figées, ou c'est sa pire game.</span>` : ''}`;
+  } else if (cle === 'fin-plus15' || cle === 'fin-plus10') {
+    const pts = cle === 'fin-plus15' ? 15 : 10;
+    html = `Score total : <span style="color:var(--text-muted)">${total}</span> → <strong style="color:var(--gold)">${total + pts} pts</strong> <span style="color:var(--green)">(+${pts})</span><br>
+      <span style="color:var(--text-muted)">Points bonus : ${p.bonusPoints || 0} → ${(p.bonusPoints || 0) + pts}</span>`;
+  } else if (cle === 'fin-rien') {
+    html = `<strong>${escHtml(p.name)}</strong> ne gagne rien.<br><span style="color:var(--text-muted)">Score inchangé : ${total} pts</span>`;
   } else if (cle === 'fin-immunite') {
     html = `<strong style="color:var(--blue)">${escHtml(p.name)}</strong> sera protégé jusqu'au <strong>${new Date(Date.now() + IMMUNITE_MS).toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</strong>`;
   } else if (cle === 'fin-fusion') {
@@ -5733,6 +5767,25 @@ function buildActionBody(type) {
       <div id="action-fin-preview" style="margin-top:12px"></div>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-right-left" style="margin-right:6px"></i>Échanger</button>`;
 
+    case 'fin-plus15': return `
+      ${finisseurSelect('p1', 'Joueur (60 games ou presque)', "apercuFin('fin-plus15')")}
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px"><strong style="color:var(--gold)">15 points bonus</strong> s'ajoutent à son score total. Ils sont permanents et indépendants de ses games : aucune roue ne peut les lui reprendre.</p>
+      <div id="action-fin-preview" style="margin-top:12px"></div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-bolt" style="margin-right:6px"></i>Accorder + 15 pts</button>`;
+
+    case 'fin-plus10': return `
+      ${finisseurSelect('p1', 'Joueur (60 games ou presque)', "apercuFin('fin-plus10')")}
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px"><strong style="color:var(--gold)">10 points bonus</strong> s'ajoutent à son score total. Ils sont permanents et indépendants de ses games : aucune roue ne peut les lui reprendre.</p>
+      <div id="action-fin-preview" style="margin-top:12px"></div>
+      <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-bolt-lightning" style="margin-right:6px"></i>Accorder + 10 pts</button>`;
+
+    case 'fin-rien': return `
+      ${finisseurSelect('p1', 'Joueur (60 games ou presque)', "apercuFin('fin-rien')")}
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">La roue est passée à côté : <strong>rien ne change</strong>. Aucun point, aucune game, aucune protection.<br>
+      L'événement est quand même publié dans le fil, pour que le tirage reste visible de tous.</p>
+      <div id="action-fin-preview" style="margin-top:12px"></div>
+      <button class="btn" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-circle-xmark" style="margin-right:6px"></i>Valider — aucun gain</button>`;
+
     default: return '<p>Action inconnue.</p>';
   }
 }
@@ -5938,13 +5991,27 @@ function execAction() {
     case 'fin-immunite':
     case 'fin-fusion':
     case 'fin-moyenne':
+    case 'fin-plus15':
+    case 'fin-plus10':
+    case 'fin-rien':
     case 'fin-echange-best': {
       const p = getP('p1');
       const p2 = getP('p2');
       const r = cibleFin(type, p, p2);
       if (r.err) { toast(r.err, 'error'); return; }
 
-      if (type === 'fin-del-worst') {
+      if (type === 'fin-plus15' || type === 'fin-plus10') {
+        const pts = type === 'fin-plus15' ? 15 : 10;
+        p.bonusPoints = (p.bonusPoints || 0) + pts;
+        addLog(`<strong>${p.name}</strong> — +${pts} pts bonus (roue des finisseurs).`, 'green', 'bolt', true);
+        toast(`+${pts} pts pour ${p.name} !`, 'gold');
+
+      } else if (type === 'fin-rien') {
+        // Rien à modifier, mais l'évènement est publié : le tirage doit rester visible
+        addLog(`<strong>${p.name}</strong> — pas de chance, la roue ne donne rien.`, 'rust', 'circle-xmark', true);
+        toast(`Pas de chance, ${p.name} ne gagne rien.`, 'error');
+
+      } else if (type === 'fin-del-worst') {
         p.games = p.games.filter(g => g.id !== r.g.id);
         addLog(`<strong>${p.name}</strong> — pire game supprimée (${r.g.score} pts), un créneau se libère.`, 'rust', 'trash-can', true);
         toast(`Pire game de ${p.name} supprimée (−${r.g.score} pts).`, 'error');
