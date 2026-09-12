@@ -1845,7 +1845,7 @@ main {
     </div>
     <div style="padding:4px 0">
       <div class="action-row">
-        <div><div class="action-row-name"><i class="fa-solid fa-gamepad"></i> Nombre de games</div><div style="font-size:11px;color:var(--text-muted)">Chaque joueur joue jusqu'à <span id="regle-maxgames-texte">—</span> games, hors games bonus. Seules les meilleures sont comptabilisées si la limite est dépassée. Une fois sa limite atteinte, ses games ne sont plus enregistrées par la saisie automatique : <strong>une seule game comptera pour toute la session</strong>, choisie et saisie à la main.</div></div>
+        <div><div class="action-row-name"><i class="fa-solid fa-gamepad"></i> Nombre de games</div><div style="font-size:11px;color:var(--text-muted)">Chaque joueur joue jusqu'à <span id="regle-maxgames-texte">—</span> games, hors games bonus. Seules les meilleures sont comptabilisées si la limite est dépassée. Une fois ses <span id="regle-maxgames-texte2">—</span> games jouées, ses games ne sont plus enregistrées par la saisie automatique, même s'il lui reste des games bonus : <strong>une seule game comptera pour toute la session</strong>, choisie et saisie à la main.</div></div>
         <span style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--gold)" id="regle-maxgames-badge">—</span>
       </div>
       <div class="action-row">
@@ -2669,10 +2669,12 @@ function limiteJoueur(player) {
 // Vrai quand le joueur ne peut plus recevoir de game supplémentaire.
 function limiteAtteinte(player) { return limiteJoueur(player) >= LIMITE_MAX_GAMES; }
 
-// Vrai quand le joueur a joué toutes ses games : une game de plus ne compterait pas,
-// puisque getCountedGames() s'arrête à sa limite. On refuse donc de la saisir.
+// Vrai quand le joueur a bouclé les 60 games de la ligue. Le seuil est la limite de
+// BASE, pas la limite personnelle : un joueur à 61/65 est concerné, ses games bonus
+// ne repoussent pas ce seuil. Au-delà, la saisie automatique s'arrête — une seule game
+// comptera pour la session, choisie et saisie à la main.
 function quotaGamesEpuise(player) {
-  return !!player && (player.games || []).length >= limiteJoueur(player);
+  return !!player && (player.games || []).length >= (state.maxGames || 60);
 }
 
 function getCountedGames(player) {
@@ -2801,6 +2803,8 @@ function renderRegles() {
   if (sf) sf.textContent = seuilFinLigue();
   const pl = document.getElementById('regle-plafond-games');
   if (pl) pl.textContent = LIMITE_MAX_GAMES;
+  const t2 = document.getElementById('regle-maxgames-texte2');
+  if (t2) t2.textContent = mg;
   const ij = document.getElementById('regle-immunite-jours');
   if (ij) ij.textContent = IMMUNITE_JOURS;
   document.querySelectorAll('.regle-immunite-jours').forEach(el => { el.textContent = IMMUNITE_JOURS; });
@@ -4087,7 +4091,7 @@ function iaRenderResults() {
 
     // Badges roue
     const badges = [];
-    if (quotaPlein) badges.push(`<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(192,71,42,0.15);border:1px solid var(--rust);color:var(--rust-light);border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700" title="Ce joueur a fini ses games : une seule comptera sur toute la session, à saisir manuellement"><i class="fa-solid fa-ban" style="font-size:9px"></i> JOUEUR À +${limiteJoueur(p)} — game non validée</span>`);
+    if (quotaPlein) badges.push(`<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(192,71,42,0.15);border:1px solid var(--rust);color:var(--rust-light);border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700" title="Ce joueur a bouclé ses 60 games : une seule comptera sur toute la session, à saisir manuellement"><i class="fa-solid fa-ban" style="font-size:9px"></i> JOUEUR À +${state.maxGames || 60} — game non validée</span>`);
     if (p?.skipNext) {
       badges.push(m.skipAction === 'skip'
         ? `<span style="background:rgba(192,71,26,0.15);border:1px solid var(--rust);color:var(--rust-light);border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700">SKIP</span>
