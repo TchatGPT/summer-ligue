@@ -1344,6 +1344,7 @@ main {
           <tbody id="ia-results-tbody"></tbody>
         </table>
         <div id="ia-lriaa-section"></div>
+        <div id="ia-quota-recap" style="margin-top:14px"></div>
         <div style="margin-top:14px">
           <button class="btn btn-solid-gold btn-lg" onclick="iaSubmitAll()" style="width:100%;justify-content:center">
             <i class="fa-solid fa-check"></i> Valider toute l'équipe
@@ -2667,6 +2668,12 @@ function limiteJoueur(player) {
 
 // Vrai quand le joueur ne peut plus recevoir de game supplémentaire.
 function limiteAtteinte(player) { return limiteJoueur(player) >= LIMITE_MAX_GAMES; }
+
+// Vrai quand le joueur a joué toutes ses games : une game de plus ne compterait pas,
+// puisque getCountedGames() s'arrête à sa limite. On refuse donc de la saisir.
+function quotaGamesEpuise(player) {
+  return !!player && (player.games || []).length >= limiteJoueur(player);
+}
 
 function getCountedGames(player) {
   const MAX_GAMES = limiteJoueur(player);
@@ -3997,7 +4004,7 @@ function iaBuildMatches(ocr) {
 }
 
 function iaGetScore(m) {
-  if (!m.player || m.skipAction === 'skip') return null;
+  if (!m.player || m.skipAction === 'skip' || quotaGamesEpuise(m.player)) return null;
   const p = m.player;
   const kills = p.freezeKills ? p.freezeKills : m.elim;
   const base = calcGameScore(kills, iaTop, 1);
@@ -4071,6 +4078,7 @@ function iaRenderResults() {
   document.getElementById('ia-results-tbody').innerHTML = iaMatches.map((m, i) => {
     const p = m.player;
     const isSkip = p?.skipNext && m.skipAction === 'skip';
+    const quotaPlein = quotaGamesEpuise(p);
     const freeze = p?.freezeKills || 0;
     const effectiveKills = freeze || m.elim;
     const score = iaGetScore(m);
@@ -4079,6 +4087,7 @@ function iaRenderResults() {
 
     // Badges roue
     const badges = [];
+    if (quotaPlein) badges.push(`<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(192,71,42,0.15);border:1px solid var(--rust);color:var(--rust-light);border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700" title="Ce joueur a joué toutes ses games : celle-ci ne serait pas comptée"><i class="fa-solid fa-ban" style="font-size:9px"></i> LIMITE ${limiteJoueur(p)} ATTEINTE — non saisie</span>`);
     if (p?.skipNext) {
       badges.push(m.skipAction === 'skip'
         ? `<span style="background:rgba(192,71,26,0.15);border:1px solid var(--rust);color:var(--rust-light);border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700">SKIP</span>
@@ -4093,7 +4102,7 @@ function iaRenderResults() {
     if (p?.jokerCount > 0) badges.push(`<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(232,184,75,0.1);border:1px solid var(--gold);color:var(--gold);border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700">🃏 ${p.jokerCount} Joker${p.jokerCount > 1 ? 's' : ''}<button onclick="iaCancelJoker(${i})" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:12px;padding:0;line-height:1;opacity:0.7" title="Retirer un joker">×</button></span>`);
     if (m.cloneLriaa) badges.push(`<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(155,89,182,0.15);border:1px solid var(--purple);color:var(--purple);border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700"><i class="fa-solid fa-gamepad" style="font-size:9px"></i> Clone Lriaa (${iaLriaaElim} kills)<button onclick="iaCancelCloneLriaaMatch(${i})" style="background:none;border:none;color:var(--purple);cursor:pointer;font-size:12px;padding:0;line-height:1;opacity:0.7" title="Annuler">×</button></span>`);
 
-    return `<tr style="${isSkip ? 'opacity:0.45' : ''}">
+    return `<tr style="${isSkip || quotaPlein ? 'opacity:0.45' : ''}">
       <td style="font-size:12px;color:var(--text-muted);padding:8px">${escHtml(m.ocrName)}</td>
       <td style="padding:8px">
         <select style="background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;padding:4px 6px;max-width:145px" onchange="iaChangeMatch(${i},this.value)">
@@ -4112,9 +4121,9 @@ function iaRenderResults() {
       </td>
       <td style="text-align:right;padding:8px">
         <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;color:var(--gold)">
-          ${isSkip ? '—' : (score !== null ? score + ' pts' : '—')}
+          ${isSkip || quotaPlein ? '—' : (score !== null ? score + ' pts' : '—')}
         </span>
-        ${!isSkip && score !== null ? `
+        ${!isSkip && !quotaPlein && score !== null ? `
         <div style="margin-top:5px;display:flex;justify-content:flex-end;align-items:center;gap:4px;flex-wrap:wrap">
           <button onclick="iaAddBonus(${i},5)" style="background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:3px;padding:2px 7px;font-size:11px;cursor:pointer">+5</button>
           <button onclick="iaAddBonus(${i},10)" style="background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:3px;padding:2px 7px;font-size:11px;cursor:pointer">+10</button>
@@ -4123,6 +4132,19 @@ function iaRenderResults() {
       </td>
     </tr>`;
   }).join('');
+
+  // Récapitulatif : annoncer avant le clic qui sera saisi et qui sera écarté
+  const recap = document.getElementById('ia-quota-recap');
+  if (recap) {
+    const pleins = iaMatches.filter(m => quotaGamesEpuise(m.player));
+    recap.innerHTML = pleins.length
+      ? `<div style="background:rgba(192,71,42,0.1);border:1px solid var(--rust);border-radius:4px;padding:10px 12px;font-size:12px;line-height:1.7;color:var(--rust-light)">
+          <i class="fa-solid fa-circle-exclamation" style="margin-right:6px"></i><strong>${pleins.length} game${pleins.length > 1 ? 's' : ''} ne ser${pleins.length > 1 ? 'ont' : 'a'} pas saisie${pleins.length > 1 ? 's' : ''}</strong> — ${pleins.length > 1 ? 'ces joueurs ont' : 'ce joueur a'} atteint la limite :<br>
+          ${pleins.map(m => `<strong>${escHtml(m.player.name)}</strong> <span style="color:var(--text-muted)">(${m.player.games.length}/${limiteJoueur(m.player)})</span>`).join(', ')}
+          <br><span style="color:var(--text-muted)">La validation enregistre uniquement les autres.</span>
+        </div>`
+      : '';
+  }
 }
 
 function iaChangeMatch(idx, pid) {
@@ -4185,9 +4207,14 @@ function iaSubmitAll() {
   const topRank = iaTop;  // snapshot before any reset/async
 
   let saved = 0;
+  const ignores = [];
   active.forEach(m => {
     const player = state.players.find(p => p.id === m.player?.id);
     if (!player) return;
+
+    // Quota de games épuisé : la game ne compterait pas, on ne la saisit pas du tout.
+    // Le skip n'est pas consommé non plus — rien ne doit changer pour ce joueur.
+    if (quotaGamesEpuise(player)) { ignores.push(player.name); return; }
 
     // Gestion skip
     if (m.skipAction === 'skip' && player.skipNext) {
@@ -4252,7 +4279,13 @@ function iaSubmitAll() {
   renderAll();
   closeModal('modal-saisie-ia');
   iaReset();
-  toast(`${saved} joueur${saved>1?'s':''} traité${saved>1?'s':''} !`);
+  if (ignores.length) {
+    // Trace publique : sans elle, une game absente du classement passerait pour un bug
+    addLog(`${ignores.length} game${ignores.length > 1 ? 's' : ''} non saisie${ignores.length > 1 ? 's' : ''} — limite de games atteinte : ${ignores.join(', ')}.`, 'rust', 'ban', true);
+  }
+  toast(ignores.length
+    ? `${saved} joueur${saved>1?'s':''} traité${saved>1?'s':''}, ${ignores.length} ignoré${ignores.length>1?'s':''} (limite atteinte).`
+    : `${saved} joueur${saved>1?'s':''} traité${saved>1?'s':''} !`);
   saveState();  // fire-and-forget after UI is already updated
 }
 
