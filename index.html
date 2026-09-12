@@ -1878,7 +1878,7 @@ main {
     <div class="action-list-compact">
 
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-lock"></i> Fige ta meilleure game</div><div style="font-size:11px;color:var(--text-muted)">Sa meilleure game encore libre passe en figée : plus supprimable, plus échangeable, plus piquable, et aucune roue ne peut plus modifier son score. Elle reste clonable. Si sa meilleure game est déjà figée, c'est sa 2ᵉ meilleure qui est figée en plus, puis la 3ᵉ — le gel s'ajoute et ne se déplace jamais. Sa pire game n'est jamais figée.</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shield-halved"></i> Immunité <span id="regle-immunite-jours">—</span> jours</div><div style="font-size:11px;color:var(--text-muted)">Pendant <span class="regle-immunite-jours">—</span> jours, le joueur ne peut être la cible d'aucune action négative : vol de score, échange subi, clone qui remplace une de ses games, ÷ 2 aléatoire, pire game à 0, roulette russe, échange général. Les bonus continuent de l'atteindre normalement — gel, points bonus, multiplicateurs, games offertes. Le badge et le temps restant sont visibles dans le classement.</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-shield-halved"></i> Immunité <span id="regle-immunite-jours">—</span> jours</div><div style="font-size:11px;color:var(--text-muted)">Pendant <span class="regle-immunite-jours">—</span> jours, le joueur ne peut être la cible d'aucune action négative : vol de score, échange subi, clone qui remplace une de ses games, ÷ 2 aléatoire, pire game à 0, roulette russe, échange général. Les bonus continuent de l'atteindre normalement — gel, points bonus, multiplicateurs, games offertes. Si le joueur est déjà immunisé, la nouvelle durée s'ajoute au temps restant au lieu de le remplacer. Le badge et le temps restant sont visibles dans le classement.</div></div></div>
 
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-code-merge"></i> Fusion des 2 pires games</div><div style="font-size:11px;color:var(--text-muted)">Ses 2 pires games non figées sont remplacées par une seule, dont le score est exactement leur somme : il ne perd aucun point. Son nombre de games baisse d'une unité, ce qui libère un créneau sous sa limite. La game issue de la fusion hérite des notes des deux games d'origine : si l'une avait déjà été modifiée par une roue, la fusion ne l'efface pas.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-chart-line"></i> Pire game ramenée à la moyenne</div><div style="font-size:11px;color:var(--text-muted)">Sa pire game non figée est remontée au niveau de la moyenne de toutes ses games. Le plafond est donc sa propre moyenne, aucun score aberrant n'est possible. Comme toute modification de roue, elle ne s'applique qu'à une game encore vierge : si sa pire game a déjà été multipliée, divisée ou mise à zéro, l'action est refusée.</div></div></div>
@@ -3570,6 +3570,15 @@ function estImmunise(p) { return !!p && (state.immunites?.[p.id] || 0) > Date.no
 function finImmunite(p) { return (state.immunites?.[p.id] || 0) - Date.now(); }
 // À appliquer sur tout tirage d'une action négative, pour écarter les protégés.
 function sansImmunises(joueurs) { return joueurs.filter(p => !estImmunise(p)); }
+
+// Nouvelle échéance d'immunité : elle se cumule avec le temps restant plutôt que de
+// le remplacer. Un joueur protégé encore 6 h qui la regagne est couvert 6 h + la durée.
+// Le point de départ est le maximum entre maintenant et l'échéance en cours, pour qu'une
+// immunité expirée ne prolonge pas le passé.
+function nouvelleEcheanceImmunite(p) {
+  const base = Math.max(Date.now(), state.immunites?.[p.id] || 0);
+  return base + IMMUNITE_MS;
+}
 
 // L'échange de la Roue des finisseurs ne sert qu'une fois par joueur, à vie.
 function aDejaEchangeFin(p) { return !!p && (state.echangeFinFait || []).includes(p.id); }
@@ -5343,9 +5352,8 @@ function cibleFin(cle, p, p2) {
     if (estImmunise(p2)) return { err: `${p2.name} est immunisé pour ${_fmtDuree(finImmunite(p2))} : il ne peut pas être visé.` };
     return { p2 };
   }
-  if (cle === 'fin-immunite') {
-    return estImmunise(p) ? { err: `${p.name} est déjà immunisé pour ${_fmtDuree(finImmunite(p))}.` } : { ok: true };
-  }
+  // Une immunité déjà en cours ne bloque plus : la nouvelle durée s'y ajoute.
+  if (cle === 'fin-immunite') return { ok: true };
   // Même cible et même cascade que le gel de la Roue Perso : si la meilleure est déjà
   // figée, on descend sur la 2e, puis la 3e. Une seule logique à maintenir.
   if (cle === 'fin-freeze-top3') return cibleGelPerso(p);
@@ -5404,7 +5412,12 @@ function apercuFin(cle) {
   } else if (cle === 'fin-rien') {
     html = `<strong>${escHtml(p.name)}</strong> ne gagne rien.<br><span style="color:var(--text-muted)">Score inchangé : ${total} pts</span>`;
   } else if (cle === 'fin-immunite') {
-    html = `<strong style="color:var(--blue)">${escHtml(p.name)}</strong> sera protégé jusqu'au <strong>${new Date(Date.now() + IMMUNITE_MS).toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</strong>`;
+    const fin = nouvelleEcheanceImmunite(p);
+    const quand = new Date(fin).toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+    html = estImmunise(p)
+      ? `<span style="color:var(--text-muted)">Déjà immunisé pour ${_fmtDuree(finImmunite(p))} — la nouvelle durée s'ajoute.</span><br><br>
+         <strong style="color:var(--blue)">${escHtml(p.name)}</strong> sera protégé <strong>${_fmtDuree(fin - Date.now())}</strong> au total, jusqu'au <strong>${quand}</strong>`
+      : `<strong style="color:var(--blue)">${escHtml(p.name)}</strong> sera protégé jusqu'au <strong>${quand}</strong>`;
   } else if (cle === 'fin-fusion') {
     const [a, b] = r.cibles;
     html = `<span style="color:var(--text-muted)">${a.score} pts + ${b.score} pts</span> → <strong style="color:var(--gold)">${a.score + b.score} pts</strong> en une seule game<br>
@@ -5761,7 +5774,8 @@ function buildActionBody(type) {
     case 'fin-immunite': return `
       ${finisseurSelect('p1', 'Joueur (60 games ou presque)', "apercuFin('fin-immunite')")}
       <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Pendant <strong style="color:var(--blue)">${IMMUNITE_JOURS} jours</strong>, il ne peut être la <strong>cible d'aucune action négative</strong> : vol de score, échange subi, clone qui remplace une de ses games, ÷ 2, pire game à 0, roulette russe.<br>
-      Les <strong>bonus continuent de l'atteindre</strong> normalement : gel, points bonus, multiplicateurs, games offertes.</p>
+      Les <strong>bonus continuent de l'atteindre</strong> normalement : gel, points bonus, multiplicateurs, games offertes.<br>
+      S'il est <strong>déjà immunisé</strong>, la nouvelle durée <strong style="color:var(--gold)">s'ajoute</strong> au temps restant.</p>
       <div id="action-fin-preview" style="margin-top:12px"></div>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-shield-halved" style="margin-right:6px"></i>Accorder l'immunité</button>`;
 
@@ -6054,9 +6068,14 @@ function execAction() {
 
       } else if (type === 'fin-immunite') {
         if (!state.immunites) state.immunites = {};
-        state.immunites[p.id] = Date.now() + IMMUNITE_MS;
-        addLog(`<strong>${p.name}</strong> — immunisé pendant ${IMMUNITE_JOURS} jours contre les actions négatives.`, 'blue', 'shield-halved', true);
-        toast(`${p.name} est immunisé pendant ${IMMUNITE_JOURS} jours !`, 'gold');
+        const cumul = estImmunise(p);
+        const restantAvant = cumul ? finImmunite(p) : 0;
+        state.immunites[p.id] = nouvelleEcheanceImmunite(p);
+        const totalRestant = _fmtDuree(finImmunite(p));
+        addLog(cumul
+          ? `<strong>${p.name}</strong> — immunité prolongée de ${IMMUNITE_JOURS} jours : ${_fmtDuree(restantAvant)} restants + ${IMMUNITE_JOURS} jours, soit ${totalRestant}.`
+          : `<strong>${p.name}</strong> — immunisé pendant ${IMMUNITE_JOURS} jours contre les actions négatives.`, 'blue', 'shield-halved', true);
+        toast(cumul ? `${p.name} est protégé ${totalRestant} au total !` : `${p.name} est immunisé pendant ${IMMUNITE_JOURS} jours !`, 'gold');
 
       } else if (type === 'fin-fusion') {
         const [a, b] = r.cibles;
