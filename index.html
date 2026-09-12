@@ -1883,7 +1883,7 @@ main {
 
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-code-merge"></i> Fusion des 2 pires games</div><div style="font-size:11px;color:var(--text-muted)">Ses 2 pires games non figées sont remplacées par une seule, dont le score est exactement leur somme : il ne perd aucun point. Son nombre de games baisse d'une unité, ce qui libère un créneau sous sa limite. La game issue de la fusion hérite des notes des deux games d'origine : si l'une avait déjà été modifiée par une roue, la fusion ne l'efface pas.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-chart-line"></i> Pire game ramenée à la moyenne</div><div style="font-size:11px;color:var(--text-muted)">Sa pire game non figée est remontée au niveau de la moyenne de toutes ses games. Le plafond est donc sa propre moyenne, aucun score aberrant n'est possible. Comme toute modification de roue, elle ne s'applique qu'à une game encore vierge : si sa pire game a déjà été multipliée, divisée ou mise à zéro, l'action est refusée.</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-right-left"></i> Échange pire contre meilleure</div><div style="font-size:11px;color:var(--text-muted)">La pire game du finisseur part chez un joueur ciblé, qui lui cède sa meilleure game. Le nombre de games de chacun reste identique. Les games figées ne peuvent pas être cédées, et un joueur immunisé ne peut pas être ciblé. <strong>Cette action n'est utilisable qu'une seule fois par joueur sur toute la ligue.</strong></div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-right-left"></i> Échange pire contre meilleure</div><div style="font-size:11px;color:var(--text-muted)">La pire game du finisseur part chez un joueur ciblé, qui lui cède sa meilleure game. Le nombre de games de chacun reste identique. Les games figées ne peuvent pas être cédées, et un joueur immunisé ne peut pas être ciblé. <strong>Cette action n'est utilisable qu'une seule fois par joueur.</strong> Une exception : la revanche. Si le joueur ciblé déclenche à son tour un échange sur celui qui l'avait visé, il récupère son propre échange — peu importe la game emportée. Celui qui prend sa revanche consomme le sien au passage, l'opération reste donc à somme nulle pour la ligue.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-skull"></i> − 20 pts à un joueur</div><div style="font-size:11px;color:var(--text-muted)">Le finisseur désigne un joueur, qui perd 20 points. Lui n'y gagne rien : l'action est purement offensive. Un joueur immunisé ne peut pas être visé.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-bolt"></i> + 15 pts bonus</div><div style="font-size:11px;color:var(--text-muted)">15 points bonus permanents s'ajoutent à son score total. Ils sont indépendants de ses games : aucune roue ne peut les lui reprendre.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-bolt-lightning"></i> + 10 pts bonus</div><div style="font-size:11px;color:var(--text-muted)">10 points bonus permanents s'ajoutent à son score total. Ils sont indépendants de ses games : aucune roue ne peut les lui reprendre.</div></div></div>
@@ -2363,7 +2363,7 @@ let state = {
   roueCommu50Next: 0,    // prochain palier forcé après annulation du mode 20 (0 = pas de forçage)
   actionCooldowns: {},  // { cléAction: timestamp ms } — blocage 24h après usage (Roue Commu)
   immunites: {},        // { idJoueur: timestamp ms } — protection contre les actions négatives
-  echangeFinFait: []    // ids des joueurs ayant déjà utilisé l'échange de la Roue des finisseurs
+  echangeFinFait: {}    // { idJoueur: idCible } — qui a déjà utilisé son échange, et sur qui
 };
 
 let currentTop = 0;
@@ -2467,10 +2467,16 @@ async function loadState() {
     // clé existe, donc cet amorçage ne se rejoue jamais.
     const echangeFlag = (flags || []).find(f => f.key === 'echangeFinFait');
     if (echangeFlag) {
-      try { state.echangeFinFait = JSON.parse(echangeFlag.value || '[]') || []; } catch { state.echangeFinFait = []; }
+      try {
+        const lu = JSON.parse(echangeFlag.value || '{}') || {};
+        // Ancien format : une simple liste d'ids, sans la victime. On la convertit, mais
+        // ces joueurs ne pourront pas récupérer leur droit par une revanche : on ignore
+        // sur qui ils avaient pris.
+        state.echangeFinFait = Array.isArray(lu) ? Object.fromEntries(lu.map(id => [id, null])) : lu;
+      } catch { state.echangeFinFait = {}; }
     } else {
       const vaerys = state.players.find(p => p.name === 'Vaerys');
-      state.echangeFinFait = vaerys ? [vaerys.id] : [];
+      state.echangeFinFait = vaerys ? { [vaerys.id]: null } : {};
     }
     // Migration de l'ancien cooldown unique de Meilleure game × 1.5
     const ancienX15 = parseInt((flags || []).find(f => f.key === 'bestX15Until')?.value || '0') || 0;
@@ -2609,7 +2615,7 @@ async function saveState() {
       { key: 'rouePersoCounts', value: JSON.stringify(Object.fromEntries(state.players.filter(p => p.rouePersoCount > 0).map(p => [p.id, p.rouePersoCount]))) },
       { key: 'actionCooldowns', value: JSON.stringify(Object.fromEntries(Object.entries(state.actionCooldowns || {}).filter(([, t]) => t > Date.now()))) },
       { key: 'immunites', value: JSON.stringify(Object.fromEntries(Object.entries(state.immunites || {}).filter(([, t]) => t > Date.now()))) },
-      { key: 'echangeFinFait', value: JSON.stringify(state.echangeFinFait || []) },
+      { key: 'echangeFinFait', value: JSON.stringify(state.echangeFinFait || {}) },
       { key: 'bestX15Until', value: '0' }, // LEGACY — remplacé par actionCooldowns
       { key: 'roueCommu20Since', value: String(state.roueCommu20Since || 0) },
       { key: 'roueCommu20Elapsed', value: String(state.roueCommu20Elapsed || 0) },
@@ -3591,8 +3597,17 @@ function nouvelleEcheanceImmunite(p) {
   return base + IMMUNITE_MS;
 }
 
-// L'échange de la Roue des finisseurs ne sert qu'une fois par joueur, à vie.
-function aDejaEchangeFin(p) { return !!p && (state.echangeFinFait || []).includes(p.id); }
+// L'échange de la Roue des finisseurs ne sert qu'une fois par joueur — sauf revanche :
+// si sa victime l'échange à son tour, son droit lui est rendu.
+function aDejaEchangeFin(p) {
+  return !!p && Object.prototype.hasOwnProperty.call(state.echangeFinFait || {}, p.id);
+}
+
+// Nom de la victime d'un joueur, pour l'annoncer dans l'aperçu et le refus.
+function victimeEchangeFin(p) {
+  const id = (state.echangeFinFait || {})[p?.id];
+  return id ? state.players.find(x => x.id === id) : null;
+}
 
 // Nombre de qualifiés pour la finale, marqués dans le classement par un liseré doré
 // et un trait de séparation sous le dernier qualifié.
@@ -5409,7 +5424,12 @@ function cibleFin(cle, p, p2) {
     return { g, moy };
   }
   if (cle === 'fin-echange-best') {
-    if (aDejaEchangeFin(p)) return { err: `${p.name} a déjà utilisé son échange : il n'est valable qu'une fois.` };
+    if (aDejaEchangeFin(p)) {
+      const v = victimeEchangeFin(p);
+      return { err: v
+        ? `${p.name} a déjà utilisé son échange (sur ${v.name}). Il le récupérera si ${v.name} l'échange à son tour.`
+        : `${p.name} a déjà utilisé son échange : il n'est valable qu'une fois.` };
+    }
     if (!p2) return { err: 'Sélectionnez le joueur ciblé.' };
     if (p2.id === p.id) return { err: 'Choisissez deux joueurs différents.' };
     if (estImmunise(p2)) return { err: `${p2.name} est immunisé pour ${_fmtDuree(finImmunite(p2))} : il ne peut pas être ciblé.` };
@@ -5464,7 +5484,9 @@ function apercuFin(cle) {
     html = `Pire game : <span style="color:var(--text-muted)">${r.g.score} pts</span> → <strong style="color:var(--gold)">${r.moy} pts</strong> <span style="color:var(--green)">(+${r.moy - r.g.score})</span><br>
       <span style="color:var(--text-muted)">Moyenne calculée sur ses ${p.games.length} games.</span>`;
   } else if (cle === 'fin-echange-best') {
-    html = `<span style="color:var(--text-muted)">Échange unique — après validation, ${escHtml(p.name)} ne pourra plus l'utiliser.</span><br><br>
+    const revanche = (state.echangeFinFait || {})[r.p2.id] === p.id;
+    html = `<span style="color:var(--text-muted)">Échange unique — après validation, ${escHtml(p.name)} ne pourra plus l'utiliser.</span><br>
+      ${revanche ? `<span style="color:var(--green)"><i class="fa-solid fa-rotate-left" style="margin-right:5px"></i><strong>Revanche</strong> : ${escHtml(r.p2.name)} vous avait pris, il récupère son échange.</span><br>` : ''}<br>
       <strong>${escHtml(p.name)}</strong> cède <span style="color:var(--text-muted)">${r.pire.score} pts</span> et reçoit <strong style="color:var(--gold)">${r.best.score} pts</strong> <span style="color:var(--green)">(+${r.best.score - r.pire.score})</span><br>
       <strong>${escHtml(r.p2.name)}</strong> cède <span style="color:var(--gold)">${r.best.score} pts</span> et reçoit <span style="color:var(--text-muted)">${r.pire.score} pts</span> <span style="color:var(--rust-light)">(${r.pire.score - r.best.score})</span>`;
   }
@@ -5835,7 +5857,7 @@ function buildActionBody(type) {
       ${playerSelect('p2', 'Joueur ciblé (donne sa meilleure game)', "apercuFin('fin-echange-best')")}
       <p style="color:var(--text-muted);font-size:12px;margin-top:8px">La <strong>pire game</strong> du finisseur part chez le joueur ciblé, qui lui cède sa <strong>meilleure game</strong>. Le nombre de games de chacun ne change pas.<br>
       Les games figées ne peuvent pas être cédées, et un joueur <strong style="color:var(--blue)">immunisé</strong> ne peut pas être ciblé.<br>
-      <strong style="color:var(--gold)">Une seule fois par joueur</strong> sur toute la ligue.</p>
+      <strong style="color:var(--gold)">Une seule fois par joueur</strong> — sauf <strong>revanche</strong> : si la cible échange à son tour avec celui qui l'a visée, elle récupère son droit.</p>
       <div id="action-fin-preview" style="margin-top:12px"></div>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()"><i class="fa-solid fa-right-left" style="margin-right:6px"></i>Échanger</button>`;
 
@@ -6140,13 +6162,16 @@ function execAction() {
         toast(`Pire game de ${p.name} : ${avant} → ${r.moy} pts !`, 'gold');
 
       } else if (type === 'fin-echange-best') {
-        if (!state.echangeFinFait) state.echangeFinFait = [];
-        state.echangeFinFait.push(p.id);
+        if (!state.echangeFinFait) state.echangeFinFait = {};
+        // Revanche : si la cible avait justement pris à ce joueur, son droit lui est rendu
+        const revanche = state.echangeFinFait[r.p2.id] === p.id;
+        if (revanche) delete state.echangeFinFait[r.p2.id];
+        state.echangeFinFait[p.id] = r.p2.id;
         p.games = p.games.filter(g => g.id !== r.pire.id);
         r.p2.games = r.p2.games.filter(g => g.id !== r.best.id);
         p.games.push({ ...r.best, id: uid(), locked: false, note: (r.best.note ? r.best.note + ' · ' : '') + `échange finisseur avec ${r.p2.name}` });
         r.p2.games.push({ ...r.pire, id: uid(), locked: false, note: (r.pire.note ? r.pire.note + ' · ' : '') + `échange finisseur avec ${p.name}` });
-        addLog(`<strong>${p.name}</strong> ↔ <strong>${r.p2.name}</strong> — échange finisseur : ${r.pire.score} pts contre ${r.best.score} pts.`, 'gold', 'right-left', true);
+        addLog(`<strong>${p.name}</strong> ↔ <strong>${r.p2.name}</strong> — échange finisseur : ${r.pire.score} pts contre ${r.best.score} pts.${revanche ? ` Revanche : <strong>${r.p2.name}</strong> récupère son échange.` : ''}`, 'gold', 'right-left', true);
         toast(`${p.name} reçoit ${r.best.score} pts de ${r.p2.name} !`, 'gold');
       }
       break;
