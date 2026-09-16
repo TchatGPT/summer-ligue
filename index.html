@@ -1064,13 +1064,6 @@ main {
   <div class="classement-header">
     <h1 class="section-title">Classement <span>Général</span></h1>
     <div class="badge" id="badge-games-count">0 joueurs</div>
-    <div style="position:relative;display:flex;align-items:center">
-      <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:10px;font-size:12px;color:var(--text-muted);pointer-events:none"></i>
-      <input id="filtre-classement" type="search" placeholder="Rechercher un joueur…" autocomplete="off"
-        oninput="setFiltreClassement(this.value)"
-        style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px;padding:7px 10px 7px 30px;width:210px;outline:none"
-        onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">
-    </div>
     <div style="margin-left:auto;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:8px 16px;text-align:right;line-height:1.6">
       <div style="font-size:11px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase">Ligue jusqu'au <span style="color:var(--gold)">30 septembre</span></div>
       <div style="font-size:14px;font-family:'Barlow Condensed',sans-serif;font-weight:700">
@@ -1120,7 +1113,20 @@ main {
     <button class="btn btn-blue btn-sm" onclick="openImportSheetModal()"><i class="fa-solid fa-cloud-arrow-down"></i> Importer Google Sheets</button>
   </div>
 
-  <div class="rank-table-wrap">
+  <!-- Barre de recherche du classement : soudée au tableau, arrondis du haut, la
+       bordure basse est celle du tableau pour que les deux ne fassent qu'un bloc. -->
+  <div style="display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--border);border-bottom:none;border-radius:4px 4px 0 0;padding:10px 14px">
+    <div style="position:relative;display:flex;align-items:center;flex:1;max-width:280px">
+      <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:10px;font-size:12px;color:var(--text-muted);pointer-events:none"></i>
+      <input id="filtre-classement" type="search" placeholder="Rechercher un joueur…" autocomplete="off"
+        oninput="setFiltreClassement(this.value)"
+        style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px;padding:7px 10px 7px 30px;width:100%;outline:none"
+        onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">
+    </div>
+    <span id="filtre-classement-info" style="font-size:12px;color:var(--text-muted)"></span>
+  </div>
+
+  <div class="rank-table-wrap" style="border-radius:0 0 4px 4px">
     <table class="rank-table">
       <thead>
         <tr>
@@ -2955,14 +2961,18 @@ function renderClassement() {
 
   const sorted = [...state.players].sort((a, b) => getPlayerTotal(b) - getPlayerTotal(a));
 
-  // Le compteur dit « 3 sur 34 » pendant une recherche, pour qu'on n'oublie pas le filtre actif
+  // Le badge de l'en-tête garde le total de la ligue ; le décompte filtré s'affiche
+  // dans la barre de recherche, à côté du champ, là où on le cherche des yeux.
   const totalJoueurs = state.players.length;
   const qBadge = _normNom(filtreClassement);
   const nbVisibles = qBadge ? sorted.filter(p => _normNom(p.name).includes(qBadge)).length : totalJoueurs;
-  if (badge) {
-    badge.textContent = qBadge
-      ? `${nbVisibles} sur ${totalJoueurs}`
-      : `${totalJoueurs} joueur${totalJoueurs > 1 ? 's' : ''}`;
+  if (badge) badge.textContent = `${totalJoueurs} joueur${totalJoueurs > 1 ? 's' : ''}`;
+  const info = document.getElementById('filtre-classement-info');
+  if (info) {
+    info.innerHTML = qBadge
+      ? `<strong style="color:var(--gold)">${nbVisibles}</strong> joueur${nbVisibles > 1 ? 's' : ''} sur ${totalJoueurs}`
+        + ` <button class="btn btn-sm" style="margin-left:6px;color:var(--text-muted);border-color:var(--border);padding:2px 8px;font-size:11px" onclick="effacerFiltreClassement()">Effacer</button>`
+      : '';
   }
 
   // Le filtre s'applique APRÈS le tri : chaque joueur garde son rang réel dans la ligue,
