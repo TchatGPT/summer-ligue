@@ -1064,6 +1064,13 @@ main {
   <div class="classement-header">
     <h1 class="section-title">Classement <span>Général</span></h1>
     <div class="badge" id="badge-games-count">0 joueurs</div>
+    <div style="position:relative;display:flex;align-items:center">
+      <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:10px;font-size:12px;color:var(--text-muted);pointer-events:none"></i>
+      <input id="filtre-classement" type="search" placeholder="Rechercher un joueur…" autocomplete="off"
+        oninput="setFiltreClassement(this.value)"
+        style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px;padding:7px 10px 7px 30px;width:210px;outline:none"
+        onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">
+    </div>
     <div style="margin-left:auto;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:8px 16px;text-align:right;line-height:1.6">
       <div style="font-size:11px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase">Ligue jusqu'au <span style="color:var(--gold)">30 septembre</span></div>
       <div style="font-size:14px;font-family:'Barlow Condensed',sans-serif;font-weight:700">
@@ -2913,9 +2920,24 @@ function renderStats() {
   `;
 }
 
+// Filtre textuel du classement. Il ne vit qu'en mémoire : rafraîchir la page le vide,
+// et il n'est jamais sauvegardé — ce n'est pas une donnée de ligue.
+let filtreClassement = '';
+
+// Comparaison tolérante : sans accents, sans casse, sans espaces superflus. « eddy »
+// doit trouver « Eddy3413 », et « vaerys » doit trouver « Vaérys ».
+function _normNom(s) {
+  return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+}
+
+function setFiltreClassement(valeur) {
+  filtreClassement = valeur || '';
+  renderClassement();
+}
+
 function renderClassement() {
   const tbody = document.getElementById('rank-body');
-  document.getElementById('badge-games-count').textContent = `${state.players.length} joueur${state.players.length > 1 ? 's' : ''}`;
+  const badge = document.getElementById('badge-games-count');
 
   const wrap = document.querySelector('.rank-table-wrap');
   if (wrap) wrap.classList.toggle('scrollable', state.players.length >= 10);
@@ -2933,7 +2955,32 @@ function renderClassement() {
 
   const sorted = [...state.players].sort((a, b) => getPlayerTotal(b) - getPlayerTotal(a));
 
+  // Le compteur dit « 3 sur 34 » pendant une recherche, pour qu'on n'oublie pas le filtre actif
+  const totalJoueurs = state.players.length;
+  const qBadge = _normNom(filtreClassement);
+  const nbVisibles = qBadge ? sorted.filter(p => _normNom(p.name).includes(qBadge)).length : totalJoueurs;
+  if (badge) {
+    badge.textContent = qBadge
+      ? `${nbVisibles} sur ${totalJoueurs}`
+      : `${totalJoueurs} joueur${totalJoueurs > 1 ? 's' : ''}`;
+  }
+
+  // Le filtre s'applique APRÈS le tri : chaque joueur garde son rang réel dans la ligue,
+  // sinon le 12e deviendrait 1er dès qu'on tape son nom.
+  const q = _normNom(filtreClassement);
+  const visible = p => !q || _normNom(p.name).includes(q);
+  const trouves = sorted.filter(visible).length;
+
+  if (q && !trouves) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-muted)">
+      Aucun joueur ne correspond à « <strong>${escHtml(filtreClassement)}</strong> ».
+      <button class="btn btn-sm" style="margin-left:10px;color:var(--text-muted);border-color:var(--border)" onclick="effacerFiltreClassement()">Effacer</button>
+    </td></tr>`;
+    return;
+  }
+
   tbody.innerHTML = sorted.map((p, i) => {
+    if (!visible(p)) return '';
     const total = getPlayerTotal(p);
     const best  = getBestGame(p);
     const worst = getWorstGame(p);
@@ -2950,7 +2997,9 @@ function renderClassement() {
         : rank === 2 ? 'background:rgba(192,192,192,0.04);box-shadow:inset 4px 0 0 #c0c0c0'
         : rank === 3 ? 'background:rgba(205,127,50,0.04);box-shadow:inset 4px 0 0 #cd7f32'
         : rank <= QUALIF_FINALE ? 'background:rgba(212,175,55,0.03);box-shadow:inset 4px 0 0 rgba(212,175,55,0.5)' : '',
-      rank === QUALIF_FINALE && sorted.length > QUALIF_FINALE ? 'border-bottom:2px solid rgba(212,175,55,0.5)' : ''
+      // Le trait de qualification n'a de sens que sur la liste complète : pendant une
+      // recherche, la ligne suivante n'est pas forcément la 7e.
+      rank === QUALIF_FINALE && sorted.length > QUALIF_FINALE && !q ? 'border-bottom:2px solid rgba(212,175,55,0.5)' : ''
     ].filter(Boolean).join(';');
 
     return `<tr style="${styles}">
@@ -2988,6 +3037,12 @@ function renderClassement() {
       </td>
     </tr>`;
   }).join('');
+}
+
+function effacerFiltreClassement() {
+  const el = document.getElementById('filtre-classement');
+  if (el) el.value = '';
+  setFiltreClassement('');
 }
 
 function topLabel(top) { return ''; }
