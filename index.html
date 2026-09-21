@@ -1563,7 +1563,7 @@ main {
         <div class="ac-bg"><i class="fa-solid fa-bolt-lightning"></i></div>
         <div class="ac-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
         <div class="ac-title">+5 pts petites games</div>
-        <div class="ac-desc">+5 pts à toutes les games de moins de 5 kills pour tous les joueurs</div>
+        <div class="ac-desc">+5 pts à toutes les games de moins de 5 kills pour tous les joueurs — une seule fois par game, les nouvelles uniquement</div>
       </div>
 
       <div class="action-card action-card-gold" onclick="openAction('clone-best-worst')">
@@ -1931,7 +1931,7 @@ main {
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-ranking-star"></i> Échange de games entre les 10 premiers</div><div style="font-size:11px;color:var(--text-muted)">Les 10 premiers du classement échangent une game en chaîne entre eux, dans un ordre tiré au sort. La game échangée n'est ni la meilleure ni la pire de son propriétaire. Chacun donne une game et en reçoit une : le nombre de games ne change pas et aucun point n'est créé ni perdu.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-right-left"></i> Échange avec FloooZii</div><div style="font-size:11px;color:var(--text-muted)">Un joueur est tiré au sort et échange une de ses games au hasard contre une game au hasard de FloooZii. Chacun donne une game et en reçoit une : le nombre de games ne change pas et aucun point n'est créé ni perdu.</div></div></div>
       <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-star"></i> Meilleure game de FloooZii clonée</div><div style="font-size:11px;color:var(--text-muted)">Un joueur est tiré au sort : une de ses games au hasard est remplacée par un clone de la meilleure game de FloooZii. FloooZii garde sa game, elle est seulement copiée, et le nombre de games du joueur tiré ne change pas.</div></div></div>
-      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-bolt-lightning"></i> +5 pts petites games</div><div style="font-size:11px;color:var(--text-muted)">Ajoute +5 pts à toutes les games de moins de 5 kills pour chaque joueur</div></div></div>
+      <div class="action-row"><div><div class="action-row-name"><i class="fa-solid fa-bolt-lightning"></i> +5 pts petites games</div><div style="font-size:11px;color:var(--text-muted)">Ajoute +5 pts à toutes les games de moins de 5 kills pour chaque joueur. Une game ne peut recevoir ce bonus qu'une seule fois : si la roue retombe dessus, seules les nouvelles petites games depuis le dernier tirage sont bonifiées.</div></div></div>
     </div>
   </div>
 
@@ -2739,6 +2739,13 @@ function _dejaMultRoue(g) {
   if (g.x15 || g.x2commu || g.x2rand || g.div2folie || g.zeroFolie || g.moyenneFin) return true;
   const note = g.note || '';
   return NOTES_MULT_ROUE.some(n => note.includes(n));
+}
+
+// Le +5 pts des petites games (Roue Commu) est un bonus à part : il ne compte pas comme
+// une transformation de roue, mais une game ne peut le recevoir qu'une seule fois.
+const NOTE_BONUS_PETITE_GAME = '+5pts (< 5 kills)';
+function _dejaBonusPetiteGame(g) {
+  return (g.note || '').includes(NOTE_BONUS_PETITE_GAME);
 }
 
 // Cible du ×1.5 : la meilleure game libre du joueur qui n'a pas encore été transformée
@@ -5800,7 +5807,7 @@ function buildActionBody(type) {
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center;background:var(--rust);border-color:var(--rust)" onclick="doFolieEchangeAll()"><i class="fa-solid fa-arrows-spin" style="margin-right:6px"></i>Tirer au sort & échanger</button>`;
 
     case 'comm-low-kills-bonus': return `
-      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Ajoute <strong style="color:var(--text)">+5 pts</strong> à toutes les games avec <strong style="color:var(--text)">moins de 5 kills</strong> pour chaque joueur.</p>
+      <p style="color:var(--text-muted);font-size:12px;margin-top:8px">Ajoute <strong style="color:var(--text)">+5 pts</strong> à toutes les games avec <strong style="color:var(--text)">moins de 5 kills</strong> pour chaque joueur. <strong style="color:var(--text)">Une seule fois par game</strong> : les petites games déjà bonifiées lors d'un tirage précédent sont ignorées, seules les nouvelles le reçoivent.</p>
       <button class="btn btn-solid-gold" style="width:100%;justify-content:center;margin-top:16px" onclick="execAction()">Appliquer +5 pts</button>`;
 
     case 'comm-vol-score': return `
@@ -6295,19 +6302,27 @@ function execAction() {
     }
     case 'folie-echange-all': doFolieEchangeAll(); return;
     case 'comm-low-kills-bonus': {
-      let totalGames = 0;
+      // Le +5 ne s'applique qu'UNE SEULE fois par game : une petite game déjà bonifiée
+      // par un tirage précédent est ignorée, seules les nouvelles petites games le reçoivent.
+      // La note fait foi car elle est stockée en base.
+      let totalGames = 0, dejaBonifiees = 0;
       state.players.forEach(p => {
-        const eligible = p.games.filter(g => g.kills < 5);
+        const petites = p.games.filter(g => g.kills < 5);
+        const eligible = petites.filter(g => !_dejaBonusPetiteGame(g));
+        dejaBonifiees += petites.length - eligible.length;
         if (!eligible.length) return;
         eligible.forEach(g => {
           g.score += 5;
-          g.note = (g.note ? g.note + ' · ' : '') + '+5pts (< 5 kills)';
+          g.note = (g.note ? g.note + ' · ' : '') + NOTE_BONUS_PETITE_GAME;
           totalGames++;
         });
-        addLog(`<strong>${p.name}</strong> — +5 pts sur ${eligible.length} game${eligible.length > 1 ? 's' : ''} (< 5 kills).`, 'gold', 'bolt-lightning', true);
+        addLog(`<strong>${p.name}</strong> — +5 pts sur ${eligible.length} nouvelle${eligible.length > 1 ? 's' : ''} game${eligible.length > 1 ? 's' : ''} (< 5 kills).`, 'gold', 'bolt-lightning', true);
       });
-      if (totalGames === 0) { toast('Aucune game avec moins de 5 kills trouvée.', 'info'); return; }
-      toast(`+5 pts appliqués à ${totalGames} game${totalGames > 1 ? 's' : ''} !`, 'gold');
+      if (totalGames === 0) {
+        toast(dejaBonifiees ? 'Toutes les games < 5 kills ont déjà reçu leur +5 pts.' : 'Aucune game avec moins de 5 kills trouvée.', 'info');
+        return;
+      }
+      toast(`+5 pts appliqués à ${totalGames} nouvelle${totalGames > 1 ? 's' : ''} game${totalGames > 1 ? 's' : ''} !`, 'gold');
       break;
     }
   }
