@@ -1015,154 +1015,181 @@ main {
 @media (max-width: 380px) { .action-grid { grid-template-columns: 1fr; } }
 
 /* ============================================================
-   MODE FINALE — hero, podium des 6 finalistes, lots, tirage
-   Tout est en grilles auto-ajustables : aucune largeur fixe, donc
-   l'affichage tient du mobile au grand écran sans media query dédiée.
+   MODE FINALE — bandeau, podium des 6 finalistes, lots, tirage
+   Grilles auto-ajustables et tailles en clamp() : le rendu tient du
+   telephone au grand ecran. Seul le podium a sa media query, parce
+   qu'un podium 2-1-3 doit se remettre dans l'ordre 1-2-3 en colonne.
    ============================================================ */
+
+/* ---- Bandeau : compact et aligne a gauche, avec les chiffres de la ligue ---- */
 .finale-hero {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(201,149,74,0.35);
-  border-radius: 8px;
-  background:
-    radial-gradient(120% 140% at 50% -20%, rgba(201,149,74,0.18), transparent 60%),
-    linear-gradient(180deg, var(--bg2), var(--bg));
-  padding: clamp(24px, 5vw, 48px) clamp(16px, 4vw, 40px);
-  text-align: center;
-  margin-bottom: 22px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  border-radius: 6px;
+  background: linear-gradient(100deg, rgba(201,149,74,0.10), var(--bg2) 42%, var(--bg2));
+  padding: clamp(18px, 3vw, 26px) clamp(16px, 3vw, 28px);
+  margin-bottom: 24px;
+  display: flex; align-items: center; gap: clamp(16px, 4vw, 40px); flex-wrap: wrap;
 }
-.finale-hero::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: repeating-linear-gradient(115deg, transparent 0 18px, rgba(201,149,74,0.035) 18px 20px);
-  pointer-events: none;
-}
+.finale-hero-txt { flex: 1 1 260px; min-width: 0; }
 .finale-kicker {
-  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
-  color: var(--text-muted); margin-bottom: 10px;
+  font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 4px;
 }
 .finale-titre {
   font-family: 'Barlow Condensed', sans-serif;
   font-weight: 900; text-transform: uppercase;
-  font-size: clamp(40px, 11vw, 92px); line-height: 0.92;
+  font-size: clamp(32px, 6vw, 52px); line-height: 0.95;
   color: var(--text); margin: 0;
 }
-.finale-titre span {
-  background: linear-gradient(180deg, var(--gold-light), var(--gold));
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-}
+.finale-titre span { color: var(--gold); }
 .finale-sous {
-  color: var(--text-muted); font-size: clamp(13px, 2.2vw, 15px);
-  margin-top: 12px; line-height: 1.7;
+  color: var(--text-muted); font-size: 13px;
+  margin-top: 8px; line-height: 1.65; max-width: 52ch;
+}
+
+/* Les chiffres de la ligue, a droite du titre */
+.finale-chiffres { display: flex; gap: clamp(14px, 3vw, 28px); flex-wrap: wrap; }
+.finale-chiffre { text-align: center; min-width: 62px; }
+.finale-chiffre b {
+  display: block;
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
+  font-size: clamp(26px, 4vw, 36px); line-height: 1; color: var(--gold);
+}
+.finale-chiffre span {
+  display: block; margin-top: 4px;
+  font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted);
 }
 
 .finale-section-titre {
   font-family: 'Barlow Condensed', sans-serif;
   font-weight: 900; text-transform: uppercase; letter-spacing: 1px;
   font-size: clamp(20px, 4vw, 28px); color: var(--text);
-  margin: 30px 0 14px; display: flex; align-items: center; gap: 10px;
+  margin: 34px 0 14px; display: flex; align-items: center; gap: 10px;
 }
 .finale-section-titre span { color: var(--gold); }
 .finale-section-titre::after {
   content: ''; flex: 1; height: 1px;
   background: linear-gradient(90deg, var(--border), transparent);
 }
+.finale-chapo { font-size: 13px; color: var(--text-muted); line-height: 1.7; margin-bottom: 16px; }
 
-/* ---- Cartes finalistes ---- */
-.fin-grid { display: grid; gap: 12px; }
-.fin-grid-2 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-.fin-grid-3 { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
-
-.fin-card {
-  position: relative; overflow: hidden;
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: 6px; padding: 16px 18px;
-  display: flex; align-items: center; gap: 14px;
-  transition: transform 0.15s, border-color 0.15s;
+/* ---- Podium : 2 | 1 | 3, puis les qualifies 4 a 6 ---- */
+.podium { display: grid; grid-template-columns: 1fr 1.22fr 1fr; gap: 12px; align-items: end; }
+.podium-col { display: flex; flex-direction: column; min-width: 0; }
+.podium-carte {
+  background: var(--bg2); border: 1px solid var(--border); border-bottom: none;
+  border-radius: 6px 6px 0 0; padding: 16px 14px 14px; text-align: center;
+  cursor: pointer; transition: transform 0.15s;
 }
-.fin-card:hover { transform: translateY(-2px); }
-.fin-card .fin-rang {
+.podium-col:hover .podium-carte { transform: translateY(-3px); }
+.podium-medaille { font-size: 19px; line-height: 1; margin-bottom: 9px; color: var(--metal); }
+.podium-1 .podium-medaille { font-size: 25px; }
+.podium-nom {
   font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
-  font-size: 30px; line-height: 1; min-width: 34px; text-align: center;
-  color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.05;
+  font-size: clamp(16px, 2.4vw, 22px); color: var(--text); overflow-wrap: anywhere;
 }
-.fin-card .fin-nom {
-  font-weight: 700; font-size: 15px; color: var(--text);
-  overflow-wrap: anywhere;
+.podium-pts {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
+  font-size: clamp(22px, 3.4vw, 32px); line-height: 1.1; margin-top: 6px; color: var(--gold);
 }
-.fin-card .fin-pts {
+.podium-pts small { font-size: 0.45em; color: var(--text-muted); font-weight: 400; margin-left: 2px; }
+.podium-meta { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+.podium-socle {
+  border-radius: 0 0 6px 6px; display: flex; align-items: center; justify-content: center;
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 30px;
+  border: 1px solid var(--border); border-top: 2px solid var(--metal);
+  background: linear-gradient(180deg, var(--teinte), var(--bg2));
+  color: var(--metal); text-shadow: 0 1px 0 rgba(0,0,0,0.4);
+}
+.podium-1 .podium-carte { border-color: rgba(255,215,0,0.55); background: linear-gradient(170deg, rgba(255,215,0,0.12), var(--bg2) 60%); padding-top: 22px; }
+.podium-1 { --metal: #ffd700; --teinte: rgba(255,215,0,0.16); }
+.podium-1 .podium-socle { height: 76px; font-size: 40px; }
+.podium-1 .podium-nom { font-size: clamp(19px, 3vw, 28px); }
+.podium-2 .podium-carte { border-color: rgba(192,192,192,0.45); background: linear-gradient(170deg, rgba(192,192,192,0.08), var(--bg2) 60%); }
+.podium-2 { --metal: #c9c9c9; --teinte: rgba(200,200,200,0.11); }
+.podium-2 .podium-socle { height: 54px; }
+.podium-3 .podium-carte { border-color: rgba(205,127,50,0.45); background: linear-gradient(170deg, rgba(205,127,50,0.08), var(--bg2) 60%); }
+.podium-3 { --metal: #d08a4e; --teinte: rgba(205,127,50,0.11); }
+.podium-3 .podium-socle { height: 38px; }
+
+/* Les qualifies 4 a 6, sous le podium */
+.fin-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); margin-top: 12px; }
+.fin-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 6px;
+  padding: 13px 15px; display: flex; align-items: center; gap: 12px;
+  cursor: pointer; transition: transform 0.15s, border-color 0.15s;
+}
+.fin-card:hover { transform: translateY(-2px); border-color: rgba(201,149,74,0.45); }
+.fin-rang {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
+  font-size: 26px; line-height: 1; min-width: 26px; text-align: center; color: var(--gold);
+}
+.fin-nom { font-weight: 700; font-size: 14px; color: var(--text); overflow-wrap: anywhere; }
+.fin-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.fin-pts {
   font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
-  font-size: 19px; color: var(--gold); margin-left: auto; white-space: nowrap;
+  font-size: 18px; color: var(--gold); margin-left: auto; white-space: nowrap;
 }
-.fin-card .fin-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.fin-reste { margin-top: 14px; font-size: 12px; color: var(--text-muted); text-align: center; }
 
-.fin-card-1 {
-  border-color: rgba(255,215,0,0.5);
-  background: linear-gradient(135deg, rgba(255,215,0,0.09), var(--bg2) 55%);
-  padding: clamp(18px, 4vw, 30px);
-}
-.fin-card-1 .fin-rang { font-size: clamp(40px, 8vw, 64px); color: #ffd700; min-width: 56px; }
-.fin-card-1 .fin-nom { font-size: clamp(20px, 4.5vw, 32px); font-family: 'Barlow Condensed', sans-serif; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
-.fin-card-1 .fin-pts { font-size: clamp(24px, 5vw, 38px); }
-.fin-card-2 { border-color: rgba(192,192,192,0.42); background: linear-gradient(135deg, rgba(192,192,192,0.07), var(--bg2) 60%); }
-.fin-card-2 .fin-rang { color: #c0c0c0; }
-.fin-card-3 { border-color: rgba(205,127,50,0.42); background: linear-gradient(135deg, rgba(205,127,50,0.07), var(--bg2) 60%); }
-.fin-card-3 .fin-rang { color: #cd7f32; }
-.fin-card-autre { border-color: rgba(201,149,74,0.28); }
-.fin-card-autre .fin-rang { color: var(--gold); }
-
-.fin-badge {
-  display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 1px;
-  text-transform: uppercase; padding: 2px 7px; border-radius: 3px;
-  background: rgba(201,149,74,0.15); border: 1px solid var(--gold); color: var(--gold);
-  margin-top: 5px;
+@media (max-width: 680px) {
+  /* En colonne, le champion passe en premier : un podium 2-1-3 empile serait illisible. */
+  .podium { grid-template-columns: 1fr; align-items: stretch; }
+  .podium-1 { order: 1; } .podium-2 { order: 2; } .podium-3 { order: 3; }
+  .podium-socle, .podium-1 .podium-socle, .podium-2 .podium-socle, .podium-3 .podium-socle { height: 34px; font-size: 24px; }
 }
 
 /* ---- Lots ---- */
-.lots-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.lots-grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
 .lot-card {
   position: relative; overflow: hidden;
   border: 1px solid var(--border); border-radius: 8px;
   background: linear-gradient(180deg, var(--bg2), var(--bg));
   display: flex; flex-direction: column;
+  transition: border-color 0.2s, transform 0.2s;
 }
+.lot-card:hover { border-color: rgba(201,149,74,0.5); transform: translateY(-3px); }
 .lot-visuel {
-  height: 170px; display: flex; align-items: center; justify-content: center;
+  height: clamp(190px, 26vw, 250px);
+  display: flex; align-items: center; justify-content: center;
   position: relative; overflow: hidden; border-bottom: 1px solid var(--border);
+  padding: 18px;
 }
-.lot-corps { padding: 18px 20px 20px; }
-.lot-nom {
-  font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
-  text-transform: uppercase; font-size: clamp(18px, 3.4vw, 24px);
-  line-height: 1.1; color: var(--text);
+/* Halo derriere la photo : la decoupe du PNG se detache sans cadre. */
+.lot-visuel::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(60% 70% at 50% 45%, var(--halo), transparent 70%);
 }
-.lot-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.7; margin-top: 8px; }
-.lot-gagnant {
-  margin-top: 14px; padding: 12px 14px; border-radius: 5px;
-  background: rgba(201,149,74,0.1); border: 1px solid var(--gold);
+.lot-cod { --halo: rgba(224,90,56,0.28); background: #14100e; }
+.lot-goxlr { --halo: rgba(74,142,201,0.26); background: #0d1116; }
+.lot-photo {
+  position: relative; max-width: 100%; max-height: 100%;
+  object-fit: contain; filter: drop-shadow(0 16px 28px rgba(0,0,0,0.6));
 }
-
-/* Visuel « boîte de jeu » dessiné en CSS, aucune image externe */
-.lot-cod { background: radial-gradient(90% 120% at 50% 0%, rgba(224,90,56,0.22), transparent 65%), #14100e; }
+/* Repli dessine en CSS, visible seulement si la photo manque. */
+.lot-repli { display: none; position: relative; }
+.lot-visuel.sans-photo .lot-photo { display: none; }
+.lot-visuel.sans-photo .lot-repli { display: flex; }
 .lot-boite {
-  width: 104px; height: 136px; border-radius: 5px;
+  width: 108px; height: 142px; border-radius: 5px;
   background: linear-gradient(150deg, #2a2420, #15110f 60%);
   border: 1px solid rgba(224,90,56,0.5);
   box-shadow: 0 10px 30px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  flex-direction: column; align-items: center; justify-content: center;
   gap: 6px; transform: rotate(-5deg);
 }
 .lot-boite .mw { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 30px; line-height: 0.85; color: var(--rust-light); letter-spacing: 1px; }
 .lot-boite .mw small { display: block; font-size: 9px; letter-spacing: 2px; color: var(--text-muted); margin-top: 4px; }
-
-/* Visuel « mixer » dessiné en CSS */
-.lot-goxlr { background: radial-gradient(90% 120% at 50% 0%, rgba(74,142,201,0.2), transparent 65%), #0d1116; }
 .lot-mixer {
-  width: 150px; padding: 12px 14px; border-radius: 7px;
+  width: 154px; padding: 12px 14px; border-radius: 7px;
   background: linear-gradient(160deg, #222a33, #141a20);
   border: 1px solid rgba(74,142,201,0.45);
   box-shadow: 0 10px 30px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07);
-  transform: rotate(3deg);
+  transform: rotate(3deg); flex-direction: column;
 }
 .lot-faders { display: flex; gap: 11px; justify-content: center; height: 70px; }
 .lot-fader { width: 7px; background: #0a0d11; border-radius: 4px; position: relative; }
@@ -1174,6 +1201,26 @@ main {
 .lot-leds { display: flex; gap: 7px; justify-content: center; margin-top: 11px; }
 .lot-led { width: 13px; height: 13px; border-radius: 3px; }
 
+.lot-corps { padding: 18px 20px 20px; display: flex; flex-direction: column; flex: 1; }
+.lot-rang {
+  font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 6px;
+}
+.lot-nom {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
+  text-transform: uppercase; font-size: clamp(19px, 3.4vw, 26px);
+  line-height: 1.08; color: var(--text);
+}
+.lot-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.7; margin-top: 8px; }
+.lot-gagnant {
+  margin-top: auto; padding: 12px 14px; border-radius: 5px;
+  background: rgba(201,149,74,0.1); border: 1px solid var(--gold);
+}
+.lot-attente {
+  margin-top: auto; padding-top: 14px; display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--text-muted);
+}
+
 /* ---- Tirage ---- */
 .tirage-ecran {
   min-height: 92px; display: flex; align-items: center; justify-content: center;
@@ -1184,6 +1231,7 @@ main {
 }
 .tirage-ecran.roule { color: var(--text); border-color: var(--gold); }
 .tirage-ecran.gagne { color: var(--gold); border-style: solid; border-color: var(--gold); background: rgba(201,149,74,0.08); }
+
 </style>
 </head>
 <body>
@@ -1220,7 +1268,6 @@ main {
 <nav class="nav-tabs">
   <button class="nav-tab active" onclick="showPage('finale')">Finale</button>
   <button class="nav-tab" onclick="showPage('classement')">Classement</button>
-  <button class="nav-tab admin-only" style="display:none" onclick="showPage('joueurs')">Joueurs</button>
   <button class="nav-tab" onclick="showPage('regles')">Règles</button>
   <button class="nav-tab admin-only" style="display:none" onclick="showPage('tirage')">Tirage au sort</button>
   <button class="nav-tab admin-only" style="display:none" onclick="showPage('moderation')">Modération</button>
@@ -1234,34 +1281,39 @@ main {
 <div id="page-finale" class="page active">
 
   <div class="finale-hero">
-    <div class="finale-kicker">Summer Ligue Warzone · Saison terminée</div>
-    <h1 class="finale-titre">La <span>Finale</span></h1>
-    <div class="finale-sous">
-      Le classement général est clos. Les <strong style="color:var(--gold)">6 premiers</strong> s'affrontent en finale.<br>
-      Et <strong style="color:var(--text)">tous les participants</strong>, finalistes ou non, entrent dans le tirage au sort des lots.
+    <div class="finale-hero-txt">
+      <div class="finale-kicker">Summer Ligue Warzone</div>
+      <h1 class="finale-titre">La <span>Finale</span></h1>
+      <div class="finale-sous">
+        Le classement est clos. Les <strong style="color:var(--gold)">6 premiers</strong> sont qualifiés pour la finale —
+        et les lots se tirent au sort parmi <strong style="color:var(--text)">tous les participants</strong>.
+      </div>
     </div>
+    <div class="finale-chiffres" id="finale-chiffres"></div>
   </div>
 
-  <h2 class="finale-section-titre"><i class="fa-solid fa-trophy" style="color:var(--gold)"></i> Les <span>finalistes</span></h2>
-  <div id="finale-podium"></div>
-
   <h2 class="finale-section-titre"><i class="fa-solid fa-gift" style="color:var(--gold)"></i> Les <span>lots</span></h2>
-  <div style="font-size:13px;color:var(--text-muted);line-height:1.7;margin-bottom:16px">
+  <div class="finale-chapo">
     <i class="fa-solid fa-circle-info" style="color:var(--gold);margin-right:5px"></i>
-    Les deux lots sont tirés au sort parmi <strong style="color:var(--text)">tous les joueurs de la ligue</strong> — aucune condition de classement.
-    Avoir participé suffit, et un même joueur ne peut gagner qu'un seul lot.
+    Tirés au sort parmi <strong style="color:var(--text)">tous les joueurs de la ligue</strong> — aucune condition de classement.
+    Avoir participé suffit, et un même joueur ne peut pas gagner les deux.
   </div>
 
   <div class="lots-grid">
     <div class="lot-card">
       <div class="lot-visuel lot-cod">
-        <div class="lot-boite">
-          <i class="fa-solid fa-crosshairs" style="font-size:26px;color:var(--rust-light);opacity:0.9"></i>
-          <div class="mw">MW4<small>WARZONE</small></div>
+        <img class="lot-photo" src="img/lot-mw4.png" alt="Call of Duty : Modern Warfare 4"
+             onerror="this.closest('.lot-visuel').classList.add('sans-photo')">
+        <div class="lot-repli">
+          <div class="lot-boite">
+            <i class="fa-solid fa-crosshairs" style="font-size:26px;color:var(--rust-light);opacity:0.9"></i>
+            <div class="mw">MW4<small>WARZONE</small></div>
+          </div>
         </div>
       </div>
       <div class="lot-corps">
-        <div class="lot-nom">Call of Duty<br>Modern Warfare 4</div>
+        <div class="lot-rang">Lot 1</div>
+        <div class="lot-nom">Call of Duty : Modern Warfare 4</div>
         <div class="lot-desc">Le jeu complet, <strong style="color:var(--text)">sur la plateforme de ton choix</strong> — PC, PlayStation ou Xbox.</div>
         <div id="lot-cod-gagnant"></div>
       </div>
@@ -1269,22 +1321,27 @@ main {
 
     <div class="lot-card">
       <div class="lot-visuel lot-goxlr">
-        <div class="lot-mixer">
-          <div class="lot-faders">
-            <div class="lot-fader"><i style="top:14%"></i></div>
-            <div class="lot-fader"><i style="top:52%"></i></div>
-            <div class="lot-fader"><i style="top:30%"></i></div>
-            <div class="lot-fader"><i style="top:66%"></i></div>
-          </div>
-          <div class="lot-leds">
-            <div class="lot-led" style="background:#4a8ec9"></div>
-            <div class="lot-led" style="background:#9b59b6"></div>
-            <div class="lot-led" style="background:#4caf77"></div>
-            <div class="lot-led" style="background:#c9954a"></div>
+        <img class="lot-photo" src="img/lot-goxlr-mini.png" alt="GoXLR Mini"
+             onerror="this.closest('.lot-visuel').classList.add('sans-photo')">
+        <div class="lot-repli">
+          <div class="lot-mixer">
+            <div class="lot-faders">
+              <div class="lot-fader"><i style="top:14%"></i></div>
+              <div class="lot-fader"><i style="top:52%"></i></div>
+              <div class="lot-fader"><i style="top:30%"></i></div>
+              <div class="lot-fader"><i style="top:66%"></i></div>
+            </div>
+            <div class="lot-leds">
+              <div class="lot-led" style="background:#4a8ec9"></div>
+              <div class="lot-led" style="background:#9b59b6"></div>
+              <div class="lot-led" style="background:#4caf77"></div>
+              <div class="lot-led" style="background:#c9954a"></div>
+            </div>
           </div>
         </div>
       </div>
       <div class="lot-corps">
+        <div class="lot-rang">Lot 2</div>
         <div class="lot-nom">GoXLR Mini</div>
         <div class="lot-desc">L'interface audio des streamers : mixage en direct, voix retravaillée, quatre faders.</div>
         <div id="lot-goxlr-gagnant"></div>
@@ -1292,8 +1349,11 @@ main {
     </div>
   </div>
 
-  <div style="margin-top:26px;text-align:center">
-    <button class="btn btn-solid-gold" onclick="showPage('classement')"><i class="fa-solid fa-ranking-star" style="margin-right:6px"></i>Voir le classement complet</button>
+  <h2 class="finale-section-titre"><i class="fa-solid fa-trophy" style="color:var(--gold)"></i> Les <span>finalistes</span></h2>
+  <div id="finale-podium"></div>
+
+  <div style="margin-top:28px;text-align:center">
+    <button class="btn btn-gold" onclick="showPage('classement')"><i class="fa-solid fa-ranking-star" style="margin-right:6px"></i>Voir le classement complet</button>
   </div>
 </div>
 
@@ -2557,40 +2617,19 @@ function annulerTirage(cle) {
 
 // ---------- Page Finale (publique) ----------
 function renderFinale() {
-  const hote = document.getElementById('finale-podium');
-  if (hote) {
-    if (!state.players.length) {
-      hote.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-muted);border:1px dashed var(--border);border-radius:6px">Aucun joueur enregistré.</div>';
-    } else {
-      const classes = [...state.players].sort((a, b) => getPlayerTotal(b) - getPlayerTotal(a));
-      const top = classes.slice(0, QUALIF_FINALE);
-      const carte = (p, rang) => {
-        const nbGames = (p.games || []).length;
-        const best = getBestGame(p);
-        const style = rang <= 3 ? 'fin-card-' + rang : 'fin-card-autre';
-        return `<div class="fin-card ${style}" onclick="showPlayerDetail('${p.id}')" style="cursor:pointer">
-          <div class="fin-rang">${rang}</div>
-          <div style="min-width:0">
-            <div class="fin-nom">${escHtml(p.name)}</div>
-            <div class="fin-meta">${nbGames} game${nbGames > 1 ? 's' : ''}${best ? ' · meilleure à ' + best.score + ' pts' : ''}</div>
-            ${rang === 1 ? '<div class="fin-badge">Tête de série</div>' : ''}
-          </div>
-          <div class="fin-pts">${getPlayerTotal(p)} <span style="font-size:0.6em;color:var(--text-muted)">pts</span></div>
-        </div>`;
-      };
-      const rangee = (debut, fin, cls) => {
-        const lot = top.slice(debut, fin);
-        if (!lot.length) return '';
-        return `<div class="fin-grid ${cls}" style="margin-top:12px">${lot.map((p, i) => carte(p, debut + i + 1)).join('')}</div>`;
-      };
-      hote.innerHTML = (top[0] ? `<div class="fin-grid">${carte(top[0], 1)}</div>` : '')
-        + rangee(1, 3, 'fin-grid-2')
-        + rangee(3, QUALIF_FINALE, 'fin-grid-3')
-        + (classes.length > QUALIF_FINALE
-          ? `<div style="margin-top:14px;font-size:12px;color:var(--text-muted);text-align:center">${classes.length - QUALIF_FINALE} autre${classes.length - QUALIF_FINALE > 1 ? 's' : ''} joueur${classes.length - QUALIF_FINALE > 1 ? 's' : ''} ont disputé la ligue — et restent dans le tirage des lots.</div>`
-          : '');
-    }
+  const chiffres = document.getElementById('finale-chiffres');
+  if (chiffres) {
+    const nbJoueurs = state.players.length;
+    const nbGames = state.players.reduce((n, p) => n + (p.games || []).length, 0);
+    chiffres.innerHTML = [
+      [nbJoueurs, nbJoueurs > 1 ? 'Joueurs' : 'Joueur'],
+      [nbGames, 'Games jouées'],
+      [LOTS_FINALE.length, 'Lots à gagner']
+    ].map(([v, l]) => `<div class="finale-chiffre"><b>${v}</b><span>${l}</span></div>`).join('');
   }
+
+  const hote = document.getElementById('finale-podium');
+  if (hote) renderPodium(hote);
 
   // Annonce publique des gagnants, dans la carte du lot concerné.
   LOTS_FINALE.forEach(lot => {
@@ -2604,10 +2643,64 @@ function renderFinale() {
             <i class="fa-solid fa-crown" style="font-size:0.7em"></i> ${escHtml(g.name)}
           </div>
         </div>`
-      : `<div style="margin-top:14px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-muted)">
+      : `<div class="lot-attente">
           <i class="fa-solid fa-dice" style="color:var(--gold)"></i> Tirage au sort à venir — parmi ${state.players.length} participant${state.players.length > 1 ? 's' : ''}.
         </div>`;
   });
+}
+
+// Podium 2 | 1 | 3, puis les qualifiés 4 à 6. L'ordre du DOM reste 2-1-3 :
+// la grille place le champion au centre, et la media query le remet en tête
+// quand tout passe en colonne.
+function renderPodium(hote) {
+  if (!state.players.length) {
+    hote.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-muted);border:1px dashed var(--border);border-radius:6px">Aucun joueur enregistré.</div>';
+    return;
+  }
+  const classes = [...state.players].sort((a, b) => getPlayerTotal(b) - getPlayerTotal(a));
+  const top = classes.slice(0, QUALIF_FINALE);
+  const MEDAILLES = {
+    1: '<i class="fa-solid fa-crown"></i>',
+    2: '<i class="fa-solid fa-medal"></i>',
+    3: '<i class="fa-solid fa-medal"></i>'
+  };
+
+  const marche = rang => {
+    const p = top[rang - 1];
+    if (!p) return '';
+    const nbGames = (p.games || []).length;
+    return `<div class="podium-col podium-${rang}" onclick="showPlayerDetail('${p.id}')">
+      <div class="podium-carte">
+        <div class="podium-medaille">${MEDAILLES[rang]}</div>
+        <div class="podium-nom">${escHtml(p.name)}</div>
+        <div class="podium-pts">${getPlayerTotal(p)}<small>pts</small></div>
+        <div class="podium-meta">${nbGames} game${nbGames > 1 ? 's' : ''}</div>
+      </div>
+      <div class="podium-socle">${rang}</div>
+    </div>`;
+  };
+
+  const suivants = top.slice(3);
+  const reste = classes.length - top.length;
+
+  hote.innerHTML = `<div class="podium">${marche(2)}${marche(1)}${marche(3)}</div>`
+    + (suivants.length
+      ? `<div class="fin-grid">${suivants.map((p, i) => {
+          const rang = i + 4;
+          const nbGames = (p.games || []).length;
+          return `<div class="fin-card" onclick="showPlayerDetail('${p.id}')">
+            <div class="fin-rang">${rang}</div>
+            <div style="min-width:0">
+              <div class="fin-nom">${escHtml(p.name)}</div>
+              <div class="fin-meta">${nbGames} game${nbGames > 1 ? 's' : ''}</div>
+            </div>
+            <div class="fin-pts">${getPlayerTotal(p)}</div>
+          </div>`;
+        }).join('')}</div>`
+      : '')
+    + (reste > 0
+      ? `<div class="fin-reste">${reste} autre${reste > 1 ? 's' : ''} joueur${reste > 1 ? 's' : ''} ont disputé la ligue — et restent dans le tirage des lots.</div>`
+      : '');
 }
 
 // ---------- Page Tirage (admin) ----------
