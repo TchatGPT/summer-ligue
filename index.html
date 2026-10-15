@@ -1013,6 +1013,177 @@ main {
 .ac-desc { font-size: 10px; color: var(--text-muted); line-height: 1.4; position: relative; }
 @media (max-width: 700px) { .action-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; } }
 @media (max-width: 380px) { .action-grid { grid-template-columns: 1fr; } }
+
+/* ============================================================
+   MODE FINALE — hero, podium des 6 finalistes, lots, tirage
+   Tout est en grilles auto-ajustables : aucune largeur fixe, donc
+   l'affichage tient du mobile au grand écran sans media query dédiée.
+   ============================================================ */
+.finale-hero {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(201,149,74,0.35);
+  border-radius: 8px;
+  background:
+    radial-gradient(120% 140% at 50% -20%, rgba(201,149,74,0.18), transparent 60%),
+    linear-gradient(180deg, var(--bg2), var(--bg));
+  padding: clamp(24px, 5vw, 48px) clamp(16px, 4vw, 40px);
+  text-align: center;
+  margin-bottom: 22px;
+}
+.finale-hero::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(115deg, transparent 0 18px, rgba(201,149,74,0.035) 18px 20px);
+  pointer-events: none;
+}
+.finale-kicker {
+  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 10px;
+}
+.finale-titre {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900; text-transform: uppercase;
+  font-size: clamp(40px, 11vw, 92px); line-height: 0.92;
+  color: var(--text); margin: 0;
+}
+.finale-titre span {
+  background: linear-gradient(180deg, var(--gold-light), var(--gold));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.finale-sous {
+  color: var(--text-muted); font-size: clamp(13px, 2.2vw, 15px);
+  margin-top: 12px; line-height: 1.7;
+}
+
+.finale-section-titre {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900; text-transform: uppercase; letter-spacing: 1px;
+  font-size: clamp(20px, 4vw, 28px); color: var(--text);
+  margin: 30px 0 14px; display: flex; align-items: center; gap: 10px;
+}
+.finale-section-titre span { color: var(--gold); }
+.finale-section-titre::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(90deg, var(--border), transparent);
+}
+
+/* ---- Cartes finalistes ---- */
+.fin-grid { display: grid; gap: 12px; }
+.fin-grid-2 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.fin-grid-3 { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+
+.fin-card {
+  position: relative; overflow: hidden;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 16px 18px;
+  display: flex; align-items: center; gap: 14px;
+  transition: transform 0.15s, border-color 0.15s;
+}
+.fin-card:hover { transform: translateY(-2px); }
+.fin-card .fin-rang {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
+  font-size: 30px; line-height: 1; min-width: 34px; text-align: center;
+  color: var(--text-muted);
+}
+.fin-card .fin-nom {
+  font-weight: 700; font-size: 15px; color: var(--text);
+  overflow-wrap: anywhere;
+}
+.fin-card .fin-pts {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+  font-size: 19px; color: var(--gold); margin-left: auto; white-space: nowrap;
+}
+.fin-card .fin-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+.fin-card-1 {
+  border-color: rgba(255,215,0,0.5);
+  background: linear-gradient(135deg, rgba(255,215,0,0.09), var(--bg2) 55%);
+  padding: clamp(18px, 4vw, 30px);
+}
+.fin-card-1 .fin-rang { font-size: clamp(40px, 8vw, 64px); color: #ffd700; min-width: 56px; }
+.fin-card-1 .fin-nom { font-size: clamp(20px, 4.5vw, 32px); font-family: 'Barlow Condensed', sans-serif; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+.fin-card-1 .fin-pts { font-size: clamp(24px, 5vw, 38px); }
+.fin-card-2 { border-color: rgba(192,192,192,0.42); background: linear-gradient(135deg, rgba(192,192,192,0.07), var(--bg2) 60%); }
+.fin-card-2 .fin-rang { color: #c0c0c0; }
+.fin-card-3 { border-color: rgba(205,127,50,0.42); background: linear-gradient(135deg, rgba(205,127,50,0.07), var(--bg2) 60%); }
+.fin-card-3 .fin-rang { color: #cd7f32; }
+.fin-card-autre { border-color: rgba(201,149,74,0.28); }
+.fin-card-autre .fin-rang { color: var(--gold); }
+
+.fin-badge {
+  display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; padding: 2px 7px; border-radius: 3px;
+  background: rgba(201,149,74,0.15); border: 1px solid var(--gold); color: var(--gold);
+  margin-top: 5px;
+}
+
+/* ---- Lots ---- */
+.lots-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.lot-card {
+  position: relative; overflow: hidden;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: linear-gradient(180deg, var(--bg2), var(--bg));
+  display: flex; flex-direction: column;
+}
+.lot-visuel {
+  height: 170px; display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden; border-bottom: 1px solid var(--border);
+}
+.lot-corps { padding: 18px 20px 20px; }
+.lot-nom {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
+  text-transform: uppercase; font-size: clamp(18px, 3.4vw, 24px);
+  line-height: 1.1; color: var(--text);
+}
+.lot-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.7; margin-top: 8px; }
+.lot-gagnant {
+  margin-top: 14px; padding: 12px 14px; border-radius: 5px;
+  background: rgba(201,149,74,0.1); border: 1px solid var(--gold);
+}
+
+/* Visuel « boîte de jeu » dessiné en CSS, aucune image externe */
+.lot-cod { background: radial-gradient(90% 120% at 50% 0%, rgba(224,90,56,0.22), transparent 65%), #14100e; }
+.lot-boite {
+  width: 104px; height: 136px; border-radius: 5px;
+  background: linear-gradient(150deg, #2a2420, #15110f 60%);
+  border: 1px solid rgba(224,90,56,0.5);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; transform: rotate(-5deg);
+}
+.lot-boite .mw { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 30px; line-height: 0.85; color: var(--rust-light); letter-spacing: 1px; }
+.lot-boite .mw small { display: block; font-size: 9px; letter-spacing: 2px; color: var(--text-muted); margin-top: 4px; }
+
+/* Visuel « mixer » dessiné en CSS */
+.lot-goxlr { background: radial-gradient(90% 120% at 50% 0%, rgba(74,142,201,0.2), transparent 65%), #0d1116; }
+.lot-mixer {
+  width: 150px; padding: 12px 14px; border-radius: 7px;
+  background: linear-gradient(160deg, #222a33, #141a20);
+  border: 1px solid rgba(74,142,201,0.45);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07);
+  transform: rotate(3deg);
+}
+.lot-faders { display: flex; gap: 11px; justify-content: center; height: 70px; }
+.lot-fader { width: 7px; background: #0a0d11; border-radius: 4px; position: relative; }
+.lot-fader i {
+  position: absolute; left: -4px; width: 15px; height: 9px; border-radius: 2px;
+  background: linear-gradient(180deg, #5f6c7a, #39434d);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+}
+.lot-leds { display: flex; gap: 7px; justify-content: center; margin-top: 11px; }
+.lot-led { width: 13px; height: 13px; border-radius: 3px; }
+
+/* ---- Tirage ---- */
+.tirage-ecran {
+  min-height: 92px; display: flex; align-items: center; justify-content: center;
+  border: 1px dashed var(--border); border-radius: 6px; background: var(--bg);
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
+  font-size: clamp(22px, 5vw, 38px); text-transform: uppercase; letter-spacing: 1px;
+  color: var(--text-muted); padding: 14px; text-align: center; overflow-wrap: anywhere;
+}
+.tirage-ecran.roule { color: var(--text); border-color: var(--gold); }
+.tirage-ecran.gagne { color: var(--gold); border-style: solid; border-color: var(--gold); background: rgba(201,149,74,0.08); }
 </style>
 </head>
 <body>
@@ -1047,11 +1218,11 @@ main {
 
 <!-- NAV -->
 <nav class="nav-tabs">
-  <button class="nav-tab active" onclick="showPage('classement')">Classement</button>
-  <button class="nav-tab admin-only" style="display:none" onclick="showPage('actions')">Actions roues</button>
+  <button class="nav-tab active" onclick="showPage('finale')">Finale</button>
+  <button class="nav-tab" onclick="showPage('classement')">Classement</button>
   <button class="nav-tab admin-only" style="display:none" onclick="showPage('joueurs')">Joueurs</button>
-  <button class="nav-tab" onclick="showPage('evenements')">Évènements</button>
   <button class="nav-tab" onclick="showPage('regles')">Règles</button>
+  <button class="nav-tab admin-only" style="display:none" onclick="showPage('tirage')">Tirage au sort</button>
   <button class="nav-tab admin-only" style="display:none" onclick="showPage('moderation')">Modération</button>
 </nav>
 
@@ -1059,8 +1230,103 @@ main {
 
 <main>
 
+<!-- PAGE FINALE -->
+<div id="page-finale" class="page active">
+
+  <div class="finale-hero">
+    <div class="finale-kicker">Summer Ligue Warzone · Saison terminée</div>
+    <h1 class="finale-titre">La <span>Finale</span></h1>
+    <div class="finale-sous">
+      Le classement général est clos. Les <strong style="color:var(--gold)">6 premiers</strong> s'affrontent en finale.<br>
+      Et <strong style="color:var(--text)">tous les participants</strong>, finalistes ou non, entrent dans le tirage au sort des lots.
+    </div>
+  </div>
+
+  <h2 class="finale-section-titre"><i class="fa-solid fa-trophy" style="color:var(--gold)"></i> Les <span>finalistes</span></h2>
+  <div id="finale-podium"></div>
+
+  <h2 class="finale-section-titre"><i class="fa-solid fa-gift" style="color:var(--gold)"></i> Les <span>lots</span></h2>
+  <div style="font-size:13px;color:var(--text-muted);line-height:1.7;margin-bottom:16px">
+    <i class="fa-solid fa-circle-info" style="color:var(--gold);margin-right:5px"></i>
+    Les deux lots sont tirés au sort parmi <strong style="color:var(--text)">tous les joueurs de la ligue</strong> — aucune condition de classement.
+    Avoir participé suffit, et un même joueur ne peut gagner qu'un seul lot.
+  </div>
+
+  <div class="lots-grid">
+    <div class="lot-card">
+      <div class="lot-visuel lot-cod">
+        <div class="lot-boite">
+          <i class="fa-solid fa-crosshairs" style="font-size:26px;color:var(--rust-light);opacity:0.9"></i>
+          <div class="mw">MW4<small>WARZONE</small></div>
+        </div>
+      </div>
+      <div class="lot-corps">
+        <div class="lot-nom">Call of Duty<br>Modern Warfare 4</div>
+        <div class="lot-desc">Le jeu complet, <strong style="color:var(--text)">sur la plateforme de ton choix</strong> — PC, PlayStation ou Xbox.</div>
+        <div id="lot-cod-gagnant"></div>
+      </div>
+    </div>
+
+    <div class="lot-card">
+      <div class="lot-visuel lot-goxlr">
+        <div class="lot-mixer">
+          <div class="lot-faders">
+            <div class="lot-fader"><i style="top:14%"></i></div>
+            <div class="lot-fader"><i style="top:52%"></i></div>
+            <div class="lot-fader"><i style="top:30%"></i></div>
+            <div class="lot-fader"><i style="top:66%"></i></div>
+          </div>
+          <div class="lot-leds">
+            <div class="lot-led" style="background:#4a8ec9"></div>
+            <div class="lot-led" style="background:#9b59b6"></div>
+            <div class="lot-led" style="background:#4caf77"></div>
+            <div class="lot-led" style="background:#c9954a"></div>
+          </div>
+        </div>
+      </div>
+      <div class="lot-corps">
+        <div class="lot-nom">GoXLR Mini</div>
+        <div class="lot-desc">L'interface audio des streamers : mixage en direct, voix retravaillée, quatre faders.</div>
+        <div id="lot-goxlr-gagnant"></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:26px;text-align:center">
+    <button class="btn btn-solid-gold" onclick="showPage('classement')"><i class="fa-solid fa-ranking-star" style="margin-right:6px"></i>Voir le classement complet</button>
+  </div>
+</div>
+
+<!-- PAGE TIRAGE AU SORT (admin) -->
+<div id="page-tirage" class="page">
+  <h1 class="section-title" style="margin-bottom:8px">Tirage <span>au sort</span></h1>
+  <div style="font-size:13px;color:var(--text-muted);line-height:1.7;margin-bottom:22px">
+    Le tirage porte sur <strong style="color:var(--text)">tous les joueurs</strong> de la ligue. Un gagnant ne peut pas remporter le second lot :
+    il est automatiquement écarté du tirage suivant. Le résultat est public dès qu'il est validé.
+  </div>
+
+  <div id="tirage-participants" style="margin-bottom:22px"></div>
+
+  <div class="lots-grid">
+    <div class="lot-card">
+      <div class="lot-corps">
+        <div class="lot-nom" style="font-size:19px">Call of Duty : Modern Warfare 4</div>
+        <div style="margin-top:14px" id="tirage-cod-ecran" class="tirage-ecran">Prêt</div>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap" id="tirage-cod-actions"></div>
+      </div>
+    </div>
+    <div class="lot-card">
+      <div class="lot-corps">
+        <div class="lot-nom" style="font-size:19px">GoXLR Mini</div>
+        <div style="margin-top:14px" id="tirage-goxlr-ecran" class="tirage-ecran">Prêt</div>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap" id="tirage-goxlr-actions"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- PAGE CLASSEMENT -->
-<div id="page-classement" class="page active">
+<div id="page-classement" class="page">
   <div class="classement-header">
     <h1 class="section-title">Classement <span>Général</span></h1>
     <div class="badge" id="badge-games-count">0 joueurs</div>
@@ -1109,7 +1375,6 @@ main {
 
   <div class="actions-bar admin-only" style="display:none">
     <button class="btn btn-green" style="font-size:15px;padding:10px 22px" onclick="openSaisieModal()"><i class="fa-solid fa-gamepad"></i> Saisir une game</button>
-    <button class="btn" style="font-size:15px;padding:10px 22px;border-color:var(--purple);color:var(--purple);transition:background 0.15s,color 0.15s" onmouseover="this.style.background='var(--purple)';this.style.color='white'" onmouseout="this.style.background='';this.style.color='var(--purple)'" onclick="openSaisieIA()"><i class="fa-solid fa-wand-magic-sparkles"></i> Saisir avec l'IA</button>
     <button class="btn btn-blue btn-sm" onclick="openImportSheetModal()"><i class="fa-solid fa-cloud-arrow-down"></i> Importer Google Sheets</button>
   </div>
 
@@ -1301,443 +1566,6 @@ main {
 </div>
 
 <!-- MODAL SAISIE IA -->
-<div class="modal-overlay modal-center" id="modal-saisie-ia">
-  <div class="modal" style="max-width:580px">
-    <div class="modal-header">
-      <div class="modal-title"><i class="fa-solid fa-wand-magic-sparkles" style="margin-right:8px;font-size:14px"></i>Saisie Équipe — IA</div>
-      <button class="modal-close" onclick="closeModal('modal-saisie-ia');iaReset()">×</button>
-    </div>
-    <div class="modal-body" style="padding:20px;max-height:80vh;overflow-y:auto">
-
-      <!-- TOP (partagé pour toute l'équipe) -->
-      <div class="form-row">
-        <label class="form-label">Classement Top <span style="font-weight:400;text-transform:none;letter-spacing:0">(partagé pour toute l'équipe)</span></label>
-        <div class="top-selector">
-          <button class="top-btn t1" id="ia-top-1" onclick="iaSelectTop(1)">TOP 1<br><small>+20 pts</small></button>
-          <button class="top-btn t2" id="ia-top-2" onclick="iaSelectTop(2)">TOP 2<br><small>+15 pts</small></button>
-          <button class="top-btn t3" id="ia-top-3" onclick="iaSelectTop(3)">TOP 3<br><small>+8 pts</small></button>
-          <button class="top-btn tn selected" id="ia-top-n" onclick="iaSelectTop(0)">Pas top<br><small>+0 pts</small></button>
-        </div>
-      </div>
-
-      <!-- PASTE ZONE -->
-      <div class="form-row" style="margin-top:14px">
-        <label class="form-label">Capture d'écran fin de game</label>
-        <div id="ia-paste-zone"
-             style="border:2px dashed var(--border);border-radius:6px;padding:32px 20px;text-align:center;cursor:pointer;transition:border-color 0.2s"
-             onclick="document.getElementById('ia-file-input').click()"
-             ondragover="event.preventDefault();this.style.borderColor='var(--blue)'"
-             ondragleave="this.style.borderColor=''"
-             ondrop="iaHandleDrop(event)">
-          <div style="font-size:30px;color:var(--text-muted);margin-bottom:8px"><i class="fa-solid fa-image"></i></div>
-          <div style="font-size:13px;color:var(--text-muted)">Ctrl+V pour coller · ou cliquez pour choisir un fichier</div>
-        </div>
-        <input type="file" id="ia-file-input" accept="image/*" style="display:none" onchange="iaHandleFileInput(event)">
-      </div>
-
-      <div style="display:flex;gap:10px;align-items:center;margin-top:12px">
-        <button class="btn btn-blue" id="ia-analyze-btn" onclick="iaAnalyze()" disabled style="flex:1;justify-content:center">
-          <i class="fa-solid fa-wand-magic-sparkles"></i> Analyser
-        </button>
-        <button class="btn btn-sm" onclick="iaReset()" style="color:var(--text-muted)"><i class="fa-solid fa-xmark"></i> Effacer</button>
-      </div>
-
-      <!-- RÉSULTATS (masqués jusqu'à l'analyse) -->
-      <div id="ia-results" style="display:none;margin-top:18px">
-        <div class="sep" style="margin-bottom:14px">Résultats</div>
-        <table style="width:100%;border-collapse:collapse">
-          <thead>
-            <tr>
-              <th style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);padding:6px 8px;border-bottom:1px solid var(--border);text-align:left">OCR</th>
-              <th style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);padding:6px 8px;border-bottom:1px solid var(--border);text-align:left">Joueur</th>
-              <th style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);padding:6px 8px;border-bottom:1px solid var(--border);text-align:center">ÉLIM.</th>
-              <th style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);padding:6px 8px;border-bottom:1px solid var(--border);text-align:right">Score</th>
-            </tr>
-          </thead>
-          <tbody id="ia-results-tbody"></tbody>
-        </table>
-        <div id="ia-lriaa-section"></div>
-        <div id="ia-quota-recap" style="margin-top:14px"></div>
-        <div style="margin-top:14px">
-          <button class="btn btn-solid-gold btn-lg" onclick="iaSubmitAll()" style="width:100%;justify-content:center">
-            <i class="fa-solid fa-check"></i> Valider toute l'équipe
-          </button>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-<!-- PAGE ACTIONS ROUES -->
-<div id="page-actions" class="page">
-  <h1 class="section-title" style="margin-bottom:20px">Actions <span>Roues</span></h1>
-<!-- ROUE DES FINISSEURS -->
-  <div class="roue-section" id="roue-fin-section" style="margin-bottom:20px;border-color:rgba(74,142,201,0.3);background:rgba(74,142,201,0.04)">
-    <div class="roue-header" style="border-bottom-color:rgba(74,142,201,0.25)">
-      <div>
-        <div class="roue-title roue-fin-color"><i class="fa-solid fa-flag-checkered" style="font-size:14px;margin-right:6px"></i>Roue des finisseurs <span style="font-size:13px;color:var(--text-muted);font-weight:400">(+ de 60 games)</span></div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:4px"><i class="fa-solid fa-circle-info"></i> Réservée aux joueurs ayant bouclé leur saison, ou à quelques games de la boucler</div>
-      </div>
-    </div>
-    <div class="action-grid">
-
-      <div class="action-card action-card-blue" onclick="openAction('fin-freeze-top3')">
-        <div class="ac-bg"><i class="fa-solid fa-lock"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-lock"></i></div>
-        <div class="ac-title">Fige ta meilleure game</div>
-        <div class="ac-desc">Sa meilleure game devient intouchable : ni vol, ni échange, ni modification de score</div>
-      </div>
-
-      <div class="action-card action-card-blue" onclick="openAction('fin-immunite')">
-        <div class="ac-bg"><i class="fa-solid fa-shield-halved"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-shield-halved"></i></div>
-        <div class="ac-title">Immunité 2 jours</div>
-        <div class="ac-desc">Pendant 2 jours, aucune action négative ne peut le cibler — les bonus l'atteignent toujours</div>
-      </div>
-
-      <div class="action-card action-card-blue" onclick="openAction('fin-fusion')">
-        <div class="ac-bg"><i class="fa-solid fa-code-merge"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-code-merge"></i></div>
-        <div class="ac-title">Fusion des 2 pires games</div>
-        <div class="ac-desc">Ses 2 pires games n'en font plus qu'une, qui cumule leurs points — et un créneau se libère</div>
-      </div>
-
-      <div class="action-card action-card-blue" onclick="openAction('fin-moyenne')">
-        <div class="ac-bg"><i class="fa-solid fa-chart-line"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-chart-line"></i></div>
-        <div class="ac-title">Pire game ramenée à la moyenne</div>
-        <div class="ac-desc">Sa pire game monte au niveau de la moyenne de toutes ses games</div>
-      </div>
-
-      <div class="action-card action-card-blue" onclick="openAction('fin-echange-best')">
-        <div class="ac-bg"><i class="fa-solid fa-right-left"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-right-left"></i></div>
-        <div class="ac-title">Échange pire contre meilleure</div>
-        <div class="ac-desc">Sa pire game part chez un joueur au choix, dont il récupère la meilleure</div>
-      </div>
-
-      <div class="action-card action-card-blue" onclick="openAction('fin-minus20')">
-        <div class="ac-bg"><i class="fa-solid fa-skull"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-skull"></i></div>
-        <div class="ac-title">− 20 pts à un joueur</div>
-        <div class="ac-desc">Retire 20 points au joueur de son choix — un joueur immunisé ne peut pas être visé</div>
-      </div>
-
-      <div class="action-card action-card-blue" onclick="openAction('fin-plus15')">
-        <div class="ac-bg"><i class="fa-solid fa-bolt"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-bolt"></i></div>
-        <div class="ac-title">+ 15 pts bonus</div>
-        <div class="ac-desc">Ajoute 15 points bonus permanents à son score total</div>
-      </div>
-
-      <div class="action-card action-card-blue" onclick="openAction('fin-plus10')">
-        <div class="ac-bg"><i class="fa-solid fa-bolt-lightning"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
-        <div class="ac-title">+ 10 pts bonus</div>
-        <div class="ac-desc">Ajoute 10 points bonus permanents à son score total</div>
-      </div>
-
-      <div class="action-card action-card-blue" onclick="openAction('fin-rien')">
-        <div class="ac-bg"><i class="fa-solid fa-circle-xmark"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-circle-xmark"></i></div>
-        <div class="ac-title">Pas de chance</div>
-        <div class="ac-desc">Il ne gagne rien du tout — la roue est passée à côté</div>
-      </div>
-
-    </div>
-  </div>
-
-<!-- ROUE DE FOLIE -->
-  <div class="roue-section" style="margin-bottom:20px;border-color:rgba(224,90,56,0.3);background:rgba(180,60,40,0.04)">
-    <div class="roue-header" style="border-bottom-color:rgba(224,90,56,0.25)">
-      <div>
-        <div class="roue-title roue-folie-color"><i class="fa-solid fa-burst" style="font-size:14px;margin-right:6px"></i>Roue de Folie</div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:4px"><i class="fa-solid fa-triangle-exclamation" style="color:var(--rust-light)"></i> Actions extrêmes et irréversibles — débloquée à 600 subs, puis tous les 200 subs</div>
-      </div>
-    </div>
-    <div class="action-grid">
-
-      <div class="action-card action-card-rust" onclick="openAction('folie-roulette')">
-        <div class="ac-bg"><i class="fa-solid fa-gun"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-gun"></i></div>
-        <div class="ac-title">Roulette russe</div>
-        <div class="ac-desc">6 joueurs dans le barillet, 1 seule balle — le touché perd sa meilleure game</div>
-      </div>
-
-      <div class="action-card action-card-rust" onclick="openAction('folie-echange-all')">
-        <div class="ac-bg"><i class="fa-solid fa-arrows-spin"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-arrows-spin"></i></div>
-        <div class="ac-title">Échange général</div>
-        <div class="ac-desc">Toute la ligue tourne — chaque joueur donne une game au hasard et en reçoit une</div>
-      </div>
-
-      <div class="action-card action-card-rust" onclick="openAction('folie-worst-zero')">
-        <div class="ac-bg"><i class="fa-solid fa-ban"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-ban"></i></div>
-        <div class="ac-title">Pire game à 0</div>
-        <div class="ac-desc">La pire game de TOUS les joueurs passe à 0 pt — la game reste, elle ne rapporte plus rien</div>
-      </div>
-
-      <div class="action-card action-card-rust" onclick="openAction('folie-jokers3')">
-        <div class="ac-bg"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-        <div class="ac-title">3 Jokers pour tout le monde</div>
-        <div class="ac-desc">Chaque joueur reçoit 3 jokers — un joker permet de ne pas compter une game</div>
-      </div>
-
-      <div class="action-card action-card-rust" onclick="openAction('folie-clone-bottom5')">
-        <div class="ac-bg"><i class="fa-solid fa-life-ring"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-life-ring"></i></div>
-        <div class="ac-title">Meilleure game aux 5 derniers</div>
-        <div class="ac-desc">Les 5 derniers du classement voient leur pire game remplacée par un clone de la meilleure game de la ligue</div>
-      </div>
-
-      <div class="action-card action-card-rust" onclick="openAction('folie-freeze-all')">
-        <div class="ac-bg"><i class="fa-solid fa-lock"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-lock"></i></div>
-        <div class="ac-title">Chacun fige une game au hasard</div>
-        <div class="ac-desc">Toute la ligue — une game tirée au sort par joueur devient intouchable, jamais la pire (clonage toujours possible)</div>
-      </div>
-
-      <div class="action-card action-card-rust" onclick="openAction('folie-half-rand')">
-        <div class="ac-bg"><i class="fa-solid fa-divide"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-divide"></i></div>
-        <div class="ac-title">Une game au hasard ÷ 2</div>
-        <div class="ac-desc">Toute la ligue — une game tirée au sort par joueur voit son score divisé par 2, parmi les games encore vierges de toute roue</div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ROUE COMMUNAUTAIRE -->
-  <div class="roue-section" id="roue-commu-section">
-    <div class="roue-header">
-      <div class="roue-title roue-comm-color">Roue Communautaire <span style="font-size:13px;color:var(--text-muted);font-weight:400">(par palier de 50 subgifts)</span> <span style="font-size:12px;color:var(--text-muted);font-weight:400">— chaque action est bloquée 24h après usage</span></div>
-    </div>
-    <div class="action-grid">
-
-      <div class="action-card action-card-gold" onclick="openAction('best-x15')">
-        <div class="ac-bg"><i class="fa-solid fa-star"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-star"></i></div>
-        <div class="ac-title">Meilleure game × 1.5</div>
-        <div class="ac-desc">Multiplie par 1.5 la meilleure game non figée de chaque joueur — une seule fois par game</div>
-      </div>
-
-      <div class="action-card action-card-gold" onclick="openAction('add-bonus-game')">
-        <div class="ac-bg"><i class="fa-solid fa-circle-plus"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-circle-plus"></i></div>
-        <div class="ac-title">Ajout d'une game sup</div>
-        <div class="ac-desc">Saisie d'une game supplémentaire pour un joueur (hors limite)</div>
-      </div>
-
-      <div class="action-card action-card-gold" onclick="openAction('remove-worst')">
-        <div class="ac-bg"><i class="fa-solid fa-trash-can"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-trash-can"></i></div>
-        <div class="ac-title">Suppression de la pire game</div>
-        <div class="ac-desc">Supprime la game avec le score le plus bas de chaque joueur</div>
-      </div>
-
-      <div class="action-card action-card-gold" onclick="openAction('comm-echange-best-worst')">
-        <div class="ac-bg"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
-        <div class="ac-title">Échange meilleure ↔ pire</div>
-        <div class="ac-desc">Tire 2 joueurs au hasard, échange la meilleure game de l'un contre la pire de l'autre</div>
-      </div>
-
-      <div class="action-card action-card-gold" onclick="openAction('comm-echange-rand')">
-        <div class="ac-bg"><i class="fa-solid fa-shuffle"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-shuffle"></i></div>
-        <div class="ac-title">Échange 2 games aléatoires</div>
-        <div class="ac-desc">Tire 2 joueurs au hasard et échange deux games aléatoires de chacun</div>
-      </div>
-
-      <div class="action-card action-card-gold" onclick="openAction('comm-roue-20subs')">
-        <div class="ac-bg"><i class="fa-solid fa-bolt"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-bolt"></i></div>
-        <div class="ac-title">Roue commu × 20 subs</div>
-        <div class="ac-desc">Active le mode 20 subs/roue pour 2 sessions (au lieu de 50) — retrait manuel</div>
-      </div>
-
-      <div class="action-card action-card-gold" onclick="openAction('comm-low-kills-bonus')">
-        <div class="ac-bg"><i class="fa-solid fa-bolt-lightning"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
-        <div class="ac-title">+5 pts petites games</div>
-        <div class="ac-desc">+5 pts à toutes les games de moins de 5 kills pour tous les joueurs — une seule fois par game, les nouvelles uniquement</div>
-      </div>
-
-      <div class="action-card action-card-gold" onclick="openAction('clone-best-worst')">
-        <div class="ac-bg"><i class="fa-solid fa-clone"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-clone"></i></div>
-        <div class="ac-title">Clone meilleure → joueur aléatoire</div>
-        <div class="ac-desc">Tire un joueur au hasard et lui ajoute la meilleure game de toute la ligue</div>
-      </div>
-
-      <div class="action-card action-card-gold" onclick="openAction('clone-best-worst-rand')">
-        <div class="ac-bg"><i class="fa-solid fa-copy"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-copy"></i></div>
-        <div class="ac-title">Clone meilleure → pire aléatoire</div>
-        <div class="ac-desc">Tire 2 joueurs au hasard, remplace la pire game de l'un par la meilleure game de l'autre</div>
-      </div>
-
-      <div class="action-card action-card-gold" onclick="openAction('top1-bonus')">
-        <div class="ac-bg"><i class="fa-solid fa-crown"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-crown"></i></div>
-        <div class="ac-title">+5 pts par Top 1</div>
-        <div class="ac-desc">+5 pts de bonus par nouveau Top 1 depuis la dernière application (tous joueurs)</div>
-      </div>
-
-      <div class="action-card action-card-gold" onclick="openAction('comm-worst-x2')">
-        <div class="ac-bg"><i class="fa-solid fa-angles-up"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-angles-up"></i></div>
-        <div class="ac-title">Pire game × 2</div>
-        <div class="ac-desc">Double le score de la pire game de chaque joueur — une seule fois par game, sinon ça remonte sur la 2ᵉ pire</div>
-      </div>
-
-      <div class="action-card action-card-gold" onclick="openAction('comm-rand-x2-trio')">
-        <div class="ac-bg"><i class="fa-solid fa-dice-three"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-dice-three"></i></div>
-        <div class="ac-title">Game aléatoire × 2 — 3 joueurs</div>
-        <div class="ac-desc">3 joueurs tirés au sort — une game au hasard de chacun voit son score doublé</div>
-      </div>
-
-      <div class="action-card action-card-gold" onclick="openAction('comm-vol-score')">
-        <div class="ac-bg"><i class="fa-solid fa-user-secret"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-user-secret"></i></div>
-        <div class="ac-title">Vol de score</div>
-        <div class="ac-desc">Un joueur au hasard copie le score du joueur juste au-dessus de lui — celui-ci garde le sien</div>
-      </div>
-
-      <div class="action-card action-card-gold" onclick="openAction('comm-freeze-best')">
-        <div class="ac-bg"><i class="fa-solid fa-lock"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-lock"></i></div>
-        <div class="ac-title">3 joueurs figent leur meilleure game</div>
-        <div class="ac-desc">Tirés au sort — leur meilleure game ne peut plus être supprimée, échangée ni piquée (clonage toujours possible)</div>
-      </div>
-
-      <div class="action-card action-card-gold" onclick="openAction('comm-freeze-rand')">
-        <div class="ac-bg"><i class="fa-solid fa-dice"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-dice"></i></div>
-        <div class="ac-title">3 joueurs figent une game au hasard</div>
-        <div class="ac-desc">Tirés au sort — une game intermédiaire est figée, ni la meilleure ni la pire</div>
-      </div>
-
-      <div class="action-card action-card-gold" onclick="openAction('comm-echange-top10')">
-        <div class="ac-bg"><i class="fa-solid fa-ranking-star"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-ranking-star"></i></div>
-        <div class="ac-title">Échange de games entre les 10 premiers</div>
-        <div class="ac-desc">Le top 10 échange une game en chaîne — ni la meilleure ni la pire de chacun</div>
-      </div>
-
-      <div class="action-card action-card-gold" onclick="openAction('comm-echange-flooozii')">
-        <div class="ac-bg"><i class="fa-solid fa-right-left"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-right-left"></i></div>
-        <div class="ac-title">Échange avec FloooZii</div>
-        <div class="ac-desc">Un joueur tiré au sort échange une de ses games au hasard contre une game au hasard de FloooZii</div>
-      </div>
-
-      <div class="action-card action-card-gold" onclick="openAction('comm-clone-flooozii')">
-        <div class="ac-bg"><i class="fa-solid fa-star"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-star"></i></div>
-        <div class="ac-title">Meilleure game de FloooZii clonée</div>
-        <div class="ac-desc">Un joueur tiré au sort voit une de ses games au hasard remplacée par un clone de la meilleure game de FloooZii</div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ROUE PERSONNELLE -->
-  <div class="roue-section">
-    <div class="roue-header">
-      <div>
-        <div class="roue-title roue-perso-color">Roue Personnelle <span style="font-size:13px;color:var(--text-muted);font-weight:400">(5 subgifts avant la game)</span></div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:4px"><i class="fa-solid fa-circle-info"></i> Applicable à toi-même ou à un autre joueur de ton choix</div>
-      </div>
-    </div>
-    <div class="action-grid">
-
-      <div class="action-card action-card-purple" onclick="openAction('perso-echange')">
-        <div class="ac-bg"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
-        <div class="ac-title">Échange de game</div>
-        <div class="ac-desc">Échange la meilleure game de A contre la pire game de B</div>
-      </div>
-
-      <div class="action-card action-card-purple" onclick="openAction('perso-minus20')">
-        <div class="ac-bg"><i class="fa-solid fa-circle-xmark"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-circle-xmark"></i></div>
-        <div class="ac-title">−20 pts à un joueur</div>
-        <div class="ac-desc">Retire 20 points bonus à la personne de son choix</div>
-      </div>
-
-      <div class="action-card action-card-purple" onclick="openAction('perso-plus15')">
-        <div class="ac-bg"><i class="fa-solid fa-arrow-trend-up"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
-        <div class="ac-title">+15 pts bonus</div>
-        <div class="ac-desc">Ajoute 15 points bonus au joueur de son choix</div>
-      </div>
-
-      <div class="action-card action-card-purple" onclick="openAction('perso-mult')">
-        <div class="ac-bg"><i class="fa-solid fa-asterisk"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-asterisk"></i></div>
-        <div class="ac-title">Multiplicateur game</div>
-        <div class="ac-desc">Applique ×1.3 à ×2 sur le score entier (kills + top) de la prochaine game</div>
-      </div>
-
-      <div class="action-card action-card-purple" onclick="openAction('perso-clone-game')">
-        <div class="ac-bg"><i class="fa-solid fa-crosshairs"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-crosshairs"></i></div>
-        <div class="ac-title">Clone kill du meilleur</div>
-        <div class="ac-desc">Copie le nombre de kills du top killeur de la game</div>
-      </div>
-
-      <div class="action-card action-card-purple" onclick="openAction('perso-joker')">
-        <div class="ac-bg"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-        <div class="ac-title">Joker</div>
-        <div class="ac-desc">Accorde 1 Joker au joueur — il s'ajoute à ceux qu'il possède déjà</div>
-      </div>
-
-      <div class="action-card action-card-purple" onclick="openAction('perso-del-worst')">
-        <div class="ac-bg"><i class="fa-solid fa-trash-can"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-trash-can"></i></div>
-        <div class="ac-title">Enlève une mauvaise game</div>
-        <div class="ac-desc">Retire une game au choix du joueur (pas forcément la pire)</div>
-      </div>
-
-      <div class="action-card action-card-purple" onclick="openAction('perso-freeze-best')">
-        <div class="ac-bg"><i class="fa-solid fa-lock"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-lock"></i></div>
-        <div class="ac-title">Fige la meilleure game</div>
-        <div class="ac-desc">La meilleure game du joueur choisi devient intouchable — aucun minimum de games requis</div>
-      </div>
-
-      <div class="action-card action-card-purple" onclick="openAction('perso-clone-best-ligue')">
-        <div class="ac-bg"><i class="fa-solid fa-trophy"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-trophy"></i></div>
-        <div class="ac-title">Ajout de la meilleure game de la ligue</div>
-        <div class="ac-desc">Le joueur reçoit un clone de la meilleure game de la ligue — en plus, sans rien perdre</div>
-      </div>
-
-      <div class="action-card action-card-purple" onclick="openAction('perso-extra-game')">
-        <div class="ac-bg"><i class="fa-solid fa-plus"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-plus"></i></div>
-        <div class="ac-title">Game supplémentaire</div>
-        <div class="ac-desc">Ajoute un slot de game bonus hors limite globale</div>
-      </div>
-
-      <div class="action-card action-card-purple" onclick="openAction('perso-top10pts')">
-        <div class="ac-bg"><i class="fa-solid fa-trophy"></i></div>
-        <div class="ac-icon"><i class="fa-solid fa-trophy"></i></div>
-        <div class="ac-title">+10 pts à partir du top 10</div>
-        <div class="ac-desc">Si le joueur finit dans le top 10 Warzone, +10 pts s'appliquent sur sa prochaine game</div>
-      </div>
-
-    </div>
-  </div>
-
-</div>
-
 <!-- PAGE JOUEURS -->
 <div id="page-joueurs" class="page">
   <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
@@ -1751,17 +1579,6 @@ main {
 
   <div id="players-list"></div>
   <div id="players-pagination"></div>
-</div>
-
-<!-- PAGE HISTORIQUE -->
-<div id="page-evenements" class="page">
-  <div style="margin-bottom:20px">
-    <h1 class="section-title">Évènements <span>Live</span></h1>
-  </div>
-  <ul class="log-list" id="log-list-events">
-    <li style="padding:40px;text-align:center;color:var(--text-muted)">Aucun évènement enregistré.</li>
-  </ul>
-  <div id="log-pagination"></div>
 </div>
 
 <!-- PAGE RÈGLES -->
@@ -2020,26 +1837,6 @@ main {
         <button class="btn btn-sm" style="color:var(--text-muted);border-color:var(--border)" onclick="resetSubs()"><i class="fa-solid fa-rotate-left"></i> Réinitialiser à 0</button>
         <button class="btn btn-sm" style="color:var(--text-muted);border-color:var(--border)" onclick="setSubsManual()"><i class="fa-solid fa-pen"></i> Définir valeur exacte</button>
       </div>
-    </div>
-  </div>
-
-  <!-- CLÉ API IA -->
-  <div class="roue-section" style="margin-bottom:20px">
-    <div class="roue-header">
-      <div class="roue-title" style="color:var(--blue)"><i class="fa-solid fa-wand-magic-sparkles" style="font-size:14px;margin-right:6px"></i>Saisie IA — Clé API Anthropic</div>
-    </div>
-    <div style="padding:8px 0">
-      <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;line-height:1.6">
-        Clé API utilisée pour l'analyse OCR des captures d'écran. Stockée uniquement dans le navigateur (localStorage), jamais envoyée à Supabase.
-      </div>
-      <div style="display:flex;gap:8px;align-items:flex-end">
-        <div style="flex:1">
-          <label class="form-label">Clé API (sk-ant-...)</label>
-          <input type="password" class="form-input" id="mod-ai-key" placeholder="sk-ant-api03-...">
-        </div>
-        <button class="btn btn-blue btn-sm" onclick="saveAiKey()"><i class="fa-solid fa-floppy-disk"></i> Sauvegarder</button>
-      </div>
-      <div id="mod-ai-key-status" style="margin-top:6px;font-size:12px;color:var(--text-muted)">Aucune clé configurée.</div>
     </div>
   </div>
 
@@ -2376,7 +2173,8 @@ let state = {
   roueCommu50Next: 0,    // prochain palier forcé après annulation du mode 20 (0 = pas de forçage)
   actionCooldowns: {},  // { cléAction: timestamp ms } — blocage 24h après usage (Roue Commu)
   immunites: {},        // { idJoueur: timestamp ms } — protection contre les actions négatives
-  echangeFinFait: {}    // { idJoueur: idCible } — qui a déjà utilisé son échange, et sur qui
+  echangeFinFait: {},   // { idJoueur: idCible } — qui a déjà utilisé son échange, et sur qui
+  tirage: {}            // { cléLot: { playerId, name, at } } — résultat du tirage des lots
 };
 
 let currentTop = 0;
@@ -2389,9 +2187,8 @@ let saisieBonus = 0;
 async function init() {
   await Promise.all([_refreshAuth(), loadState()]);
   updateAdminUI();
-  document.addEventListener('paste', iaHandlePaste);
   const hashPage = window.location.hash.slice(1);
-  const validPages = ['classement','actions','joueurs','evenements','regles','moderation'];
+  const validPages = ['finale','classement','joueurs','regles','moderation','tirage'];
   if (hashPage && validPages.includes(hashPage)) {
     await showPage(hashPage);
   } else {
@@ -2510,9 +2307,13 @@ async function loadState() {
     if (!state.roueCommu20Since && !state.roueCommu20Paused && ancienUntil > Date.now()) {
       state.roueCommu20Since = Date.now();
     }
+    const tirageFlag = (flags || []).find(f => f.key === 'tirageLots');
+    try { state.tirage = JSON.parse(tirageFlag?.value || '{}') || {}; } catch { state.tirage = {}; }
+
     // Ce qui vient d'être lu EST ce qu'il y a en base : on prend l'empreinte pour que
     // la prochaine sauvegarde n'écrive que les différences réelles.
     _snapshotSaved();
+    _chargementOk = true;
   } catch(e) {
     console.error('loadState error:', e);
   }
@@ -2526,6 +2327,12 @@ async function loadState() {
 // des millions de messages pour une poignée d'utilisateurs. On ne pousse désormais
 // que les lignes réellement modifiées, ajoutées ou supprimées.
 let _saved = { players: new Map(), games: new Map(), logs: new Map(), flags: new Map() };
+
+// Les flags sont recalculés depuis la mémoire à chaque sauvegarde : si le chargement a
+// échoué (API indisponible), la mémoire est vide et les écrire écraserait la limite de
+// games, les games figées, les immunités et le tirage. On ne les touche donc pas tant
+// qu'un chargement n'a pas abouti.
+let _chargementOk = false;
 
 const _rowsPlayers = () => state.players.map(p => ({
   id: p.id, name: p.name,
@@ -2635,13 +2442,219 @@ async function saveState() {
       { key: 'roueCommu20Until', value: '0' }, // LEGACY — vidé, l'ancien décompte 24h n'existe plus
       { key: 'roueCommu20Start', value: String(state.roueCommu20Start || 0) },
       { key: 'roueCommu50Next', value: String(state.roueCommu50Next || 0) },
-      { key: 'roueCommu20Paused', value: String(state.roueCommu20Paused || 0) }
+      { key: 'roueCommu20Paused', value: String(state.roueCommu20Paused || 0) },
+      { key: 'tirageLots', value: JSON.stringify(state.tirage || {}) }
     ];
+    if (!_chargementOk) throw new Error('flags non sauvegardés : aucun chargement réussi');
     const aEcrire = flagRows.filter(f => _saved.flags.get(f.key) !== f.value);
     if (aEcrire.length) await _sb.from('app_flags').upsert(aEcrire);
     flagRows.forEach(f => _saved.flags.set(f.key, f.value));
   } catch(e) { console.error('saveState flags:', e); }
   _savePending = false;
+}
+
+// ============================================================
+// MODE FINALE — podium des finalistes et tirage au sort des lots
+// ============================================================
+// Les lots sont ouverts à TOUS les joueurs de la ligue : le classement ne joue
+// aucun rôle ici, seule la participation compte. Un gagnant est écarté du second
+// tirage pour qu'une même personne ne reparte pas avec les deux lots.
+const LOTS_FINALE = [
+  { cle: 'cod',   nom: 'Call of Duty : Modern Warfare 4' },
+  { cle: 'goxlr', nom: 'GoXLR Mini' }
+];
+
+function _tirageEtat() {
+  if (!state.tirage || typeof state.tirage !== 'object') state.tirage = {};
+  return state.tirage;
+}
+
+function gagnantLot(cle) {
+  const g = _tirageEtat()[cle];
+  if (!g || !g.playerId) return null;
+  // Le joueur peut avoir été renommé depuis le tirage : on affiche son nom actuel.
+  const p = state.players.find(x => x.id === g.playerId);
+  return { playerId: g.playerId, name: p ? p.name : (g.name || 'Joueur retiré'), at: g.at || 0, present: !!p };
+}
+
+// Participants au tirage d'un lot : tout le monde, sauf qui a déjà gagné l'autre lot.
+function participantsTirage(cle) {
+  const pris = new Set(LOTS_FINALE.filter(l => l.cle !== cle)
+    .map(l => gagnantLot(l.cle)?.playerId).filter(Boolean));
+  return state.players.filter(p => !pris.has(p.id));
+}
+
+// Tirage uniforme : rejection sampling sur crypto, pour que le modulo ne favorise
+// pas les premiers de la liste. Aucun joueur n'est pondéré, de pres ou de loin.
+function _indexAleatoire(taille) {
+  if (taille <= 0) return -1;
+  if (taille === 1) return 0;
+  if (!window.crypto?.getRandomValues) return Math.floor(Math.random() * taille);
+  const limite = Math.floor(0x100000000 / taille) * taille;
+  const buf = new Uint32Array(1);
+  let v;
+  do { window.crypto.getRandomValues(buf); v = buf[0]; } while (v >= limite);
+  return v % taille;
+}
+
+let _tirageEnCours = null;
+
+function _defileNoms(ecran, candidats, gagnant) {
+  return new Promise(resolve => {
+    if (!ecran) return resolve();
+    const debut = Date.now(), duree = 2800;
+    ecran.className = 'tirage-ecran roule';
+    const tic = () => {
+      const t = Date.now() - debut;
+      if (t >= duree) {
+        ecran.textContent = gagnant.name;
+        ecran.className = 'tirage-ecran gagne';
+        return resolve();
+      }
+      ecran.textContent = candidats[Math.floor(Math.random() * candidats.length)].name;
+      // Le défilement ralentit vers la fin, pour le suspense.
+      setTimeout(tic, 45 + Math.round(260 * Math.pow(t / duree, 3)));
+    };
+    tic();
+  });
+}
+
+async function lancerTirage(cle) {
+  if (!isAdmin()) { toast('Tirage réservé à l\'admin.', 'error'); return; }
+  if (_tirageEnCours) { toast('Un tirage est déjà en cours.', 'error'); return; }
+  const lot = LOTS_FINALE.find(l => l.cle === cle);
+  if (!lot) return;
+  if (gagnantLot(cle)) { toast('Ce lot a déjà son gagnant.', 'error'); return; }
+  const candidats = participantsTirage(cle);
+  if (!candidats.length) { toast('Aucun participant pour ce lot.', 'error'); return; }
+
+  const gagnant = candidats[_indexAleatoire(candidats.length)];
+  _tirageEnCours = cle;
+  renderTirage();
+  await _defileNoms(document.getElementById('tirage-' + cle + '-ecran'), candidats, gagnant);
+  _tirageEnCours = null;
+
+  _tirageEtat()[cle] = { playerId: gagnant.id, name: gagnant.name, at: Date.now() };
+  saveState();
+  addLog(`<strong>${escHtml(gagnant.name)}</strong> remporte <strong>${escHtml(lot.nom)}</strong> au tirage au sort, parmi ${candidats.length} participants.`, 'gold', 'gift', true);
+  renderAll();
+  toast(gagnant.name + ' remporte ' + lot.nom + ' !');
+}
+
+function annulerTirage(cle) {
+  if (!isAdmin()) { toast('Réservé à l\'admin.', 'error'); return; }
+  if (_tirageEnCours) return;
+  const lot = LOTS_FINALE.find(l => l.cle === cle);
+  const g = gagnantLot(cle);
+  if (!lot || !g) return;
+  if (!confirm(`Annuler le tirage de ${lot.nom} ?\n\n${g.name} ne sera plus annoncé gagnant et retournera dans le tirage.`)) return;
+  delete _tirageEtat()[cle];
+  saveState();
+  addLog(`Tirage de <strong>${escHtml(lot.nom)}</strong> annulé — ${escHtml(g.name)} n'est plus gagnant.`, 'rust', 'rotate-left', true);
+  renderAll();
+  toast('Tirage annulé.');
+}
+
+// ---------- Page Finale (publique) ----------
+function renderFinale() {
+  const hote = document.getElementById('finale-podium');
+  if (hote) {
+    if (!state.players.length) {
+      hote.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-muted);border:1px dashed var(--border);border-radius:6px">Aucun joueur enregistré.</div>';
+    } else {
+      const classes = [...state.players].sort((a, b) => getPlayerTotal(b) - getPlayerTotal(a));
+      const top = classes.slice(0, QUALIF_FINALE);
+      const carte = (p, rang) => {
+        const nbGames = (p.games || []).length;
+        const best = getBestGame(p);
+        const style = rang <= 3 ? 'fin-card-' + rang : 'fin-card-autre';
+        return `<div class="fin-card ${style}" onclick="showPlayerDetail('${p.id}')" style="cursor:pointer">
+          <div class="fin-rang">${rang}</div>
+          <div style="min-width:0">
+            <div class="fin-nom">${escHtml(p.name)}</div>
+            <div class="fin-meta">${nbGames} game${nbGames > 1 ? 's' : ''}${best ? ' · meilleure à ' + best.score + ' pts' : ''}</div>
+            ${rang === 1 ? '<div class="fin-badge">Tête de série</div>' : ''}
+          </div>
+          <div class="fin-pts">${getPlayerTotal(p)} <span style="font-size:0.6em;color:var(--text-muted)">pts</span></div>
+        </div>`;
+      };
+      const rangee = (debut, fin, cls) => {
+        const lot = top.slice(debut, fin);
+        if (!lot.length) return '';
+        return `<div class="fin-grid ${cls}" style="margin-top:12px">${lot.map((p, i) => carte(p, debut + i + 1)).join('')}</div>`;
+      };
+      hote.innerHTML = (top[0] ? `<div class="fin-grid">${carte(top[0], 1)}</div>` : '')
+        + rangee(1, 3, 'fin-grid-2')
+        + rangee(3, QUALIF_FINALE, 'fin-grid-3')
+        + (classes.length > QUALIF_FINALE
+          ? `<div style="margin-top:14px;font-size:12px;color:var(--text-muted);text-align:center">${classes.length - QUALIF_FINALE} autre${classes.length - QUALIF_FINALE > 1 ? 's' : ''} joueur${classes.length - QUALIF_FINALE > 1 ? 's' : ''} ont disputé la ligue — et restent dans le tirage des lots.</div>`
+          : '');
+    }
+  }
+
+  // Annonce publique des gagnants, dans la carte du lot concerné.
+  LOTS_FINALE.forEach(lot => {
+    const el = document.getElementById('lot-' + lot.cle + '-gagnant');
+    if (!el) return;
+    const g = gagnantLot(lot.cle);
+    el.innerHTML = g
+      ? `<div class="lot-gagnant">
+          <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted)">Gagnant du tirage</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(20px,4vw,27px);text-transform:uppercase;color:var(--gold);line-height:1.1;overflow-wrap:anywhere">
+            <i class="fa-solid fa-crown" style="font-size:0.7em"></i> ${escHtml(g.name)}
+          </div>
+        </div>`
+      : `<div style="margin-top:14px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-muted)">
+          <i class="fa-solid fa-dice" style="color:var(--gold)"></i> Tirage au sort à venir — parmi ${state.players.length} participant${state.players.length > 1 ? 's' : ''}.
+        </div>`;
+  });
+}
+
+// ---------- Page Tirage (admin) ----------
+function renderTirage() {
+  const liste = document.getElementById('tirage-participants');
+  if (!liste) return;
+
+  const total = state.players.length;
+  const noms = [...state.players].sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+  liste.innerHTML = total
+    ? `<div style="border:1px solid var(--border);border-radius:6px;background:var(--bg2);padding:14px 16px">
+        <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px">
+          ${total} participant${total > 1 ? 's' : ''} dans le chapeau
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">${noms.map(p => {
+          const dejaGagnant = LOTS_FINALE.some(l => gagnantLot(l.cle)?.playerId === p.id);
+          return `<span style="font-size:12px;padding:3px 9px;border-radius:3px;border:1px solid ${dejaGagnant ? 'var(--gold)' : 'var(--border)'};color:${dejaGagnant ? 'var(--gold)' : 'var(--text-muted)'};background:${dejaGagnant ? 'rgba(201,149,74,0.1)' : 'transparent'}">${dejaGagnant ? '<i class="fa-solid fa-crown" style="font-size:9px;margin-right:4px"></i>' : ''}${escHtml(p.name)}</span>`;
+        }).join('')}</div>
+      </div>`
+    : '<div style="padding:24px;text-align:center;color:var(--text-muted);border:1px dashed var(--border);border-radius:6px">Aucun joueur enregistré : rien à tirer au sort.</div>';
+
+  LOTS_FINALE.forEach(lot => {
+    const ecran = document.getElementById('tirage-' + lot.cle + '-ecran');
+    const actions = document.getElementById('tirage-' + lot.cle + '-actions');
+    const g = gagnantLot(lot.cle);
+    const candidats = participantsTirage(lot.cle);
+    const ecarte = LOTS_FINALE.filter(l => l.cle !== lot.cle).map(l => gagnantLot(l.cle)).filter(Boolean)[0];
+
+    // On ne réécrit pas l'écran pendant que les noms défilent dessus.
+    if (ecran && _tirageEnCours !== lot.cle) {
+      ecran.className = 'tirage-ecran' + (g ? ' gagne' : '');
+      ecran.textContent = g ? g.name : (candidats.length ? 'Prêt' : 'Aucun participant');
+    }
+    if (!actions) return;
+    const occupe = !!_tirageEnCours;
+    actions.innerHTML = g
+      ? `<button class="btn btn-sm btn-rust" ${occupe ? 'disabled' : ''} onclick="annulerTirage('${lot.cle}')">
+          <i class="fa-solid fa-rotate-left" style="margin-right:5px"></i>Annuler ce tirage
+        </button>
+        <div style="align-self:center;font-size:11px;color:var(--text-muted)">Tiré le ${g.at ? new Date(g.at).toLocaleDateString('fr-FR') : '—'}</div>`
+      : `<button class="btn btn-solid-gold" ${occupe || !candidats.length ? 'disabled' : ''} onclick="lancerTirage('${lot.cle}')">
+          <i class="fa-solid fa-dice" style="margin-right:6px"></i>Lancer le tirage
+        </button>
+        <div style="align-self:center;font-size:11px;color:var(--text-muted);line-height:1.5">
+          ${candidats.length} joueur${candidats.length > 1 ? 's' : ''} en jeu${ecarte ? '<br>' + escHtml(ecarte.name) + ' est écarté (déjà gagnant)' : ''}
+        </div>`;
+  });
 }
 
 // ============================================================
@@ -2806,6 +2819,8 @@ function middleGames(player) {
 // RENDER ALL
 // ============================================================
 function renderAll() {
+  renderFinale();
+  renderTirage();
   renderClassement();
   renderSaisieSelects();
   renderPlayersList();
@@ -3338,7 +3353,7 @@ function renderStatsLineChart() {
 // NAVIGATION
 // ============================================================
 async function showPage(name) {
-  const adminPages = ['actions', 'joueurs', 'moderation'];
+  const adminPages = ['joueurs', 'moderation', 'tirage'];
   if (adminPages.includes(name)) {
     const ok = await _refreshAuth();
     if (!ok) {
@@ -3859,542 +3874,6 @@ function submitGame() {
   resetSaisie();
   renderAll();
   closeModal('modal-saisie');
-}
-
-// ============================================================
-// SAISIE IA — OCR screenshot team game entry
-// ============================================================
-let iaTop = 0;
-let iaImgBase64 = null;
-let iaImgMime = 'image/png';
-let iaMatches = [];
-let iaLriaaElim = 0; // kills de Lriaa détectés par l'OCR
-
-function openSaisieIA() {
-  iaReset();
-  openModal('modal-saisie-ia');
-}
-
-function iaSelectTop(n) {
-  iaTop = n;
-  ['ia-top-1','ia-top-2','ia-top-3','ia-top-n'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.classList.remove('selected');
-  });
-  const idMap = {0:'ia-top-n',1:'ia-top-1',2:'ia-top-2',3:'ia-top-3'};
-  const el = document.getElementById(idMap[n]);
-  if (el) el.classList.add('selected');
-  iaRefreshScores();
-}
-
-function iaHandleFileInput(e) {
-  const f = e.target.files[0];
-  if (f) iaLoadImage(f, f.type || 'image/png');
-}
-
-function iaHandleDrop(e) {
-  e.preventDefault();
-  const f = e.dataTransfer.files[0];
-  if (f && f.type.startsWith('image/')) iaLoadImage(f, f.type);
-}
-
-function iaHandlePaste(e) {
-  const modal = document.getElementById('modal-saisie-ia');
-  if (!modal || !modal.classList.contains('open')) return;
-  const items = e.clipboardData?.items;
-  if (!items) return;
-  for (const item of items) {
-    if (item.type.startsWith('image/')) { iaLoadImage(item.getAsFile(), item.type); break; }
-  }
-}
-
-function iaLoadImage(file, mime) {
-  const reader = new FileReader();
-  reader.onload = ev => {
-    iaImgBase64 = ev.target.result.split(',')[1];
-    iaImgMime = mime;
-    const zone = document.getElementById('ia-paste-zone');
-    zone.onclick = null;
-    zone.style.padding = '0';
-    zone.style.border = '2px solid var(--green)';
-    zone.innerHTML = `<img src="${ev.target.result}" style="max-width:100%;max-height:220px;display:block;border-radius:4px;cursor:zoom-in" title="Cliquer pour agrandir" onclick="iaZoomImage(this.src)">`;
-    document.getElementById('ia-analyze-btn').disabled = false;
-  };
-  reader.readAsDataURL(file);
-}
-
-function iaReset() {
-  iaImgBase64 = null;
-  iaMatches = [];
-  const zone = document.getElementById('ia-paste-zone');
-  if (zone) {
-    zone.style.padding = '32px 20px';
-    zone.style.border = '2px dashed var(--border)';
-    zone.onclick = () => document.getElementById('ia-file-input').click();
-    zone.innerHTML = `<div style="font-size:30px;color:var(--text-muted);margin-bottom:8px"><i class="fa-solid fa-image"></i></div><div style="font-size:13px;color:var(--text-muted)">Ctrl+V pour coller · ou cliquez pour choisir un fichier</div>`;
-  }
-  const btn = document.getElementById('ia-analyze-btn');
-  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Analyser'; }
-  iaLriaaElim = 0;
-  const results = document.getElementById('ia-results');
-  if (results) results.style.display = 'none';
-  const fi = document.getElementById('ia-file-input');
-  if (fi) fi.value = '';
-  iaTop = 0;
-  ['ia-top-1','ia-top-2','ia-top-3'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('selected'); });
-  const iaTn = document.getElementById('ia-top-n');
-  if (iaTn) iaTn.classList.add('selected');
-}
-
-async function iaAnalyze() {
-  if (!iaImgBase64) { toast('Pas d\'image chargée.', 'error'); return; }
-  const key = localStorage.getItem('sl_ai_key');
-  if (!key) { toast('Clé API non configurée — allez dans Modération.', 'error'); return; }
-
-  const btn = document.getElementById('ia-analyze-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,0.25);border-top-color:white;border-radius:50%;animation:iaSpin 0.6s linear infinite;vertical-align:middle;margin-right:6px"></span>Analyse en cours...';
-
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 500,
-        temperature: 0,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image', source: { type: 'base64', media_type: iaImgMime, data: iaImgBase64 } },
-            { type: 'text', text: `Capture d'écran de fin de game Warzone/Résurgence.\n\nJoueurs de la ligue : ${state.players.map(p=>p.ingameName ? `${p.name} (pseudo in-game: ${p.ingameName})` : p.name).join(', ')}\n\nCOLONNES du tableau (de gauche à droite) : NOM | SCORE | ÉLIM./ASSIST. | ÉLIM. | ASSIST.\n- Ignore SCORE et ÉLIM. entièrement.\n- Lis ÉLIM./ASSIST. → elimAssist.\n- Lis ÉLIM. → elim (kills purs directs).\n- Lis ASSIST. (vient APRÈS ÉLIM., c'est la dernière colonne du joueur) → assist.\nATTENTION : ÉLIM. et ASSIST. sont deux colonnes distinctes. ASSIST. est toujours après ÉLIM.\nExemple : "Karbbbbbb | 3505 | 8 | 5 | 3" → ignore 3505 (SCORE) → elimAssist=8, elim=5, assist=3.\nS'il y a des colonnes supplémentaires après ASSIST., ignore-les.\n\nRègles :\n- Retourne TOUS les joueurs visibles (y compris Lriaa si présente), même ceux hors ligue.\n- Inclus les joueurs dont la ligne est grisée ou en transparence (déconnexion en cours de game) — lis quand même leurs stats.\n- Ignore uniquement la ligne "TOTAUX ESCOUADE".\n- Si un pseudo commence par quelque chose entre crochets (ex: [VI], [7], [TAG]), c'est une marque de clan — elle ne fait PAS partie du pseudo du joueur. Ex: [VI]LD → le vrai pseudo est "LD", [7]_MiKaa → le vrai pseudo est "_MiKaa" ou "MiKaa".\n- Pour chaque joueur, fais correspondre son pseudo (sans la marque de clan) au joueur de la ligue le plus proche. Utilise le "pseudo in-game" fourni comme indice prioritaire.\n- Si vraiment aucune correspondance possible, name=null.\n- Lriaa n'est PAS dans la ligue : retourne toujours name:null pour elle.\n\nFormat JSON uniquement, sans markdown :\n[{"ocr":"pseudo_exact_lu","name":"nom_exact_ligue_ou_null","elimAssist":valeur_ÉLIM_ASSIST,"elim":valeur_ÉLIM,"assist":valeur_ASSIST}]` }
-          ]
-        }]
-      })
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error?.message || `HTTP ${res.status}`);
-    }
-
-    const data = await res.json();
-    let raw = data.content[0].text.trim();
-    const md = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (md) raw = md[1].trim();
-
-    const ocr = JSON.parse(raw);
-    iaBuildMatches(ocr);
-    iaRenderResults();
-
-  } catch (err) {
-    toast('Erreur analyse : ' + err.message, 'error');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Analyser';
-  }
-}
-
-function iaNorm(s) { return s.toLowerCase().replace(/[^a-z0-9]/g, ''); }
-
-function iaLev(a, b) {
-  const m = a.length, n = b.length;
-  const dp = Array.from({length: m+1}, (_, i) => Array.from({length: n+1}, (_, j) => i===0 ? j : j===0 ? i : 0));
-  for (let i = 1; i <= m; i++)
-    for (let j = 1; j <= n; j++)
-      dp[i][j] = a[i-1]===b[j-1] ? dp[i-1][j-1] : 1+Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
-  return dp[m][n];
-}
-
-function iaFuzzy(ocrName) {
-  const norm = iaNorm(ocrName);
-  let p = state.players.find(x => x.name.toLowerCase() === ocrName.toLowerCase());
-  if (p) return { player: p, conf: 1.0 };
-  p = state.players.find(x => iaNorm(x.name) === norm);
-  if (p) return { player: p, conf: 0.95 };
-  p = state.players.find(x => { const xn = iaNorm(x.name); return xn.includes(norm) || norm.includes(xn); });
-  if (p) return { player: p, conf: 0.75 };
-  let best = null, minD = Infinity;
-  for (const x of state.players) { const d = iaLev(norm, iaNorm(x.name)); if (d < minD) { minD = d; best = x; } }
-  const maxLen = Math.max(norm.length, iaNorm(best?.name||'').length) || 1;
-  const conf = Math.max(0, 1 - minD / maxLen);
-  return conf >= 0.4 ? { player: best, conf } : { player: null, conf: 0 };
-}
-
-// Noms toujours exclus de l'OCR (la streameuse ne participe pas à la ligue)
-// Utilise une comparaison fuzzy pour catcher les erreurs OCR (Lraa, Lriaa, Lriaa_, etc.)
-const IA_EXCL = ['lriaa'];
-
-function iaIsExcluded(ocrName) {
-  const norm = iaNorm(ocrName);
-  return IA_EXCL.some(excl => {
-    const d = iaLev(norm, iaNorm(excl));
-    return (1 - d / Math.max(norm.length, excl.length, 1)) >= 0.6;
-  });
-}
-
-function iaBuildMatches(ocr) {
-  // Calcule les kills réels : préfère elim direct si disponible, sinon elimAssist - assist
-  // Cross-validation : si les deux sont disponibles et divergent, elim (lu direct) est plus fiable
-  ocr.forEach(r => {
-    if (r.elimAssist !== undefined) {
-      const computed = Math.max(0, (r.elimAssist || 0) - (r.assist || 0));
-      const direct = (r.elim !== undefined && r.elim !== null) ? r.elim : null;
-      r.elim = (direct !== null && direct !== computed) ? direct : computed;
-    }
-  });
-
-  // Capture les kills de Lriaa avant de la filtrer
-  const lriaaEntry = ocr.find(r => iaIsExcluded(r.ocr || r.name || ''));
-  iaLriaaElim = lriaaEntry?.elim || 0;
-
-  iaMatches = ocr
-    .filter(r => {
-      if (iaIsExcluded(r.ocr || r.name || '')) return false;
-      if (!r.name || r.name === 'null') {
-        // Fallback : essaie de matcher l'OCR brut contre les pseudos in-game
-        const ocrN = iaNorm(r.ocr || '');
-        const hit = state.players.find(p => {
-          if (!p.ingameName) return false;
-          const igN = iaNorm(p.ingameName);
-          return igN && (ocrN.includes(igN) || igN.includes(ocrN));
-        });
-        if (hit) { r.name = hit.name; r._ingameFallback = true; } else return false;
-      }
-      return true;
-    })
-    .map(r => {
-      // Claude a déjà fait le matching — cherche d'abord exact, puis fuzzy en fallback
-      let player = state.players.find(p => p.name === r.name);
-      let conf = 1.0;
-      if (!player) {
-        const m = iaFuzzy(r.name);
-        player = m.player;
-        conf = m.conf;
-      }
-      const cloneLriaa = !!(player?.pendingCloneLriaa && iaLriaaElim > 0);
-      const rawOcr = r.ocr || r.name || '';
-      const stripped = rawOcr.replace(/^\[.*?\]\s*_?\s*/, '').trim();
-      const ocrName = stripped || player?.ingameName || rawOcr;
-      return {
-        ocrName,
-        elim: cloneLriaa ? iaLriaaElim : (r.elim || 0),
-        cloneLriaa,
-        player,
-        conf,
-        skipAction: player?.skipNext ? 'skip' : 'record',
-        bonus: 0
-      };
-    })
-    .filter(m => m.player && m.conf >= 0.4);
-}
-
-function iaGetScore(m) {
-  if (!m.player || m.skipAction === 'skip' || quotaGamesEpuise(m.player)) return null;
-  const p = m.player;
-  const kills = p.freezeKills ? p.freezeKills : m.elim;
-  const base = calcGameScore(kills, iaTop, 1);
-  const withMult = p.pendingMult ? Math.round(base * p.pendingMult) : base;
-  return withMult + (p.pendingBonus || 0);
-}
-
-function iaAddBonus(idx, pts) {
-  iaMatches[idx].bonus = (iaMatches[idx].bonus || 0) + pts;
-  iaRenderResults();
-}
-
-function iaClearBonus(idx) {
-  iaMatches[idx].bonus = 0;
-  iaRenderResults();
-}
-
-function iaAdjustElim(idx, delta) {
-  iaMatches[idx].elim = Math.max(0, (iaMatches[idx].elim || 0) + delta);
-  iaRenderResults();
-}
-
-function iaCancelFreeze(idx) {
-  const p = iaMatches[idx].player;
-  if (!p) return;
-  p.freezeKills = 0;
-  saveState();
-  iaRenderResults();
-}
-
-function iaCancelMult(idx) {
-  const p = iaMatches[idx].player;
-  if (!p) return;
-  p.pendingMult = 0;
-  saveState();
-  iaRenderResults();
-}
-
-function iaCancelPendingBonus(idx) {
-  const p = iaMatches[idx].player;
-  if (!p) return;
-  p.pendingBonus = 0;
-  saveState();
-  iaRenderResults();
-}
-
-function iaCancelJoker(idx) {
-  const p = iaMatches[idx].player;
-  if (!p || !p.jokerCount) return;
-  showConfirm('Retirer un Joker',
-    `Retirer un Joker à <strong>${escHtml(p.name)}</strong> ? Il lui en restera <strong>${p.jokerCount - 1}</strong>.`,
-    () => {
-      p.jokerCount -= 1;
-      addLog(`<strong>${p.name}</strong> — Joker retiré (${p.jokerCount} restant${p.jokerCount > 1 ? 's' : ''}).`, 'rust', 'xmark', true);
-      saveState();
-      iaRenderResults();
-    }
-  );
-}
-
-function iaSetSkipAction(idx, action) {
-  iaMatches[idx].skipAction = action;
-  iaRenderResults();
-}
-
-function iaRenderResults() {
-  document.getElementById('ia-results').style.display = '';
-  iaRenderLriaaSection();
-  const playerOptions = state.players.map(p => `<option value="${p.id}">${escHtml(p.name)}</option>`).join('');
-
-  document.getElementById('ia-results-tbody').innerHTML = iaMatches.map((m, i) => {
-    const p = m.player;
-    const isSkip = p?.skipNext && m.skipAction === 'skip';
-    const quotaPlein = quotaGamesEpuise(p);
-    const freeze = p?.freezeKills || 0;
-    const effectiveKills = freeze || m.elim;
-    const score = iaGetScore(m);
-    const confColor = m.conf >= 0.9 ? 'var(--green)' : 'var(--gold)';
-    const opts = playerOptions.replace(`value="${p?.id}"`, `value="${p?.id}" selected`);
-
-    // Badges roue
-    const badges = [];
-    if (quotaPlein) badges.push(`<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(192,71,42,0.15);border:1px solid var(--rust);color:var(--rust-light);border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700" title="Ce joueur a bouclé ses 60 games : une seule comptera sur toute la session, à saisir manuellement"><i class="fa-solid fa-ban" style="font-size:9px"></i> JOUEUR À +${state.maxGames || 60} — game non validée</span>`);
-    if (p?.skipNext) {
-      badges.push(m.skipAction === 'skip'
-        ? `<span style="background:rgba(192,71,26,0.15);border:1px solid var(--rust);color:var(--rust-light);border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700">SKIP</span>
-           <button onclick="iaSetSkipAction(${i},'record')" style="background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:3px;padding:2px 7px;font-size:10px;cursor:pointer">Saisir quand même</button>`
-        : `<span style="background:rgba(192,71,26,0.08);border:1px solid var(--rust);color:var(--rust-light);border-radius:3px;padding:2px 7px;font-size:10px">Skip ignoré</span>
-           <button onclick="iaSetSkipAction(${i},'skip')" style="background:none;border:1px solid var(--rust);color:var(--rust-light);border-radius:3px;padding:2px 7px;font-size:10px;cursor:pointer">Confirmer skip</button>`
-      );
-    }
-    if (freeze) badges.push(`<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(74,144,217,0.15);border:1px solid var(--blue);color:var(--blue);border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700">❄ Gelé ${freeze} kills<button onclick="iaCancelFreeze(${i})" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:12px;padding:0;line-height:1;opacity:0.7" title="Annuler le gel">×</button></span>`);
-    if (p?.pendingMult) badges.push(`<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(155,89,182,0.15);border:1px solid var(--purple);color:var(--purple);border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700">×${p.pendingMult} game<button onclick="iaCancelMult(${i})" style="background:none;border:none;color:var(--purple);cursor:pointer;font-size:12px;padding:0;line-height:1;opacity:0.7" title="Annuler le multiplicateur">×</button></span>`);
-    if (p?.pendingBonus) badges.push(`<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(76,175,130,0.15);border:1px solid var(--green);color:var(--green);border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700">+${p.pendingBonus}pts top10<button onclick="iaCancelPendingBonus(${i})" style="background:none;border:none;color:var(--green);cursor:pointer;font-size:12px;padding:0;line-height:1;opacity:0.7" title="Annuler le bonus">×</button></span>`);
-    if (p?.jokerCount > 0) badges.push(`<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(232,184,75,0.1);border:1px solid var(--gold);color:var(--gold);border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700">🃏 ${p.jokerCount} Joker${p.jokerCount > 1 ? 's' : ''}<button onclick="iaCancelJoker(${i})" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:12px;padding:0;line-height:1;opacity:0.7" title="Retirer un joker">×</button></span>`);
-    if (m.cloneLriaa) badges.push(`<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(155,89,182,0.15);border:1px solid var(--purple);color:var(--purple);border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700"><i class="fa-solid fa-gamepad" style="font-size:9px"></i> Clone Lriaa (${iaLriaaElim} kills)<button onclick="iaCancelCloneLriaaMatch(${i})" style="background:none;border:none;color:var(--purple);cursor:pointer;font-size:12px;padding:0;line-height:1;opacity:0.7" title="Annuler">×</button></span>`);
-
-    return `<tr style="${isSkip || quotaPlein ? 'opacity:0.45' : ''}">
-      <td style="font-size:12px;color:var(--text-muted);padding:8px">${escHtml(m.ocrName)}</td>
-      <td style="padding:8px">
-        <select style="background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;padding:4px 6px;max-width:145px" onchange="iaChangeMatch(${i},this.value)">
-          <option value="">— non assigné —</option>${opts}
-        </select>
-        <div style="font-size:10px;margin-top:2px;color:${confColor}">${Math.round(m.conf*100)}%</div>
-        ${badges.length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px">${badges.join('')}</div>` : ''}
-      </td>
-      <td style="text-align:center;padding:8px">
-        ${isSkip ? '<i class="fa-solid fa-forward-step" style="font-size:16px;opacity:0.5"></i>' : freeze ? `<span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:20px;color:var(--blue)">${freeze} ❄</span>` : `
-        <div style="display:flex;align-items:center;justify-content:center;gap:4px">
-          <button onclick="iaAdjustElim(${i},-1)" style="background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:3px;width:22px;height:22px;cursor:pointer;font-size:14px;line-height:1;padding:0">−</button>
-          <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:20px;color:var(--rust-light);min-width:24px;display:inline-block;text-align:center">${effectiveKills}</span>
-          <button onclick="iaAdjustElim(${i},1)" style="background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:3px;width:22px;height:22px;cursor:pointer;font-size:14px;line-height:1;padding:0">+</button>
-        </div>`}
-      </td>
-      <td style="text-align:right;padding:8px">
-        <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;color:var(--gold)">
-          ${isSkip || quotaPlein ? '—' : (score !== null ? score + ' pts' : '—')}
-        </span>
-        ${!isSkip && !quotaPlein && score !== null ? `
-        <div style="margin-top:5px;display:flex;justify-content:flex-end;align-items:center;gap:4px;flex-wrap:wrap">
-          <button onclick="iaAddBonus(${i},5)" style="background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:3px;padding:2px 7px;font-size:11px;cursor:pointer">+5</button>
-          <button onclick="iaAddBonus(${i},10)" style="background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:3px;padding:2px 7px;font-size:11px;cursor:pointer">+10</button>
-          ${m.bonus ? `<span style="color:var(--blue);font-size:11px;font-weight:600">+${m.bonus}pts</span><button onclick="iaClearBonus(${i})" style="background:none;border:none;color:var(--text-muted);font-size:13px;cursor:pointer;padding:0 2px">×</button>` : ''}
-        </div>` : ''}
-      </td>
-    </tr>`;
-  }).join('');
-
-  // Récapitulatif : annoncer avant le clic qui sera saisi et qui sera écarté
-  const recap = document.getElementById('ia-quota-recap');
-  if (recap) {
-    const pleins = iaMatches.filter(m => quotaGamesEpuise(m.player));
-    recap.innerHTML = pleins.length
-      ? `<div style="background:rgba(192,71,42,0.1);border:1px solid var(--rust);border-radius:4px;padding:10px 12px;font-size:12px;line-height:1.7;color:var(--rust-light)">
-          <i class="fa-solid fa-circle-exclamation" style="margin-right:6px"></i><strong>${pleins.length} game${pleins.length > 1 ? 's' : ''} non validée${pleins.length > 1 ? 's' : ''}</strong> — ${pleins.length > 1 ? 'ces joueurs sont' : 'ce joueur est'} à +${state.maxGames || 60} games :<br>
-          ${pleins.map(m => `<strong>${escHtml(m.player.name)}</strong> <span style="color:var(--text-muted)">(${m.player.games.length}/${limiteJoueur(m.player)})</span>`).join(', ')}
-          <br><span style="color:var(--text-muted)">Une seule game comptera sur toute la session : choisissez laquelle et saisissez-la <strong>à la main</strong>. La validation enregistre uniquement les autres joueurs.</span>
-        </div>`
-      : '';
-  }
-}
-
-function iaChangeMatch(idx, pid) {
-  const player = pid ? state.players.find(p => p.id === pid) : null;
-  iaMatches[idx].player = player;
-  iaMatches[idx].conf = player ? 1.0 : 0;
-  iaMatches[idx].skipAction = player?.skipNext ? 'skip' : 'record';
-  iaRenderResults();
-}
-
-function iaRefreshScores() {
-  iaRenderResults();
-}
-
-function iaRenderLriaaSection() {
-  const el = document.getElementById('ia-lriaa-section');
-  if (!el) { return; }
-  const clonePlayer = state.players.find(p => p.pendingCloneLriaa);
-  const inMatch = clonePlayer && iaMatches.some(m => m.cloneLriaa && m.player?.id === clonePlayer.id);
-  if (!inMatch) { el.innerHTML = ''; return; }
-  // Joueur reconnu par l'OCR avec clone actif → afficher la section de confirmation
-  const autoDetected = iaLriaaElim > 0;
-  const killsContent = autoDetected
-    ? `<div style="font-size:12px;color:var(--text)"><i class="fa-solid fa-check" style="color:var(--green);margin-right:4px"></i>Lriaa détectée : <strong>${iaLriaaElim} kills</strong> = <strong>${iaLriaaElim} pts</strong></div>`
-    : `<div style="font-size:11px;color:var(--text-muted)"><i class="fa-solid fa-clock" style="margin-right:4px"></i>Lriaa non détectée dans cette capture — clone en attente</div>`;
-  el.innerHTML = `<div style="margin-top:14px;padding:12px;background:rgba(155,89,182,0.08);border:1px solid var(--purple);border-radius:6px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <div style="display:flex;align-items:center;gap:8px">
-        <i class="fa-solid fa-gamepad" style="color:var(--purple)"></i>
-        <span style="font-size:13px;font-weight:700;color:var(--purple)">Clone kills de Lriaa → ${escHtml(clonePlayer.name)}</span>
-      </div>
-      <button onclick="iaCancelCloneLriaa()" style="background:none;border:none;color:var(--text-muted);font-size:15px;cursor:pointer;padding:0 4px;line-height:1" title="Annuler">×</button>
-    </div>
-    ${killsContent}
-  </div>`;
-}
-
-function iaCancelCloneLriaa() {
-  showConfirm(`Annuler le clone de kills de Lriaa ?`, () => {
-    const p = state.players.find(pl => pl.pendingCloneLriaa);
-    if (p) { p.pendingCloneLriaa = false; saveState(); }
-    iaRenderLriaaSection();
-  });
-}
-
-function iaCancelCloneLriaaMatch(idx) {
-  showConfirm(`Annuler le clone de kills de Lriaa ?`, () => {
-    const p = iaMatches[idx]?.player;
-    if (p) { p.pendingCloneLriaa = false; saveState(); }
-    iaMatches[idx].cloneLriaa = false;
-    iaMatches[idx].elim = 0; // remet les kills OCR réels à 0 (pas retrouvables, safer)
-    iaRenderResults();
-  });
-}
-
-function iaSubmitAll() {
-  const active = iaMatches.filter(m => m.player);
-  if (!active.length) { toast('Aucun joueur valide à valider.', 'error'); return; }
-
-  const topRank = iaTop;  // snapshot before any reset/async
-
-  let saved = 0;
-  const ignores = [];
-  active.forEach(m => {
-    const player = state.players.find(p => p.id === m.player?.id);
-    if (!player) return;
-
-    // Quota de games épuisé : la game ne compterait pas, on ne la saisit pas du tout.
-    // Le skip n'est pas consommé non plus — rien ne doit changer pour ce joueur.
-    if (quotaGamesEpuise(player)) { ignores.push(player.name); return; }
-
-    // Gestion skip
-    if (m.skipAction === 'skip' && player.skipNext) {
-      player.skipNext = false;
-      addLog(`<strong>${player.name}</strong> — game skippée. <span style="opacity:0.5">(IA)</span>`, 'rust', 'forward-step');
-      saved++;
-      return;
-    }
-    if (player.skipNext) player.skipNext = false;
-
-    // Gel de kills
-    let kills = m.elim;
-    let frozenAt = 0;
-    if (player.freezeKills) {
-      frozenAt = player.freezeKills;
-      kills = player.freezeKills;
-      player.freezeKills = 0;
-    }
-
-    // Multiplicateur game (roue)
-    let pendingGameMult = 0;
-    if (player.pendingMult) { pendingGameMult = player.pendingMult; player.pendingMult = 0; }
-
-    let baseScore = calcGameScore(kills, topRank, 1);
-    if (pendingGameMult) baseScore = Math.round(baseScore * pendingGameMult);
-
-    // Bonus top 10
-    let pendingBonusApplied = 0;
-    if (player.pendingBonus) { pendingBonusApplied = player.pendingBonus; player.pendingBonus = 0; }
-
-    const score = baseScore + pendingBonusApplied;
-    const noteparts = [];
-    if (frozenAt) noteparts.push(`❄ gelé ${frozenAt} kills`);
-    if (pendingGameMult) noteparts.push(`×${pendingGameMult} roue`);
-    if (pendingBonusApplied) noteparts.push(`+${pendingBonusApplied}pts top10`);
-
-    const manualBonus = m.bonus || 0;
-    if (manualBonus) noteparts.push(`+${manualBonus}pts bonus`);
-    if (m.cloneLriaa) { noteparts.push('kills Lriaa'); player.pendingCloneLriaa = false; }
-    const topStr = topRank===1?' Top 1':topRank===2?' Top 2':topRank===3?' Top 3':'';
-    player.games.push({
-      id: uid(), kills, top: topRank, mult: 1, score,
-      date: new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}),
-      note: noteparts.join(' · ')
-    });
-    if (pendingBonusApplied) player.bonusPoints = (player.bonusPoints || 0) + pendingBonusApplied;
-    if (manualBonus) player.bonusPoints = (player.bonusPoints || 0) + manualBonus;
-    addLog(`<strong>${player.name}</strong> — ${kills} kills${topStr} = ${score} pts${manualBonus ? ` +${manualBonus}pts bonus` : ''} <span style="opacity:0.5">(IA)</span>`, 'green', 'wand-magic-sparkles');
-    saved++;
-  });
-
-  // Lriaa kills attribution (si flag actif et joueur absent des matches principaux)
-  const clonePlayer = state.players.find(p => p.pendingCloneLriaa);
-  if (clonePlayer && iaLriaaElim > 0) {
-    clonePlayer.games.push({ id: uid(), kills: iaLriaaElim, top: 0, mult: 1, score: iaLriaaElim, date: now(), note: 'kills Lriaa' });
-    clonePlayer.pendingCloneLriaa = false;
-    addLog(`<strong>${clonePlayer.name}</strong> — kills de Lriaa (${iaLriaaElim}) clonés.`, 'purple', 'gamepad', true);
-    saved++;
-  }
-  // Si iaLriaaElim = 0 (Lriaa pas dans la capture), le flag reste actif pour la prochaine game
-
-  renderAll();
-  closeModal('modal-saisie-ia');
-  iaReset();
-  if (ignores.length) {
-    // Trace publique : sans elle, une game absente du classement passerait pour un bug
-    addLog(`${ignores.length} game${ignores.length > 1 ? 's' : ''} non validée${ignores.length > 1 ? 's' : ''} — ${ignores.length > 1 ? 'joueurs' : 'joueur'} à +${state.maxGames || 60} games : ${ignores.join(', ')}. Une seule game comptera sur la session, saisie manuellement.`, 'rust', 'ban', true);
-  }
-  toast(ignores.length
-    ? `${saved} joueur${saved>1?'s':''} traité${saved>1?'s':''}, ${ignores.length} à +${state.maxGames || 60} non validé${ignores.length>1?'s':''}.`
-    : `${saved} joueur${saved>1?'s':''} traité${saved>1?'s':''} !`);
-  saveState();  // fire-and-forget after UI is already updated
-}
-
-function saveAiKey() {
-  const val = document.getElementById('mod-ai-key').value.trim();
-  if (!val) { toast('Entrez une clé API.', 'error'); return; }
-  localStorage.setItem('sl_ai_key', val);
-  document.getElementById('mod-ai-key-status').textContent = 'Clé sauvegardée.';
-  document.getElementById('mod-ai-key-status').style.color = 'var(--green)';
-  toast('Clé API sauvegardée.');
-}
-
-function iaZoomImage(src) {
-  const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;cursor:zoom-out';
-  overlay.innerHTML = `<img src="${src}" style="max-width:95vw;max-height:95vh;border-radius:6px;box-shadow:0 0 60px rgba(0,0,0,0.8)">`;
-  overlay.onclick = () => overlay.remove();
-  document.body.appendChild(overlay);
 }
 
 // ============================================================
@@ -7128,7 +6607,7 @@ const _sb = createClient(
     updateAdminUI();
     if (event === 'SIGNED_OUT') {
       _s = null;
-      const adminPages = ['actions', 'joueurs', 'moderation'];
+      const adminPages = ['joueurs', 'moderation', 'tirage'];
       if (adminPages.includes(window.location.hash.slice(1))) showPage('classement');
       if (!_savePending) toast('Déconnecté.', 'rust');
     }
