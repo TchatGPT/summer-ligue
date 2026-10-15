@@ -647,6 +647,7 @@ main {
 @keyframes rrBang  { from { transform: scale(2.2); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
   .rr-cylinder.spinning, .rr-wrap.shaking, .rr-chamber.hit, .rr-bang { animation: none; }
+  .lot-photo, .lot-visuel::before { animation: none; }
 }
 
 /* SCORE PREVIEW */
@@ -1163,13 +1164,29 @@ main {
 .lot-visuel::before {
   content: ''; position: absolute; inset: 0;
   background: radial-gradient(60% 70% at 50% 45%, var(--halo), transparent 70%);
+  animation: lot-halo 7s ease-in-out infinite;
 }
 .lot-cod { --halo: rgba(224,90,56,0.28); background: #14100e; }
 .lot-goxlr { --halo: rgba(74,142,201,0.26); background: #0d1116; }
 .lot-photo {
   position: relative; max-width: 100%; max-height: 100%;
   object-fit: contain; filter: drop-shadow(0 16px 28px rgba(0,0,0,0.6));
+  animation: lot-flotte 7s ease-in-out infinite;
+  will-change: transform;
 }
+/* Le lot flotte, et le halo derriere glisse en sens inverse : le decalage
+   entre les deux donne la profondeur, sans rien faire bouger d'autre. */
+@keyframes lot-flotte {
+  0%, 100% { transform: translateY(-7px) rotate(-0.45deg); }
+  50%      { transform: translateY(8px) rotate(0.45deg); }
+}
+@keyframes lot-halo {
+  0%, 100% { transform: translateY(5px) scale(1); opacity: 0.82; }
+  50%      { transform: translateY(-6px) scale(1.07); opacity: 1; }
+}
+/* La seconde carte est desynchronisee, sinon les deux lots battent ensemble. */
+.lots-grid .lot-card:nth-child(2) .lot-photo { animation-duration: 8.6s; animation-delay: -2.9s; }
+.lots-grid .lot-card:nth-child(2) .lot-visuel::before { animation-duration: 8.6s; animation-delay: -2.9s; }
 /* Repli dessine en CSS, visible seulement si la photo manque. */
 .lot-repli { display: none; position: relative; }
 .lot-visuel.sans-photo .lot-photo { display: none; }
