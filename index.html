@@ -3748,9 +3748,7 @@ function updateSaisiePreview() {
     bonusRow.style.display = 'none';
   }
 
-  document.getElementById('prev-total').textContent = gameMult !== 1
-    ? `${multipliedScore} pts (${rawScore} × ${gameMult})`
-    : total + ' pts';
+  document.getElementById('prev-total').textContent = total + ' pts';
 
   let warning = '';
   if (player) {
