@@ -755,7 +755,10 @@ main {
 
 /* KILLS TOP PICKER */
 .top-selector {
-  display: flex;
+  /* Neuf choix : une grille auto-ajustable, qui passe sur deux ou trois rangs
+     plutôt que d'écraser les boutons sur un téléphone. */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(76px, 1fr));
   gap: 6px;
 }
 .top-btn {
@@ -775,7 +778,21 @@ main {
 .top-btn.selected.t1 { background: rgba(255,215,0,0.15); border-color: #ffd700; color: #ffd700; }
 .top-btn.selected.t2 { background: rgba(192,192,192,0.15); border-color: #c0c0c0; color: #c0c0c0; }
 .top-btn.selected.t3 { background: rgba(205,127,50,0.15); border-color: #cd7f32; color: #cd7f32; }
+.top-btn.selected.t4, .top-btn.selected.t5,
+.top-btn.selected.t6, .top-btn.selected.t7, .top-btn.selected.t8 {
+  background: rgba(201,149,74,0.15); border-color: var(--gold); color: var(--gold);
+}
 .top-btn.selected.tn { background: rgba(139,132,120,0.15); border-color: var(--text-muted); color: var(--text); }
+.top-btn small { font-weight: 400; opacity: 0.85; }
+
+/* Rappel de la règle, sous les boutons */
+.top-regle {
+  display: flex; align-items: flex-start; gap: 8px;
+  margin-top: 9px; padding: 9px 11px;
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 4px;
+  font-size: 11.5px; line-height: 1.6; color: var(--text-muted);
+}
+.top-regle strong { color: var(--text); }
 
 /* MULT SELECTOR */
 .mult-grid {
@@ -1578,7 +1595,10 @@ main {
               <button id="freeze-cancel-btn" onclick="" style="background:none;border:1px solid var(--blue);color:var(--blue);border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer;line-height:1.4;touch-action:manipulation">✕ Annuler</button>
             </div>
           </div>
-          <div class="form-row" style="margin-bottom:0">
+          <!-- Les roues n'existent plus : la finale compte 1 point par kill. Le
+               sélecteur reste dans le DOM parce que la saisie et l'aperçu le
+               lisent encore, mais il n'est plus montré ni utilisé. -->
+          <div class="form-row" style="margin-bottom:0;display:none" id="saisie-mult-row">
             <label class="form-label" id="mult-label">Multiplicateur</label>
             <select class="form-select" id="saisie-mult" onchange="updateSaisiePreview()">
               <option value="1">x1 (aucun)</option>
@@ -1598,12 +1618,22 @@ main {
         </div>
 
         <div class="form-row" style="margin-top:14px">
-          <label class="form-label">Classement (Top)</label>
+          <label class="form-label">Top à la première mort</label>
           <div class="top-selector">
-            <button class="top-btn t1" id="top-1" onclick="selectTop(1)">TOP 1<br><small>+20 pts</small></button>
-            <button class="top-btn t2" id="top-2" onclick="selectTop(2)">TOP 2<br><small>+15 pts</small></button>
-            <button class="top-btn t3" id="top-3" onclick="selectTop(3)">TOP 3<br><small>+8 pts</small></button>
-            <button class="top-btn tn selected" id="top-n" onclick="selectTop(0)">Pas top<br><small>+0 pts</small></button>
+          <button class="top-btn t1" id="top-1" onclick="selectTop(1)">TOP 1<br><small>+20 pts</small></button>
+          <button class="top-btn t2" id="top-2" onclick="selectTop(2)">TOP 2<br><small>+15 pts</small></button>
+          <button class="top-btn t3" id="top-3" onclick="selectTop(3)">TOP 3<br><small>+8 pts</small></button>
+          <button class="top-btn t4" id="top-4" onclick="selectTop(4)">TOP 4<br><small>+6 pts</small></button>
+          <button class="top-btn t5" id="top-5" onclick="selectTop(5)">TOP 5<br><small>+5 pts</small></button>
+          <button class="top-btn t6" id="top-6" onclick="selectTop(6)">TOP 6<br><small>+3 pts</small></button>
+          <button class="top-btn t7" id="top-7" onclick="selectTop(7)">TOP 7<br><small>+3 pts</small></button>
+          <button class="top-btn t8" id="top-8" onclick="selectTop(8)">TOP 8<br><small>+3 pts</small></button>
+          <button class="top-btn tn selected" id="top-n" onclick="selectTop(0)">Pas top<br><small>+0 pts</small></button>
+          </div>
+          <div class="top-regle">
+            <i class="fa-solid fa-skull" style="color:var(--rust-light)"></i>
+            <span>Le top compte <strong>au moment de la première mort</strong> du joueur, pas au classement final de l'équipe.
+            Les kills et assists, eux, comptent <strong>jusqu'à la fin de la partie</strong>, réanimation comprise.</span>
           </div>
         </div>
 
@@ -1620,8 +1650,8 @@ main {
         </div>
 
         <div id="saisie-preview" class="score-preview" style="display:none">
-          <div class="sp-row"><span id="prev-kills-label">Kills (×multiplicateur)</span><span id="prev-kills-pts">0 pts</span></div>
-          <div class="sp-row"><span>Top placement</span><span id="prev-top-pts">0 pts</span></div>
+          <div class="sp-row"><span id="prev-kills-label">Kills / assists</span><span id="prev-kills-pts">0 pts</span></div>
+          <div class="sp-row"><span>Top (1re mort)</span><span id="prev-top-pts">0 pts</span></div>
           <div class="sp-row" id="prev-bonus-row" style="display:none;color:var(--blue)"><span><i class="fa-solid fa-star-of-life" style="font-size:9px"></i> Bonus</span><span id="prev-bonus-pts">+0 pts</span></div>
           <div class="sp-row sp-total"><span>SCORE GAME</span><span id="prev-total">0 pts</span></div>
           <div style="margin-top:8px;font-size:11px;color:var(--text-muted)" id="prev-warning"></div>
@@ -2102,13 +2132,23 @@ main {
       </div>
 
       <div class="form-row" style="margin-top:14px">
-        <label class="form-label">Classement (Top)</label>
+        <label class="form-label">Top à la première mort</label>
         <div class="top-selector">
           <button class="top-btn t1" id="edit-top-1" onclick="selectEditTop(1)">TOP 1<br><small>+20 pts</small></button>
           <button class="top-btn t2" id="edit-top-2" onclick="selectEditTop(2)">TOP 2<br><small>+15 pts</small></button>
           <button class="top-btn t3" id="edit-top-3" onclick="selectEditTop(3)">TOP 3<br><small>+8 pts</small></button>
+          <button class="top-btn t4" id="edit-top-4" onclick="selectEditTop(4)">TOP 4<br><small>+6 pts</small></button>
+          <button class="top-btn t5" id="edit-top-5" onclick="selectEditTop(5)">TOP 5<br><small>+5 pts</small></button>
+          <button class="top-btn t6" id="edit-top-6" onclick="selectEditTop(6)">TOP 6<br><small>+3 pts</small></button>
+          <button class="top-btn t7" id="edit-top-7" onclick="selectEditTop(7)">TOP 7<br><small>+3 pts</small></button>
+          <button class="top-btn t8" id="edit-top-8" onclick="selectEditTop(8)">TOP 8<br><small>+3 pts</small></button>
           <button class="top-btn tn" id="edit-top-n" onclick="selectEditTop(0)">Pas top<br><small>+0 pts</small></button>
         </div>
+          <div class="top-regle">
+            <i class="fa-solid fa-skull" style="color:var(--rust-light)"></i>
+            <span>Le top compte <strong>au moment de la première mort</strong> du joueur, pas au classement final de l'équipe.
+            Les kills et assists, eux, comptent <strong>jusqu'à la fin de la partie</strong>, réanimation comprise.</span>
+          </div>
       </div>
 
       <div class="form-row" style="margin-top:14px">
@@ -2125,7 +2165,7 @@ main {
 
       <div class="score-preview" style="margin-top:14px">
         <div class="sp-row"><span>Kills (×multiplicateur)</span><span id="edit-prev-kills">0 pts</span></div>
-        <div class="sp-row"><span>Top placement</span><span id="edit-prev-top">0 pts</span></div>
+        <div class="sp-row"><span>Top (1re mort)</span><span id="edit-prev-top">0 pts</span></div>
         <div class="sp-row" id="edit-prev-bonus-row" style="display:none;color:var(--blue)"><span><i class="fa-solid fa-star-of-life" style="font-size:9px"></i> Bonus</span><span id="edit-prev-bonus">+0 pts</span></div>
         <div class="sp-row sp-total"><span>SCORE GAME</span><span id="edit-prev-total">0 pts</span></div>
       </div>
@@ -2770,13 +2810,19 @@ function renderTirage() {
 // ============================================================
 // SCORE CALCULATION
 // ============================================================
+// ---- Barème de la finale ----
+// Un kill ou un assist vaut 1 point, et ils comptent jusqu'à la fin de la partie,
+// réanimation comprise. Le top, lui, est figé au moment de la PREMIÈRE MORT du
+// joueur : tombé en top 5 alors que l'équipe finit top 1, c'est 5 pts et pas 20.
+const POINTS_TOP = { 1: 20, 2: 15, 3: 8, 4: 6, 5: 5, 6: 3, 7: 3, 8: 3 };
+const TOP_MAX = 8;
+function pointsTop(top) { return POINTS_TOP[top] || 0; }
+// Libellé d'un top, pour les logs et les cartes de game.
+function libelleTop(top) { return top ? 'Top ' + top : ''; }
+
 function calcGameScore(kills, top, mult) {
   const killsPts = Math.round(kills * mult);
-  let topPts = 0;
-  if (top === 1) topPts = 20;
-  else if (top === 2) topPts = 15;
-  else if (top === 3) topPts = 8;
-  return killsPts + topPts;
+  return killsPts + pointsTop(top);
 }
 
 function getPlayerTotal(player) {
@@ -3628,11 +3674,14 @@ function changeKills(delta) {
   updateSaisiePreview();
 }
 
+// L'identifiant d'un bouton de top, dans l'une ou l'autre modale.
+function _idTop(prefixe, n) { return prefixe + (n === 0 ? 'n' : n); }
+
 function selectTop(n) {
   currentTop = n;
-  document.querySelectorAll('.top-btn').forEach(b => b.classList.remove('selected'));
-  const map = { 0: 'top-n', 1: 'top-1', 2: 'top-2', 3: 'top-3' };
-  document.getElementById(map[n]).classList.add('selected');
+  document.querySelectorAll('#modal-saisie .top-btn').forEach(b => b.classList.remove('selected'));
+  const b = document.getElementById(_idTop('top-', n));
+  if (b) b.classList.add('selected');
   updateSaisiePreview();
 }
 
@@ -3676,23 +3725,19 @@ function updateSaisiePreview() {
     multSel.classList.remove('mult-roue-active');
     badge.style.display = 'none';
   }
-  const selectMult = parseFloat(multSel.value || 1);
-  const gameMult = (player && player.pendingMult) ? player.pendingMult : 1;
+  // Finale : 1 point par kill ou assist, aucun multiplicateur. Le sélecteur reste
+  // dans le DOM parce que d'autres fonctions le lisent, mais il est masqué.
   const top = currentTop;
-  const killsPts = Math.round(kills * (gameMult === 1 ? selectMult : 1));
-  let topPts = 0;
-  if (top === 1) topPts = 20;
-  else if (top === 2) topPts = 15;
-  else if (top === 3) topPts = 8;
-  const rawScore = killsPts + topPts;
-  const multipliedScore = gameMult !== 1 ? Math.round(rawScore * gameMult) : rawScore;
+  const killsPts = kills;
+  const topPts = pointsTop(top);
+  const multipliedScore = killsPts + topPts;
   const total = multipliedScore + saisieBonus;
 
   const preview = document.getElementById('saisie-preview');
   preview.style.display = 'block';
   const killsLabel = document.getElementById('prev-kills-label');
-  if (killsLabel) killsLabel.textContent = gameMult !== 1 ? 'Kills' : 'Kills (×multiplicateur)';
-  document.getElementById('prev-kills-pts').textContent = `${kills} pts${selectMult !== 1 && gameMult === 1 ? ` × ${selectMult} = ${killsPts}` : ''}`;
+  if (killsLabel) killsLabel.textContent = 'Kills / assists';
+  document.getElementById('prev-kills-pts').textContent = `${kills} pts`;
   document.getElementById('prev-top-pts').textContent = topPts + ' pts';
 
   const bonusRow = document.getElementById('prev-bonus-row');
@@ -3923,7 +3968,7 @@ function submitGame() {
   }
 
   let kills = parseInt(document.getElementById('saisie-kills').value || 0);
-  let mult = parseFloat(document.getElementById('saisie-mult').value || 1);
+  let mult = 1;   // finale : 1 point par kill, le multiplicateur n'existe plus
   const top = currentTop;
 
   // Apply freeze
@@ -3935,12 +3980,13 @@ function submitGame() {
     toast(`Kills gelés à ${kills} pour ${player.name}.`, 'info');
   }
 
-  let pendingGameMult = 0;
+  // Reliquat des roues, qui n'existent plus en finale : on nettoie le drapeau
+  // sans l'appliquer, le barème de la finale ne connaît pas de multiplicateur.
+  const pendingGameMult = 0;
   if (player.pendingMult) {
-    pendingGameMult = player.pendingMult;
+    const ancien = player.pendingMult;
     player.pendingMult = 0;
-    mult = 1; // le select affiche pendingMult mais on ne doit pas multiplier les kills
-    toast(`Multiplicateur ×${pendingGameMult} (roue) appliqué sur toute la game.`, 'info');
+    toast(`Multiplicateur ×${ancien} ignoré : la finale compte 1 point par kill.`, 'info');
   }
 
   let baseScore = calcGameScore(kills, top, mult);
@@ -3975,7 +4021,7 @@ function submitGame() {
   if (saisieBonus > 0) player.bonusPoints = (player.bonusPoints || 0) + saisieBonus;
   saveState();
 
-  const topStr = top === 1 ? 'Top 1' : top === 2 ? 'Top 2' : top === 3 ? 'Top 3' : '';
+  const topStr = libelleTop(top);
   const bonusStr = saisieBonus > 0 ? ` +${saisieBonus}pts bonus` : '';
   const top10Str = pendingBonusApplied ? ` +${pendingBonusApplied}pts top10` : '';
   const totalScore = score + saisieBonus;
@@ -4023,7 +4069,7 @@ function showPlayerDetail(id) {
         ${g.locked ? `<div style="display:inline-flex;align-items:center;gap:4px;margin-bottom:3px;background:rgba(74,142,201,0.15);border:1px solid var(--blue);border-radius:3px;padding:1px 6px;font-size:9px;font-weight:700;color:var(--blue);letter-spacing:0.5px"><i class="fa-solid fa-lock" style="font-size:8px"></i> FIGÉE${isAdmin() ? `<button onclick="unlockGame('${p.id}','${g.id}');event.stopPropagation()" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:11px;padding:0;line-height:1;margin-left:2px;opacity:0.75" title="Dégeler cette game">×</button>` : ''}</div>` : ''}
         <div class="gc-num">Game ${i + 1} · ${g.date || ''}</div>
         <div class="gc-score">${g.score}</div>
-        <div class="gc-detail">${g.kills} kills · ${g.top === 1 ? 'Top 1' : g.top === 2 ? 'Top 2' : g.top === 3 ? 'Top 3' : '—'}</div>
+        <div class="gc-detail">${g.kills} kills · ${libelleTop(g.top) || '—'}</div>
         ${g.mult !== 1 ? `<div class="gc-mult">×${g.mult}</div>` : ''}
         ${g.note ? `<div class="gc-note">${escHtml(g.note)}</div>` : ''}
         ${!isCounted ? '<div style="font-size:9px;color:var(--rust);margin-top:2px">non comptée</div>' : ''}
@@ -4127,9 +4173,11 @@ function openEditGame(playerId, gameId) {
   document.getElementById('edit-mult').value = g.mult || 1;
 
   // Sync top buttons
-  ['edit-top-n','edit-top-1','edit-top-2','edit-top-3'].forEach(id => document.getElementById(id).classList.remove('selected'));
-  const topMap = { 0: 'edit-top-n', 1: 'edit-top-1', 2: 'edit-top-2', 3: 'edit-top-3' };
-  document.getElementById(topMap[g.top]).classList.add('selected');
+  document.querySelectorAll('#modal-edit-game .top-btn').forEach(b => b.classList.remove('selected'));
+  // Une vieille game peut porter un top hors grille : on retombe sur « pas top »
+  // plutôt que de planter sur un bouton inexistant.
+  const btnTop = document.getElementById(_idTop('edit-top-', g.top)) || document.getElementById('edit-top-n');
+  btnTop.classList.add('selected');
 
   // Reset bonus and note state
   _editBonus = 0;
@@ -4200,9 +4248,9 @@ function removeNoteBadge(idx) {
 
 function selectEditTop(n) {
   _editCtx.top = n;
-  ['edit-top-n','edit-top-1','edit-top-2','edit-top-3'].forEach(id => document.getElementById(id).classList.remove('selected'));
-  const map = { 0: 'edit-top-n', 1: 'edit-top-1', 2: 'edit-top-2', 3: 'edit-top-3' };
-  document.getElementById(map[n]).classList.add('selected');
+  document.querySelectorAll('#modal-edit-game .top-btn').forEach(b => b.classList.remove('selected'));
+  const b = document.getElementById(_idTop('edit-top-', n));
+  if (b) b.classList.add('selected');
   updateEditPreview();
 }
 
@@ -4217,7 +4265,7 @@ function updateEditPreview() {
   const mult  = parseFloat(document.getElementById('edit-mult').value || 1);
   const top   = _editCtx.top;
   const killsPts = Math.round(kills * mult);
-  const topPts   = top === 1 ? 20 : top === 2 ? 15 : top === 3 ? 8 : 0;
+  const topPts   = pointsTop(top);
   document.getElementById('edit-prev-kills').textContent = `${kills}${mult !== 1 ? ' × ' + mult + ' = ' + killsPts : ''} pts`;
   document.getElementById('edit-prev-top').textContent   = topPts + ' pts';
   // Existing bonus still in note segments (not yet removed)
@@ -6598,7 +6646,7 @@ function parseSheetCSV(csv) {
       }
 
       // Score: pts_totaux is the authoritative sheet value (includes mult & bonuses)
-      const placementPts = top === 1 ? 20 : top === 2 ? 15 : top === 3 ? 8 : 0;
+      const placementPts = pointsTop(top);
       const score = ptsTotaux > 0 ? ptsTotaux : Math.round(kills * mult) + placementPts;
 
       // Notes: keep non-numeric annotations (e.g. "gèle 5 kills", "5 pts", "> roue commu")
