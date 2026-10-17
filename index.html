@@ -1255,6 +1255,25 @@ main {
   font-size: 12px; color: var(--text-muted);
 }
 
+/* ---- Tickets de tirage ---- */
+.tickets-bareme { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 18px; }
+.ticket-palier {
+  border: 1px solid var(--border); border-left: 3px solid var(--gold); border-radius: 5px;
+  background: var(--bg2); padding: 11px 14px;
+}
+.ticket-palier b {
+  display: block; font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
+  font-size: 20px; line-height: 1; color: var(--gold);
+}
+.ticket-palier span { display: block; margin-top: 4px; font-size: 12px; color: var(--text-muted); }
+.ticket-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; padding: 3px 9px; border-radius: 3px;
+  border: 1px solid var(--border); color: var(--text-muted);
+}
+.ticket-chip i.t { font-style: normal; font-weight: 700; color: var(--gold); }
+.ticket-chip.gagnant { border-color: var(--gold); color: var(--gold); background: rgba(201,149,74,0.1); }
+
 /* ---- Tirage ---- */
 .tirage-ecran {
   min-height: 92px; display: flex; align-items: center; justify-content: center;
@@ -1331,7 +1350,9 @@ main {
     <i class="fa-solid fa-circle-info" style="color:var(--gold);margin-right:5px"></i>
     Tirés au sort parmi <strong style="color:var(--text)">tous les joueurs de la ligue</strong> — aucune condition de classement.
     Avoir participé suffit, et un même joueur ne peut pas gagner les deux.
+    Les joueurs les plus assidus ont simplement <strong style="color:var(--text)">plus de tickets</strong> dans le chapeau :
   </div>
+  <div class="tickets-bareme" id="tickets-bareme"></div>
 
   <div class="lots-grid">
     <div class="lot-card">
@@ -2601,8 +2622,36 @@ function participantsTirage(cle) {
   return state.players.filter(p => !pris.has(p.id));
 }
 
-// Tirage uniforme : rejection sampling sur crypto, pour que le modulo ne favorise
-// pas les premiers de la liste. Aucun joueur n'est pondéré, de pres ou de loin.
+// ---- Tickets de tirage ----
+// Le tirage récompense la participation : plus un joueur a disputé de games,
+// plus il a de tickets dans le chapeau. Les paliers sont publics, affichés sur
+// la page Finale et détaillés joueur par joueur sur la page de tirage.
+// Paliers du plus exigeant au moins exigeant : le premier atteint l'emporte.
+const PALIERS_TIRAGE = [
+  { min: 50, tickets: 4, libelle: '50 games et plus' },
+  { min: 20, tickets: 2, libelle: 'de 20 à 49 games' },
+  { min: 0,  tickets: 1, libelle: 'moins de 20 games' }
+];
+function palierTirage(player) {
+  const nb = (player?.games || []).length;
+  return PALIERS_TIRAGE.find(p => nb >= p.min) || PALIERS_TIRAGE[PALIERS_TIRAGE.length - 1];
+}
+function ticketsTirage(player) { return palierTirage(player).tickets; }
+
+// Le chapeau : chaque joueur y figure autant de fois qu'il a de tickets. Tirer
+// un index uniforme là-dedans revient exactement à tirer au prorata des tickets,
+// et ça garde le tirage vérifiable d'un coup d'œil.
+function chapeauTirage(cle) {
+  const chapeau = [];
+  for (const p of participantsTirage(cle)) {
+    for (let i = 0; i < ticketsTirage(p); i++) chapeau.push(p);
+  }
+  return chapeau;
+}
+
+// Tirage uniforme dans le chapeau : rejection sampling sur crypto, pour que le
+// modulo ne favorise pas les premiers de la liste. La seule pondération est celle
+// des tickets, annoncée publiquement ; rien d'autre ne départage les joueurs.
 function _indexAleatoire(taille) {
   if (taille <= 0) return -1;
   if (taille === 1) return 0;
@@ -2644,16 +2693,18 @@ async function lancerTirage(cle) {
   if (gagnantLot(cle)) { toast('Ce lot a déjà son gagnant.', 'error'); return; }
   const candidats = participantsTirage(cle);
   if (!candidats.length) { toast('Aucun participant pour ce lot.', 'error'); return; }
+  const chapeau = chapeauTirage(cle);
 
-  const gagnant = candidats[_indexAleatoire(candidats.length)];
+  const gagnant = chapeau[_indexAleatoire(chapeau.length)];
   _tirageEnCours = cle;
   renderTirage();
-  await _defileNoms(document.getElementById('tirage-' + cle + '-ecran'), candidats, gagnant);
+  // Les noms défilent depuis le chapeau : ce qu'on voit passer reflète les chances.
+  await _defileNoms(document.getElementById('tirage-' + cle + '-ecran'), chapeau, gagnant);
   _tirageEnCours = null;
 
   _tirageEtat()[cle] = { playerId: gagnant.id, name: gagnant.name, at: Date.now() };
   saveState();
-  addLog(`<strong>${escHtml(gagnant.name)}</strong> remporte <strong>${escHtml(lot.nom)}</strong> au tirage au sort, parmi ${candidats.length} participants.`, 'gold', 'gift', true);
+  addLog(`<strong>${escHtml(gagnant.name)}</strong> remporte <strong>${escHtml(lot.nom)}</strong> au tirage au sort, parmi ${candidats.length} participants et ${chapeau.length} tickets.`, 'gold', 'gift', true);
   renderAll();
   toast(gagnant.name + ' remporte ' + lot.nom + ' !');
 }
@@ -2683,6 +2734,15 @@ function renderFinale() {
       [nbGames, 'Games jouées'],
       [LOTS_FINALE.length, 'Lots à gagner']
     ].map(([v, l]) => `<div class="finale-chiffre"><b>${v}</b><span>${l}</span></div>`).join('');
+  }
+
+  const bareme = document.getElementById('tickets-bareme');
+  if (bareme) {
+    bareme.innerHTML = PALIERS_TIRAGE.map(p =>
+      `<div class="ticket-palier">
+        <b>${p.tickets} ticket${p.tickets > 1 ? 's' : ''}</b>
+        <span>${p.libelle}</span>
+      </div>`).join('');
   }
 
   const hote = document.getElementById('finale-podium');
@@ -2766,15 +2826,23 @@ function renderTirage() {
   if (!liste) return;
 
   const total = state.players.length;
-  const noms = [...state.players].sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+  // Trié par tickets décroissants : on voit d'un coup qui pèse le plus, et le
+  // décompte total doit correspondre à la taille du chapeau.
+  const noms = [...state.players].sort((a, b) =>
+    ticketsTirage(b) - ticketsTirage(a) || a.name.localeCompare(b.name, 'fr'));
+  const totalTickets = noms.reduce((t, p) => t + ticketsTirage(p), 0);
   liste.innerHTML = total
     ? `<div style="border:1px solid var(--border);border-radius:6px;background:var(--bg2);padding:14px 16px">
-        <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px">
-          ${total} participant${total > 1 ? 's' : ''} dans le chapeau
+        <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px">
+          ${total} participant${total > 1 ? 's' : ''} · ${totalTickets} tickets dans le chapeau
+        </div>
+        <div style="font-size:11.5px;color:var(--text-muted);margin-bottom:10px;line-height:1.6">
+          ${PALIERS_TIRAGE.map(p => `${p.libelle} : <strong style="color:var(--gold)">${p.tickets}</strong>`).join(' · ')}
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:6px">${noms.map(p => {
           const dejaGagnant = LOTS_FINALE.some(l => gagnantLot(l.cle)?.playerId === p.id);
-          return `<span style="font-size:12px;padding:3px 9px;border-radius:3px;border:1px solid ${dejaGagnant ? 'var(--gold)' : 'var(--border)'};color:${dejaGagnant ? 'var(--gold)' : 'var(--text-muted)'};background:${dejaGagnant ? 'rgba(201,149,74,0.1)' : 'transparent'}">${dejaGagnant ? '<i class="fa-solid fa-crown" style="font-size:9px;margin-right:4px"></i>' : ''}${escHtml(p.name)}</span>`;
+          const nb = (p.games || []).length;
+          return `<span class="ticket-chip${dejaGagnant ? ' gagnant' : ''}" title="${nb} game${nb > 1 ? 's' : ''} jouée${nb > 1 ? 's' : ''}">${dejaGagnant ? '<i class="fa-solid fa-crown" style="font-size:9px"></i>' : ''}${escHtml(p.name)}<i class="t">×${ticketsTirage(p)}</i></span>`;
         }).join('')}</div>
       </div>`
     : '<div style="padding:24px;text-align:center;color:var(--text-muted);border:1px dashed var(--border);border-radius:6px">Aucun joueur enregistré : rien à tirer au sort.</div>';
@@ -2802,7 +2870,7 @@ function renderTirage() {
           <i class="fa-solid fa-dice" style="margin-right:6px"></i>Lancer le tirage
         </button>
         <div style="align-self:center;font-size:11px;color:var(--text-muted);line-height:1.5">
-          ${candidats.length} joueur${candidats.length > 1 ? 's' : ''} en jeu${ecarte ? '<br>' + escHtml(ecarte.name) + ' est écarté (déjà gagnant)' : ''}
+          ${candidats.length} joueur${candidats.length > 1 ? 's' : ''} · ${chapeauTirage(lot.cle).length} tickets${ecarte ? '<br>' + escHtml(ecarte.name) + ' est écarté (déjà gagnant)' : ''}
         </div>`;
   });
 }
